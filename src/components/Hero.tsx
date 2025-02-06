@@ -18,7 +18,7 @@ const Hero = () => {
             <Button className="bg-gold text-navy hover:bg-gold/90">
               Zobacz Samochody
             </Button>
-            <Button variant="outline" className="text-white border-white hover:bg-white/10">
+            <Button variant="outline" className="text-navy bg-white border-white hover:bg-white/90">
               Zamów Inspekcję
             </Button>
           </div>
