@@ -10,19 +10,19 @@ const Navbar = () => {
           </Link>
           <div className="hidden md:flex space-x-8">
             <Link to="/" className="text-gray-700 hover:text-navy transition-colors">
-              Home
+              Strona główna
             </Link>
             <Link to="/inventory" className="text-gray-700 hover:text-navy transition-colors">
-              Inventory
+              Samochody
             </Link>
             <Link to="/imports" className="text-gray-700 hover:text-navy transition-colors">
-              Imports
+              Import
             </Link>
             <Link to="/inspections" className="text-gray-700 hover:text-navy transition-colors">
-              Inspections
+              Inspekcje
             </Link>
             <Link to="/contact" className="text-gray-700 hover:text-navy transition-colors">
-              Contact
+              Kontakt
             </Link>
           </div>
         </div>

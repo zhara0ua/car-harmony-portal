@@ -19,14 +19,14 @@ const CarCard = ({ image, name, price, year, mileage }: CarCardProps) => {
           <div className="space-y-2">
             <p className="text-2xl font-bold text-navy">{price}</p>
             <div className="flex justify-between text-sm text-gray-600">
-              <span>{year}</span>
-              <span>{mileage}</span>
+              <span>Rok: {year}</span>
+              <span>Przebieg: {mileage}</span>
             </div>
           </div>
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <Button className="w-full bg-navy hover:bg-navy/90">View Details</Button>
+        <Button className="w-full bg-navy hover:bg-navy/90">Zobacz Szczegóły</Button>
       </CardFooter>
     </Card>
   );

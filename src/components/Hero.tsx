@@ -9,17 +9,17 @@ const Hero = () => {
       <div className="relative container mx-auto px-6 h-full flex items-center">
         <div className="max-w-2xl">
           <h1 className="text-5xl font-bold mb-6">
-            Discover Your Perfect Drive
+            Odkryj Swój Wymarzony Samochód
           </h1>
           <p className="text-xl mb-8">
-            Premium vehicles, expert imports, and thorough inspections for the discerning driver.
+            Luksusowe pojazdy, profesjonalny import i dokładne inspekcje dla wymagających kierowców.
           </p>
           <div className="space-x-4">
             <Button className="bg-gold text-navy hover:bg-gold/90">
-              View Inventory
+              Zobacz Samochody
             </Button>
             <Button variant="outline" className="text-white border-white hover:bg-white/10">
-              Schedule Inspection
+              Umów Inspekcję
             </Button>
           </div>
         </div>
