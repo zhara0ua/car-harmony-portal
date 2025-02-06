@@ -19,7 +19,7 @@ const Hero = () => {
               Zobacz Samochody
             </Button>
             <Button variant="outline" className="text-white border-white hover:bg-white/10">
-              Umów Inspekcję
+              Zamów Inspekcję
             </Button>
           </div>
         </div>
