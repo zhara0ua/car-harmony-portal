@@ -457,7 +457,7 @@ const Inventory = () => {
           <div className="mt-12 text-center">
             <Button 
               onClick={loadMore}
-              className="px-8 rounded-full bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white"
+              className="px-8 rounded-full"
             >
               Завантажити ще
             </Button>
