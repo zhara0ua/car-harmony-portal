@@ -8,12 +8,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Image } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const CarDetails = () => {
   const { id } = useParams();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const isMobile = useIsMobile();
   
   // This would typically come from an API or database
   const carDetails = {
@@ -61,61 +63,124 @@ const CarDetails = () => {
     <div className="min-h-screen bg-silver">
       <Navbar />
       
-      <main className="container mx-auto px-6 py-12">
+      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           {/* Image Gallery */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
-            {carDetails.images.map((image, index) => (
-              <Dialog key={index} open={isGalleryOpen && currentImageIndex === index} onOpenChange={setIsGalleryOpen}>
-                <DialogTrigger asChild>
-                  <img
-                    src={image}
-                    alt={`${carDetails.name} - фото ${index + 1}`}
-                    className="w-full h-64 object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
-                    onClick={() => setCurrentImageIndex(index)}
-                  />
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl h-[80vh] p-0">
-                  <div className="relative h-full">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-2 top-2 z-50"
-                      onClick={() => setIsGalleryOpen(false)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                    <img
-                      src={carDetails.images[currentImageIndex]}
-                      alt={`${carDetails.name} - фото ${currentImageIndex + 1}`}
-                      className="w-full h-full object-contain"
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        prevImage();
-                      }}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        nextImage();
-                      }}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            ))}
+          <div className="p-4 sm:p-6">
+            {isMobile ? (
+              <div className="relative">
+                <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
+                  <DialogTrigger asChild>
+                    <div className="relative cursor-pointer">
+                      <img
+                        src={carDetails.images[0]}
+                        alt={`${carDetails.name} - головне фото`}
+                        className="w-full h-[300px] object-cover rounded-lg"
+                      />
+                      <div className="absolute bottom-4 right-4 bg-white/90 rounded-full p-2">
+                        <Image className="w-6 h-6" />
+                      </div>
+                      <div className="absolute bottom-4 left-4 bg-white/90 rounded-full px-3 py-1">
+                        <span className="text-sm font-medium">1 / {carDetails.images.length}</span>
+                      </div>
+                    </div>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl h-[80vh] p-0">
+                    <div className="relative h-full">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-2 z-50"
+                        onClick={() => setIsGalleryOpen(false)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                      <img
+                        src={carDetails.images[currentImageIndex]}
+                        alt={`${carDetails.name} - фото ${currentImageIndex + 1}`}
+                        className="w-full h-full object-contain"
+                      />
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          prevImage();
+                        }}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          nextImage();
+                        }}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {carDetails.images.map((image, index) => (
+                  <Dialog key={index} open={isGalleryOpen && currentImageIndex === index} onOpenChange={setIsGalleryOpen}>
+                    <DialogTrigger asChild>
+                      <img
+                        src={image}
+                        alt={`${carDetails.name} - фото ${index + 1}`}
+                        className="w-full h-64 object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+                        onClick={() => setCurrentImageIndex(index)}
+                      />
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl h-[80vh] p-0">
+                      <div className="relative h-full">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-2 z-50"
+                          onClick={() => setIsGalleryOpen(false)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <img
+                          src={carDetails.images[currentImageIndex]}
+                          alt={`${carDetails.name} - фото ${currentImageIndex + 1}`}
+                          className="w-full h-full object-contain"
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="absolute left-4 top-1/2 transform -translate-y-1/2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            prevImage();
+                          }}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            nextImage();
+                          }}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                ))}
+              </div>
+            )}
           </div>
           
           {/* Car Information */}

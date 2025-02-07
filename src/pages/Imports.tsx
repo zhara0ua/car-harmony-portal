@@ -42,22 +42,22 @@ const Imports = () => {
     <div className="min-h-screen bg-gradient-to-b from-silver to-white">
       <Navbar />
       
-      <main className="container mx-auto px-6 py-12">
-        <div className="relative mb-16">
+      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="relative mb-12 sm:mb-16">
           <img 
             src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80"
             alt="Luxury car auction"
-            className="w-full h-[400px] object-cover rounded-lg"
+            className="w-full h-[300px] sm:h-[400px] object-cover rounded-lg"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-navy/80 to-transparent rounded-lg">
             <div className="h-full flex items-center">
-              <div className="max-w-2xl px-8 text-white">
-                <h1 className="text-4xl font-bold mb-4">Імпорт автомобілів з Європи</h1>
-                <p className="text-lg mb-6">
+              <div className="max-w-2xl p-4 sm:px-8 text-white">
+                <h1 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4">Імпорт автомобілів з Європи</h1>
+                <p className="text-base sm:text-lg mb-4 sm:mb-6">
                   Ми спеціалізуємося на імпорті преміальних автомобілів з найкращих європейських аукціонів. 
                   Наша команда експертів забезпечує повний супровід угоди та гарантує прозорість на кожному етапі.
                 </p>
-                <Badge variant="secondary" className="text-lg py-2 px-4">
+                <Badge variant="secondary" className="text-base sm:text-lg py-1.5 sm:py-2 px-3 sm:px-4">
                   +48 123 456 789
                 </Badge>
               </div>
