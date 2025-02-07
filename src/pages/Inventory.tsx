@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -455,9 +456,8 @@ const Inventory = () => {
         {hasMoreCars && (
           <div className="mt-12 text-center">
             <Button 
-              variant="outline"
               onClick={loadMore}
-              className="px-8"
+              className="px-8 rounded-full bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white"
             >
               Завантажити ще
             </Button>
