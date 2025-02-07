@@ -16,7 +16,8 @@ const Footer = () => {
             <div className="space-y-2 text-gray-300">
               <p>Телефон: +48 123 456 789</p>
               <p>Email: info@kristinauto.pl</p>
-              <p>Адреса: вул. Автомобільна 1, Варшава</p>
+              <p>Адреса: Strzygłowska 15,</p>
+              <p>Wawer 04-872 Warszawa</p>
             </div>
           </div>
           
