@@ -39,7 +39,7 @@ const Inventory = () => {
 
   const cars: Car[] = [
     {
-      image: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80",
+      image: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8",
       name: "Mercedes-Benz S-Class",
       make: "Mercedes-Benz",
       model: "S-Class",
@@ -54,7 +54,7 @@ const Inventory = () => {
       enginePower: "435 к.с."
     },
     {
-      image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80",
+      image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70",
       name: "BMW 7 Series",
       make: "BMW",
       model: "7 Series",
@@ -69,7 +69,7 @@ const Inventory = () => {
       enginePower: "389 к.с."
     },
     {
-      image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80",
+      image: "https://images.unsplash.com/photo-1555215695-3004980ad54e",
       name: "Audi A8",
       make: "Audi",
       model: "A8",
@@ -84,7 +84,7 @@ const Inventory = () => {
       enginePower: "340 к.с."
     },
     {
-      image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?auto=format&fit=crop&q=80",
+      image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d",
       name: "Porsche Panamera",
       make: "Porsche",
       model: "Panamera",
@@ -99,7 +99,7 @@ const Inventory = () => {
       enginePower: "680 к.с."
     },
     {
-      image: "https://images.unsplash.com/photo-1616422285623-13ff0162193c?auto=format&fit=crop&q=80",
+      image: "https://images.unsplash.com/photo-1616422285623-13ff0162193c",
       name: "BMW X7",
       make: "BMW",
       model: "X7",
@@ -114,7 +114,7 @@ const Inventory = () => {
       enginePower: "340 к.с."
     },
     {
-      image: "https://images.unsplash.com/photo-1619362280286-f1f8fd5032ed?auto=format&fit=crop&q=80",
+      image: "https://images.unsplash.com/photo-1619362280286-f1f8fd5032ed",
       name: "Mercedes-Benz G-Class",
       make: "Mercedes-Benz",
       model: "G-Class",
@@ -127,6 +127,141 @@ const Inventory = () => {
       fuelType: "Бензин",
       engineSize: "4.0л",
       enginePower: "585 к.с."
+    },
+    {
+      image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537",
+      name: "BMW M5",
+      make: "BMW",
+      model: "M5",
+      price: "95.000 zł",
+      priceNumber: 95000,
+      year: 2022,
+      mileage: "28.000 km",
+      category: "Седан",
+      transmission: "Автомат",
+      fuelType: "Бензин",
+      engineSize: "4.4л",
+      enginePower: "625 к.с."
+    },
+    {
+      image: "https://images.unsplash.com/photo-1614200179396-2bdb77ebf81b",
+      name: "Porsche 911",
+      make: "Porsche",
+      model: "911",
+      price: "165.000 zł",
+      priceNumber: 165000,
+      year: 2023,
+      mileage: "12.000 km",
+      category: "Купе",
+      transmission: "Автомат",
+      fuelType: "Бензин",
+      engineSize: "3.0л",
+      enginePower: "450 к.с."
+    },
+    {
+      image: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a",
+      name: "Audi RS6",
+      make: "Audi",
+      model: "RS6",
+      price: "145.000 zł",
+      priceNumber: 145000,
+      year: 2022,
+      mileage: "22.000 km",
+      category: "Універсал",
+      transmission: "Автомат",
+      fuelType: "Бензин",
+      engineSize: "4.0л",
+      enginePower: "600 к.с."
+    },
+    {
+      image: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738",
+      name: "Mercedes-AMG GT",
+      make: "Mercedes-Benz",
+      model: "AMG GT",
+      price: "175.000 zł",
+      priceNumber: 175000,
+      year: 2023,
+      mileage: "8.000 km",
+      category: "Купе",
+      transmission: "Автомат",
+      fuelType: "Бензин",
+      engineSize: "4.0л",
+      enginePower: "585 к.с."
+    },
+    {
+      image: "https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5",
+      name: "Porsche Cayenne",
+      make: "Porsche",
+      model: "Cayenne",
+      price: "115.000 zł",
+      priceNumber: 115000,
+      year: 2022,
+      mileage: "32.000 km",
+      category: "SUV",
+      transmission: "Автомат",
+      fuelType: "Гібрид",
+      engineSize: "3.0л",
+      enginePower: "462 к.с."
+    },
+    {
+      image: "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1",
+      name: "Audi RS Q8",
+      make: "Audi",
+      model: "RS Q8",
+      price: "155.000 zł",
+      priceNumber: 155000,
+      year: 2023,
+      mileage: "18.000 km",
+      category: "SUV",
+      transmission: "Автомат",
+      fuelType: "Бензин",
+      engineSize: "4.0л",
+      enginePower: "600 к.с."
+    },
+    {
+      image: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a",
+      name: "BMW M8",
+      make: "BMW",
+      model: "M8",
+      price: "168.000 zł",
+      priceNumber: 168000,
+      year: 2023,
+      mileage: "15.000 km",
+      category: "Купе",
+      transmission: "Автомат",
+      fuelType: "Бензин",
+      engineSize: "4.4л",
+      enginePower: "625 к.с."
+    },
+    {
+      image: "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1",
+      name: "Mercedes-AMG E63",
+      make: "Mercedes-Benz",
+      model: "E63",
+      price: "135.000 zł",
+      priceNumber: 135000,
+      year: 2022,
+      mileage: "25.000 km",
+      category: "Седан",
+      transmission: "Автомат",
+      fuelType: "Бензин",
+      engineSize: "4.0л",
+      enginePower: "612 к.с."
+    },
+    {
+      image: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a",
+      name: "Audi RS7",
+      make: "Audi",
+      model: "RS7",
+      price: "148.000 zł",
+      priceNumber: 148000,
+      year: 2023,
+      mileage: "20.000 km",
+      category: "Купе",
+      transmission: "Автомат",
+      fuelType: "Бензин",
+      engineSize: "4.0л",
+      enginePower: "600 к.с."
     }
   ];
 

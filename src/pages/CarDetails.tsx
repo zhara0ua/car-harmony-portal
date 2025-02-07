@@ -1,10 +1,19 @@
-
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 const CarDetails = () => {
   const { id } = useParams();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   
   // This would typically come from an API or database
   const carDetails = {
@@ -29,8 +38,23 @@ const CarDetails = () => {
     images: [
       "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80",
       "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80"
+      "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1553440569-bcc63803a83d?auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1616422285623-13ff0162193c?auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1619362280286-f1f8fd5032ed?auto=format&fit=crop&q=80"
     ]
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => 
+      prev === carDetails.images.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => 
+      prev === 0 ? carDetails.images.length - 1 : prev - 1
+    );
   };
 
   return (
@@ -42,12 +66,55 @@ const CarDetails = () => {
           {/* Image Gallery */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
             {carDetails.images.map((image, index) => (
-              <img
-                key={index}
-                src={image}
-                alt={`${carDetails.name} - фото ${index + 1}`}
-                className="w-full h-64 object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
-              />
+              <Dialog key={index} open={isGalleryOpen && currentImageIndex === index} onOpenChange={setIsGalleryOpen}>
+                <DialogTrigger asChild>
+                  <img
+                    src={image}
+                    alt={`${carDetails.name} - фото ${index + 1}`}
+                    className="w-full h-64 object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+                    onClick={() => setCurrentImageIndex(index)}
+                  />
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl h-[80vh] p-0">
+                  <div className="relative h-full">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-2 z-50"
+                      onClick={() => setIsGalleryOpen(false)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <img
+                      src={carDetails.images[currentImageIndex]}
+                      alt={`${carDetails.name} - фото ${currentImageIndex + 1}`}
+                      className="w-full h-full object-contain"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        prevImage();
+                      }}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        nextImage();
+                      }}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             ))}
           </div>
           
