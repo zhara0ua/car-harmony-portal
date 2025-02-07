@@ -16,14 +16,15 @@ const AdminPanel = () => {
   const [newCar, setNewCar] = useState<Partial<Car>>({
     category: "Седан",
     transmission: "Автомат",
-    fuelType: "Бензин"
+    fuelType: "Бензин",
+    images: []
   });
 
   const handleAddCar = () => {
-    if (!newCar.name || !newCar.price || !newCar.image) {
+    if (!newCar.name || !newCar.price || !newCar.images?.length) {
       toast({
         title: "Помилка",
-        description: "Будь ласка, заповніть всі обов'язкові поля",
+        description: "Будь ласка, заповніть всі обов'язкові поля та додайте хоча б одне зображення",
         variant: "destructive"
       });
       return;
@@ -31,7 +32,8 @@ const AdminPanel = () => {
 
     const carToAdd: Car = {
       id: Date.now().toString(),
-      image: newCar.image || "",
+      images: newCar.images || [],
+      image: newCar.images[0] || "",
       name: newCar.name || "",
       make: newCar.make || "",
       model: newCar.model || "",
@@ -43,14 +45,16 @@ const AdminPanel = () => {
       transmission: newCar.transmission || "Автомат",
       fuelType: newCar.fuelType || "Бензин",
       engineSize: newCar.engineSize || "",
-      enginePower: newCar.enginePower || ""
+      enginePower: newCar.enginePower || "",
+      description: newCar.description || ""
     };
 
     setCars([...cars, carToAdd]);
     setNewCar({
       category: "Седан",
       transmission: "Автомат",
-      fuelType: "Бензин"
+      fuelType: "Бензин",
+      images: []
     });
     setShowAddForm(false);
     toast({
@@ -62,7 +66,11 @@ const AdminPanel = () => {
   const handleEditCar = (carId: string) => {
     const updatedCars = cars.map(car => {
       if (car.id === carId) {
-        return { ...car, ...newCar };
+        return { 
+          ...car, 
+          ...newCar,
+          image: newCar.images?.[0] || car.image 
+        };
       }
       return car;
     });

@@ -1,6 +1,7 @@
 
 export interface Car {
   id: string;
+  images: string[];
   image: string;
   name: string;
   make: string;
@@ -14,5 +15,5 @@ export interface Car {
   fuelType: "Бензин" | "Дизель" | "Гібрид" | "Електро";
   engineSize: string;
   enginePower: string;
+  description?: string;
 }
-

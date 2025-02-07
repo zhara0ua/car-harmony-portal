@@ -3,6 +3,7 @@ import { Car } from "@/types/car";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Select,
   SelectContent,
@@ -10,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue, 
 } from "@/components/ui/select";
+import { X } from "lucide-react";
 
 interface CarFormProps {
   car: Partial<Car>;
@@ -20,8 +22,54 @@ interface CarFormProps {
 }
 
 const CarForm = ({ car, onSubmit, onCancel, setCar, isEditing }: CarFormProps) => {
+  const handleImageAdd = () => {
+    const newImages = [...(car.images || []), ""];
+    setCar({ ...car, images: newImages });
+  };
+
+  const handleImageChange = (index: number, value: string) => {
+    const newImages = [...(car.images || [])];
+    newImages[index] = value;
+    setCar({ ...car, images: newImages });
+  };
+
+  const handleImageRemove = (index: number) => {
+    const newImages = [...(car.images || [])];
+    newImages.splice(index, 1);
+    setCar({ ...car, images: newImages });
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="space-y-2 col-span-full">
+        <Label>Зображення</Label>
+        <div className="space-y-2">
+          {(car.images || []).map((img, index) => (
+            <div key={index} className="flex gap-2">
+              <Input
+                value={img}
+                onChange={(e) => handleImageChange(index, e.target.value)}
+                placeholder="https://example.com/car-image.jpg"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => handleImageRemove(index)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleImageAdd}
+          >
+            Додати зображення
+          </Button>
+        </div>
+      </div>
+
       <div className="space-y-2">
         <Label>Назва</Label>
         <Input
@@ -46,15 +94,6 @@ const CarForm = ({ car, onSubmit, onCancel, setCar, isEditing }: CarFormProps) =
           value={car.model || ""}
           onChange={(e) => setCar({ ...car, model: e.target.value })}
           placeholder="S-Class"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label>Зображення (URL)</Label>
-        <Input
-          value={car.image || ""}
-          onChange={(e) => setCar({ ...car, image: e.target.value })}
-          placeholder="https://example.com/car-image.jpg"
         />
       </div>
 
@@ -162,6 +201,16 @@ const CarForm = ({ car, onSubmit, onCancel, setCar, isEditing }: CarFormProps) =
         />
       </div>
 
+      <div className="space-y-2 col-span-full">
+        <Label>Опис</Label>
+        <Textarea
+          value={car.description || ""}
+          onChange={(e) => setCar({ ...car, description: e.target.value })}
+          placeholder="Детальний опис автомобіля..."
+          rows={5}
+        />
+      </div>
+
       <div className="flex gap-4 col-span-full">
         <Button
           onClick={onSubmit}
@@ -181,4 +230,3 @@ const CarForm = ({ car, onSubmit, onCancel, setCar, isEditing }: CarFormProps) =
 };
 
 export default CarForm;
-
