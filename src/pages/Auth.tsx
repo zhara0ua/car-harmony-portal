@@ -17,20 +17,30 @@ const Auth = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log("Attempting login with email:", email);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      console.log("Login response:", { data, error });
 
-      navigate("/admin");
+      if (error) {
+        console.error("Login error:", error);
+        throw error;
+      }
+
+      if (data.user) {
+        console.log("Login successful, user:", data.user);
+        navigate("/");
+      }
     } catch (error: any) {
+      console.error("Caught error:", error);
       toast({
         title: "Помилка входу",
-        description: error.message,
+        description: error.message || "Невірний email або пароль",
         variant: "destructive",
       });
     } finally {
@@ -41,23 +51,33 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log("Attempting signup with email:", email);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
       });
 
-      if (error) throw error;
+      console.log("Signup response:", { data, error });
+
+      if (error) {
+        console.error("Signup error:", error);
+        throw error;
+      }
 
       toast({
         title: "Реєстрація успішна",
         description: "Перевірте вашу електронну пошту для підтвердження.",
       });
     } catch (error: any) {
+      console.error("Caught error:", error);
       toast({
         title: "Помилка реєстрації",
-        description: error.message,
+        description: error.message || "Помилка при створенні облікового запису",
         variant: "destructive",
       });
     } finally {
