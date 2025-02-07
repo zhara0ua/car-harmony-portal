@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { Edit, Trash, Plus } from "lucide-react"
+import { Edit, Trash } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,10 +11,20 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
+import type { Database } from "@/integrations/supabase/types"
+
+type UserRole = {
+  id: string
+  user_id: string
+  role: Database['public']['Enums']['app_role']
+  user: {
+    email: string
+  }
+}
 
 export default function Users() {
   const { toast } = useToast()
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedUser, setSelectedUser] = useState<UserRole | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   const { data: users, refetch } = useQuery({
@@ -31,7 +41,7 @@ export default function Users() {
       }
       
       console.log("Fetched users:", roles)
-      return roles
+      return roles as UserRole[]
     },
   })
 
@@ -60,7 +70,7 @@ export default function Users() {
     }
   }
 
-  const handleEdit = async (userId: string, newRole: string) => {
+  const handleEdit = async (userId: string, newRole: Database['public']['Enums']['app_role']) => {
     console.log("Editing user:", userId, "new role:", newRole)
     try {
       const { error } = await supabase
@@ -125,13 +135,13 @@ export default function Users() {
                           <div className="space-y-2">
                             <Button
                               variant="outline"
-                              onClick={() => handleEdit(userRole.user_id, "admin")}
+                              onClick={() => selectedUser && handleEdit(selectedUser.user_id, "admin")}
                             >
                               Зробити адміном
                             </Button>
                             <Button
                               variant="outline"
-                              onClick={() => handleEdit(userRole.user_id, "user")}
+                              onClick={() => selectedUser && handleEdit(selectedUser.user_id, "user")}
                             >
                               Зробити користувачем
                             </Button>
