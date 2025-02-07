@@ -39,33 +39,73 @@ const Imports = () => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-b from-silver to-white">
       <Navbar />
       
       <main className="container mx-auto px-6 py-12">
-        <h1 className="text-4xl font-bold text-navy mb-8 text-center">Імпорт автомобілів з Європи</h1>
-        
-        <div className="max-w-3xl mx-auto mb-12">
-          <p className="text-lg text-gray-700 mb-6">
-            Ми спеціалізуємося на імпорті преміальних автомобілів з найкращих європейських аукціонів. 
-            Наша команда експертів забезпечує повний супровід угоди та гарантує прозорість на кожному етапі.
-          </p>
-          
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-semibold mb-4">Чому варто купувати авто з Європи?</h2>
-              <ul className="list-disc pl-6 space-y-2">
-                <li>Краща якість автомобілів та їх комплектація</li>
-                <li>Прозора історія експлуатації та обслуговування</li>
-                <li>Відсутність корозії завдяки якісним дорогам</li>
-                <li>Вигідніша ціна порівняно з локальним ринком</li>
-                <li>Більший вибір модифікацій та комплектацій</li>
-              </ul>
-            </CardContent>
-          </Card>
+        <div className="relative mb-16">
+          <img 
+            src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80"
+            alt="Luxury car auction"
+            className="w-full h-[400px] object-cover rounded-lg"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-navy/80 to-transparent rounded-lg">
+            <div className="h-full flex items-center">
+              <div className="max-w-2xl px-8 text-white">
+                <h1 className="text-4xl font-bold mb-4">Імпорт автомобілів з Європи</h1>
+                <p className="text-lg mb-6">
+                  Ми спеціалізуємося на імпорті преміальних автомобілів з найкращих європейських аукціонів. 
+                  Наша команда експертів забезпечує повний супровід угоди та гарантує прозорість на кожному етапі.
+                </p>
+                <Badge variant="secondary" className="text-lg py-2 px-4">
+                  +48 123 456 789
+                </Badge>
+              </div>
+            </div>
+          </div>
         </div>
+        
+        <Card className="mb-16">
+          <CardContent className="p-8">
+            <h2 className="text-2xl font-semibold mb-6">Чому варто купувати авто з Європи?</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <ul className="space-y-4">
+                  <li className="flex items-start">
+                    <ShieldCheck className="w-6 h-6 text-navy mr-2 flex-shrink-0" />
+                    <span>Краща якість автомобілів та їх комплектація</span>
+                  </li>
+                  <li className="flex items-start">
+                    <FileCheck className="w-6 h-6 text-navy mr-2 flex-shrink-0" />
+                    <span>Прозора історія експлуатації та обслуговування</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Settings className="w-6 h-6 text-navy mr-2 flex-shrink-0" />
+                    <span>Відсутність корозії завдяки якісним дорогам</span>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <ul className="space-y-4">
+                  <li className="flex items-start">
+                    <Euro className="w-6 h-6 text-navy mr-2 flex-shrink-0" />
+                    <span>Вигідніша ціна порівняно з локальним ринком</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Car className="w-6 h-6 text-navy mr-2 flex-shrink-0" />
+                    <span>Більший вибір модифікацій та комплектацій</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Truck className="w-6 h-6 text-navy mr-2 flex-shrink-0" />
+                    <span>Повний супровід імпорту та оформлення</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {benefits.map((benefit, index) => (
             <Card key={index} className="text-center p-6 hover:shadow-lg transition-shadow">
               <CardContent>
