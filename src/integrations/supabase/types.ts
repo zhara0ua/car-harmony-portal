@@ -9,7 +9,108 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      cars: {
+        Row: {
+          category: string
+          created_at: string
+          engine_power: string
+          engine_size: string
+          fuel_type: string
+          id: string
+          image_url: string
+          make: string
+          mileage: string
+          model: string
+          name: string
+          price: number
+          transmission: string
+          year: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          engine_power: string
+          engine_size: string
+          fuel_type: string
+          id?: string
+          image_url: string
+          make: string
+          mileage: string
+          model: string
+          name: string
+          price: number
+          transmission: string
+          year: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          engine_power?: string
+          engine_size?: string
+          fuel_type?: string
+          id?: string
+          image_url?: string
+          make?: string
+          mileage?: string
+          model?: string
+          name?: string
+          price?: number
+          transmission?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      inspection_cases: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          image_url: string
+          name: string
+          result: string
+          year: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          image_url: string
+          name: string
+          result: string
+          year: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string
+          name?: string
+          result?: string
+          year?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
