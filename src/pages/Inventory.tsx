@@ -307,10 +307,11 @@ const Inventory = () => {
       <Navbar />
       
       <div className="container mx-auto px-6 py-16">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold text-navy">Наші Автомобілі</h1>
+        <h1 className="text-4xl font-bold text-navy mb-8">Наші Автомобілі</h1>
+        
+        <div className="mb-8">
           <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-            <CollapsibleTrigger className="flex items-center gap-2 text-navy hover:text-navy/80 transition-colors">
+            <CollapsibleTrigger className="flex items-center gap-2 text-navy hover:text-navy/80 transition-colors mb-4">
               <span className="font-medium">Фільтри</span>
               {isOpen ? (
                 <ChevronUp className="h-5 w-5" />
@@ -319,7 +320,7 @@ const Inventory = () => {
               )}
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label>Марка</Label>
                   <Select value={make} onValueChange={(value) => setMake(value)}>
