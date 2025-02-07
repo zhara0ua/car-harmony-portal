@@ -13,9 +13,6 @@ const Auth = () => {
   const location = useLocation();
   const { toast } = useToast();
 
-  // Get the previous page from state or default to '/'
-  const from = location.state?.from?.pathname || "/inventory";
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -35,12 +32,36 @@ const Auth = () => {
           description: error.message,
         });
       } else {
-        console.log("Login successful, redirecting to:", from);
+        console.log("Login successful, checking role");
+        
+        const { data: isAdmin, error: roleError } = await supabase.rpc('has_role', {
+          role: 'admin'
+        });
+
+        if (roleError) {
+          console.error("Error checking role:", roleError);
+          toast({
+            variant: "destructive",
+            title: "Помилка перевірки ролі",
+            description: roleError.message,
+          });
+          return;
+        }
+
+        console.log("Role check result:", { isAdmin });
+        
+        if (isAdmin) {
+          console.log("User is admin, redirecting to admin panel");
+          navigate("/admin");
+        } else {
+          console.log("User is not admin, redirecting to home");
+          navigate("/");
+        }
+
         toast({
           title: "Успішний вхід",
           description: "Ласкаво просимо!",
         });
-        navigate(from);
       }
     } catch (error) {
       console.error("Unexpected error during login:", error);
