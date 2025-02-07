@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
@@ -68,6 +69,14 @@ const Navbar = () => {
             >
               {t('nav.contact')}
             </Link>
+            <Link
+              to="/scraper"
+              className={`${
+                isActive("/scraper") ? "text-navy font-semibold" : "text-gray-700"
+              } hover:text-navy transition-colors`}
+            >
+              Парсер
+            </Link>
           </div>
 
           <div className="flex items-center gap-4">
@@ -129,6 +138,15 @@ const Navbar = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {t('nav.contact')}
+                </Link>
+                <Link
+                  to="/scraper"
+                  className={`${
+                    isActive("/scraper") ? "text-navy font-semibold" : "text-gray-700"
+                  } hover:text-navy transition-colors`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Парсер
                 </Link>
               </div>
             </div>
