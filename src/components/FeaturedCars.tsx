@@ -95,8 +95,8 @@ const FeaturedCars = () => {
 
   return (
     <section className="py-16 bg-silver">
-      <div className="container mx-auto px-6">
-        <h2 className="text-3xl font-bold text-navy mb-8">Wyróżnione Pojazdy</h2>
+      <div className="container mx-auto px-6 md:px-8 lg:px-12">
+        <h2 className="text-2xl md:text-3xl font-bold text-navy mb-8 text-center">Wyróżnione Pojazdy</h2>
         
         <div className="relative">
           <div className="overflow-hidden">
@@ -105,7 +105,7 @@ const FeaturedCars = () => {
               style={{ transform: `translateX(-${currentIndex * (100 / 3)}%)` }}
             >
               {cars.map((car, index) => (
-                <div key={index} className="w-1/3 flex-shrink-0 px-2">
+                <div key={index} className="w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-2">
                   <CarCard {...car} />
                 </div>
               ))}
@@ -115,7 +115,7 @@ const FeaturedCars = () => {
           <Button
             variant="outline"
             size="icon"
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white"
+            className="absolute -left-12 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white hidden md:flex"
             onClick={prevSlide}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -124,11 +124,31 @@ const FeaturedCars = () => {
           <Button
             variant="outline"
             size="icon"
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white"
+            className="absolute -right-12 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white hidden md:flex"
             onClick={nextSlide}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
+
+          {/* Mobile Navigation Buttons */}
+          <div className="flex justify-center gap-4 mt-6 md:hidden">
+            <Button
+              variant="outline"
+              size="icon"
+              className="bg-white/80 hover:bg-white"
+              onClick={prevSlide}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="bg-white/80 hover:bg-white"
+              onClick={nextSlide}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </section>
