@@ -17,9 +17,7 @@ type UserRole = {
   id: string
   user_id: string
   role: Database['public']['Enums']['app_role']
-  user: {
-    email: string
-  }
+  user_email: string
 }
 
 export default function Users() {
@@ -33,15 +31,30 @@ export default function Users() {
       console.log("Fetching users...")
       const { data: roles, error } = await supabase
         .from("user_roles")
-        .select("*, user:user_id(*)")
+        .select(`
+          id,
+          user_id,
+          role,
+          user:user_id (
+            email
+          )
+        `)
       
       if (error) {
         console.error("Error fetching users:", error)
         throw error
       }
       
-      console.log("Fetched users:", roles)
-      return roles as UserRole[]
+      // Transform the data to match our UserRole type
+      const transformedRoles = roles.map(role => ({
+        id: role.id,
+        user_id: role.user_id,
+        role: role.role,
+        user_email: role.user?.email || 'Unknown email'
+      }))
+      
+      console.log("Fetched users:", transformedRoles)
+      return transformedRoles as UserRole[]
     },
   })
 
@@ -114,7 +127,7 @@ export default function Users() {
             <tbody>
               {users?.map((userRole) => (
                 <tr key={userRole.user_id} className="border-b">
-                  <td className="px-4 py-2">{userRole.user?.email}</td>
+                  <td className="px-4 py-2">{userRole.user_email}</td>
                   <td className="px-4 py-2">{userRole.role}</td>
                   <td className="px-4 py-2 space-x-2">
                     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
