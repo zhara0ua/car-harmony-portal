@@ -1,7 +1,9 @@
+
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import FeaturedCars from "@/components/FeaturedCars";
 import ServiceCard from "@/components/ServiceCard";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   const services = [
@@ -38,6 +40,8 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };

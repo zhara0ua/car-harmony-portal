@@ -1,4 +1,5 @@
 
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -27,6 +28,8 @@ const CarCard = ({
   engineSize,
   enginePower 
 }: CarCardProps) => {
+  const navigate = useNavigate();
+
   return (
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg">
       <CardContent className="p-0">
@@ -48,7 +51,12 @@ const CarCard = ({
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <Button className="w-full bg-navy hover:bg-navy/90">Дізнатись більше</Button>
+        <Button 
+          className="w-full bg-navy hover:bg-navy/90"
+          onClick={() => navigate(`/car/1`)}
+        >
+          Дізнатись більше
+        </Button>
       </CardFooter>
     </Card>
   );
