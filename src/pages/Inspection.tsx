@@ -13,11 +13,64 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Wrench, CheckCircle, Car } from "lucide-react";
+import InspectionCaseCard from "@/components/InspectionCaseCard";
+
+const inspectionCases = [
+  {
+    id: 1,
+    image: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80",
+    name: "Mercedes-Benz S-Class",
+    year: "2020",
+    result: "Успішно придбано",
+    description: "Детальна перевірка виявила відмінний стан автомобіля..."
+  },
+  {
+    id: 2,
+    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80",
+    name: "BMW 7 Series",
+    year: "2021",
+    result: "Виявлено приховані дефекти",
+    description: "Під час інспекції виявлено серйозні недоліки..."
+  },
+  {
+    id: 3,
+    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80",
+    name: "Audi A8",
+    year: "2022",
+    result: "Успішно придбано",
+    description: "Автомобіль пройшов повну технічну діагностику..."
+  },
+  {
+    id: 4,
+    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80",
+    name: "Porsche Panamera",
+    year: "2021",
+    result: "Успішно придбано",
+    description: "Повна перевірка підтвердила відмінний стан..."
+  },
+  {
+    id: 5,
+    image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?auto=format&fit=crop&q=80",
+    name: "Range Rover Sport",
+    year: "2022",
+    result: "Виявлено приховані дефекти",
+    description: "Інспекція виявила проблеми з підвіскою..."
+  },
+  {
+    id: 6,
+    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80",
+    name: "Maserati Ghibli",
+    year: "2021",
+    result: "Успішно придбано",
+    description: "Технічний стан підтверджено як відмінний..."
+  }
+];
 
 const Inspection = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [description, setDescription] = useState("");
+  const [visibleCases, setVisibleCases] = useState(3);
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -34,26 +87,9 @@ const Inspection = () => {
     setDescription("");
   };
 
-  const completedInspections = [
-    {
-      image: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80",
-      name: "Mercedes-Benz S-Class",
-      year: "2020",
-      result: "Успішно придбано"
-    },
-    {
-      image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80",
-      name: "BMW 7 Series",
-      year: "2021",
-      result: "Виявлено приховані дефекти"
-    },
-    {
-      image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80",
-      name: "Audi A8",
-      year: "2022",
-      result: "Успішно придбано"
-    }
-  ];
+  const loadMore = () => {
+    setVisibleCases(prev => Math.min(prev + 3, inspectionCases.length));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-silver to-white">
@@ -141,22 +177,24 @@ const Inspection = () => {
 
           <section>
             <h2 className="text-2xl font-bold text-navy mb-6">Наші Успішні Підбори</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {completedInspections.map((car, index) => (
-                <Card key={index} className="overflow-hidden">
-                  <img 
-                    src={car.image} 
-                    alt={car.name} 
-                    className="w-full h-48 object-cover"
-                  />
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold">{car.name}</h3>
-                    <p className="text-sm text-gray-600">{car.year}</p>
-                    <p className="text-sm font-medium text-navy mt-2">{car.result}</p>
-                  </CardContent>
-                </Card>
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              {inspectionCases.slice(0, visibleCases).map((inspectionCase) => (
+                <InspectionCaseCard 
+                  key={inspectionCase.id} 
+                  inspectionCase={inspectionCase}
+                />
               ))}
             </div>
+            {visibleCases < inspectionCases.length && (
+              <div className="text-center">
+                <Button 
+                  onClick={loadMore}
+                  className="bg-navy hover:bg-navy/90"
+                >
+                  Показати ще
+                </Button>
+              </div>
+            )}
           </section>
         </div>
       </main>
