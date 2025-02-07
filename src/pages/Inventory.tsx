@@ -5,7 +5,10 @@ import CarCard from "@/components/CarCard";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import CarForm from "@/components/admin/CarForm";
+import { Card } from "@/components/ui/card";
 import { 
   Select,
   SelectContent,
@@ -18,6 +21,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Car } from "@/types/car";
 
 interface Car {
   image: string;
@@ -36,7 +40,10 @@ interface Car {
 }
 
 const Inventory = () => {
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const [isAddingCar, setIsAddingCar] = useState(false);
+  const [newCar, setNewCar] = useState<Partial<Car>>({});
   const [category, setCategory] = useState<string>("all");
   const [transmission, setTransmission] = useState<string>("all");
   const [fuelType, setFuelType] = useState<string>("all");
@@ -275,6 +282,24 @@ const Inventory = () => {
     }
   ];
 
+  const handleAddCar = () => {
+    setIsAddingCar(true);
+  };
+
+  const handleAddCarSubmit = () => {
+    toast({
+      title: "Успіх!",
+      description: "Автомобіль успішно додано.",
+    });
+    setIsAddingCar(false);
+    setNewCar({});
+  };
+
+  const handleAddCarCancel = () => {
+    setIsAddingCar(false);
+    setNewCar({});
+  };
+
   const uniqueMakes = Array.from(new Set(cars.map(car => car.make)));
   const uniqueModels = Array.from(new Set(cars.filter(car => make === "all" || car.make === make).map(car => car.model)));
 
@@ -316,7 +341,27 @@ const Inventory = () => {
       <Navbar />
       
       <div className="container mx-auto px-6 py-16">
-        <h1 className="text-4xl font-bold text-navy mb-8">Наші Автомобілі</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold text-navy">Наші Автомобілі</h1>
+          <Button 
+            onClick={handleAddCar}
+            className="bg-navy hover:bg-navy/90 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Додати автомобіль
+          </Button>
+        </div>
+
+        {isAddingCar && (
+          <Card className="p-6 mb-8">
+            <CarForm
+              car={newCar}
+              onSubmit={handleAddCarSubmit}
+              onCancel={handleAddCarCancel}
+              setCar={setNewCar}
+            />
+          </Card>
+        )}
         
         <div className="mb-8">
           <Collapsible open={isOpen} onOpenChange={setIsOpen}>
