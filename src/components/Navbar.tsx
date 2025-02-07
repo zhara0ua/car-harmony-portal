@@ -38,17 +38,17 @@ const Navbar = () => {
               {t('nav.home')}
             </Link>
             <Link
-              to="/inventory"
+              to="/car"
               className={`${
-                isActive("/inventory") ? "text-navy font-semibold" : "text-gray-700"
+                isActive("/car") ? "text-navy font-semibold" : "text-gray-700"
               } hover:text-navy transition-colors`}
             >
               {t('nav.cars')}
             </Link>
             <Link
-              to="/imports"
+              to="/import"
               className={`${
-                isActive("/imports") ? "text-navy font-semibold" : "text-gray-700"
+                isActive("/import") ? "text-navy font-semibold" : "text-gray-700"
               } hover:text-navy transition-colors`}
             >
               {t('nav.import')}
@@ -98,18 +98,18 @@ const Navbar = () => {
                 {t('nav.home')}
               </Link>
               <Link
-                to="/inventory"
+                to="/car"
                 className={`${
-                  isActive("/inventory") ? "text-navy font-semibold" : "text-gray-700"
+                  isActive("/car") ? "text-navy font-semibold" : "text-gray-700"
                 } hover:text-navy transition-colors`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('nav.cars')}
               </Link>
               <Link
-                to="/imports"
+                to="/import"
                 className={`${
-                  isActive("/imports") ? "text-navy font-semibold" : "text-gray-700"
+                  isActive("/import") ? "text-navy font-semibold" : "text-gray-700"
                 } hover:text-navy transition-colors`}
                 onClick={() => setIsMenuOpen(false)}
               >
