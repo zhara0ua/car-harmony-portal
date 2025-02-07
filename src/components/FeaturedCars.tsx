@@ -1,3 +1,4 @@
+
 import CarCard from "./CarCard";
 
 const FeaturedCars = () => {
@@ -7,21 +8,36 @@ const FeaturedCars = () => {
       name: "Mercedes-Benz S-Class",
       price: "85.000 zł",
       year: 2023,
-      mileage: "24.000 km"
+      mileage: "24.000 km",
+      category: "Седан",
+      transmission: "Автомат",
+      fuelType: "Бензин",
+      engineSize: "3.0л",
+      enginePower: "435 к.с."
     },
     {
       image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80",
       name: "BMW 7 Series",
       price: "78.500 zł",
       year: 2022,
-      mileage: "35.000 km"
+      mileage: "35.000 km",
+      category: "Седан",
+      transmission: "Автомат",
+      fuelType: "Гібрид",
+      engineSize: "3.0л",
+      enginePower: "389 к.с."
     },
     {
       image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80",
       name: "Audi A8",
       price: "82.000 zł",
       year: 2023,
-      mileage: "29.000 km"
+      mileage: "29.000 km",
+      category: "Седан",
+      transmission: "Автомат",
+      fuelType: "Дизель",
+      engineSize: "3.0л",
+      enginePower: "340 к.с."
     }
   ];
 

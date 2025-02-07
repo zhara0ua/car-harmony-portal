@@ -123,7 +123,7 @@ const Inventory = () => {
               <SelectValue placeholder="Тип кузова" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Всі типи</SelectItem>
+              <SelectItem value="all">Всі типи</SelectItem>
               <SelectItem value="Седан">Седан</SelectItem>
               <SelectItem value="SUV">SUV</SelectItem>
               <SelectItem value="Купе">Купе</SelectItem>
@@ -136,7 +136,7 @@ const Inventory = () => {
               <SelectValue placeholder="Коробка передач" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Всі типи</SelectItem>
+              <SelectItem value="all">Всі типи</SelectItem>
               <SelectItem value="Автомат">Автомат</SelectItem>
               <SelectItem value="Механіка">Механіка</SelectItem>
             </SelectContent>
@@ -147,7 +147,7 @@ const Inventory = () => {
               <SelectValue placeholder="Тип палива" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Всі типи</SelectItem>
+              <SelectItem value="all">Всі типи</SelectItem>
               <SelectItem value="Бензин">Бензин</SelectItem>
               <SelectItem value="Дизель">Дизель</SelectItem>
               <SelectItem value="Гібрид">Гібрид</SelectItem>

@@ -42,7 +42,7 @@ const CarCard = ({
               <span>КПП: {transmission}</span>
               <span>Паливо: {fuelType}</span>
               <span>Об'єм: {engineSize}</span>
-              <span colSpan={2}>Потужність: {enginePower}</span>
+              <span>Потужність: {enginePower}</span>
             </div>
           </div>
         </div>
