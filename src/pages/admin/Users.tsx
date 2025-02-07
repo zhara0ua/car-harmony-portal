@@ -35,10 +35,11 @@ export default function Users() {
           id,
           user_id,
           role,
-          user:user_id (
+          users:user_id (
             email
           )
         `)
+        .returns<(Omit<UserRole, 'user_email'> & { users: { email: string } })[]>()
       
       if (error) {
         console.error("Error fetching users:", error)
@@ -50,11 +51,11 @@ export default function Users() {
         id: role.id,
         user_id: role.user_id,
         role: role.role,
-        user_email: role.user?.email || 'Unknown email'
+        user_email: role.users.email
       }))
       
       console.log("Fetched users:", transformedRoles)
-      return transformedRoles as UserRole[]
+      return transformedRoles
     },
   })
 
