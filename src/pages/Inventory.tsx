@@ -455,9 +455,8 @@ const Inventory = () => {
         {hasMoreCars && (
           <div className="mt-12 text-center">
             <Button 
-              variant="outline"
               onClick={loadMore}
-              className="px-8"
+              className="bg-navy hover:bg-navy/90 text-white px-8 py-2 rounded-full transition-colors"
             >
               Завантажити ще
             </Button>
