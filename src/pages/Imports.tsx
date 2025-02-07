@@ -1,9 +1,8 @@
-
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Car, ShieldCheck, Euro, Truck, FileCheck, Tools } from "lucide-react";
+import { Car, ShieldCheck, Euro, Truck, FileCheck, Settings } from "lucide-react";
 
 const Imports = () => {
   const benefits = [
@@ -33,7 +32,7 @@ const Imports = () => {
       description: "Всі автомобілі проходять офіційне розмитнення та реєстрацію."
     },
     {
-      icon: <Tools className="w-8 h-8 mb-4 text-navy" />,
+      icon: <Settings className="w-8 h-8 mb-4 text-navy" />,
       title: "Технічний стан",
       description: "Європейські авто відрізняються кращим технічним станом та обслуговуванням."
     }
