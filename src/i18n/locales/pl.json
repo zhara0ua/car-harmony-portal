@@ -1,0 +1,29 @@
+{
+  "nav": {
+    "home": "Strona główna",
+    "cars": "Samochody",
+    "import": "Import",
+    "inspection": "Inspekcje",
+    "contact": "Kontakt"
+  },
+  "hero": {
+    "title": "Odkryj Swój Wymarzony Samochód",
+    "subtitle": "Luksusowe pojazdy, profesjonalny import i dokładne inspekcje dla wymagających kierowców.",
+    "viewCars": "Zobacz Samochody",
+    "orderInspection": "Zamów Inspekcję"
+  },
+  "inspection": {
+    "title": "Profesjonalny Dobór Samochodu",
+    "subtitle": "Zostaw swoje dane kontaktowe, a my skontaktujemy się z Tobą, aby omówić szczegóły",
+    "form": {
+      "name": "Twoje imię",
+      "phone": "Numer telefonu",
+      "description": "Opisz, który samochód Cię interesuje",
+      "submit": "Wyślij zapytanie"
+    },
+    "cases": {
+      "title": "Nasze Udane Dobory",
+      "loadMore": "Pokaż więcej"
+    }
+  }
+}

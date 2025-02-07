@@ -2,10 +2,13 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { t } = useTranslation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -24,17 +27,19 @@ const Navbar = () => {
             Kristin Auto
           </Link>
 
-          {/* Mobile menu button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={toggleMenu}
-          >
-            {isMenuOpen ? <X /> : <Menu />}
-          </Button>
+          <div className="flex items-center gap-4">
+            <LanguageSwitcher />
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={toggleMenu}
+            >
+              {isMenuOpen ? <X /> : <Menu />}
+            </Button>
+          </div>
 
-          {/* Desktop menu */}
           <div className="hidden md:flex space-x-8">
             <Link
               to="/"
@@ -42,7 +47,7 @@ const Navbar = () => {
                 isActive("/") ? "text-navy font-semibold" : "text-gray-700"
               } hover:text-navy transition-colors`}
             >
-              Strona główna
+              {t('nav.home')}
             </Link>
             <Link
               to="/inventory"
@@ -50,7 +55,7 @@ const Navbar = () => {
                 isActive("/inventory") ? "text-navy font-semibold" : "text-gray-700"
               } hover:text-navy transition-colors`}
             >
-              Samochody
+              {t('nav.cars')}
             </Link>
             <Link
               to="/imports"
@@ -58,7 +63,7 @@ const Navbar = () => {
                 isActive("/imports") ? "text-navy font-semibold" : "text-gray-700"
               } hover:text-navy transition-colors`}
             >
-              Import
+              {t('nav.import')}
             </Link>
             <Link
               to="/inspection"
@@ -66,7 +71,7 @@ const Navbar = () => {
                 isActive("/inspection") ? "text-navy font-semibold" : "text-gray-700"
               } hover:text-navy transition-colors`}
             >
-              Inspekcje
+              {t('nav.inspection')}
             </Link>
             <Link
               to="/contact"
@@ -74,12 +79,11 @@ const Navbar = () => {
                 isActive("/contact") ? "text-navy font-semibold" : "text-gray-700"
               } hover:text-navy transition-colors`}
             >
-              Kontakt
+              {t('nav.contact')}
             </Link>
           </div>
         </div>
 
-        {/* Mobile menu */}
         {isMenuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg z-50">
             <div className="flex flex-col space-y-4 p-4">
@@ -90,7 +94,7 @@ const Navbar = () => {
                 } hover:text-navy transition-colors`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Strona główna
+                {t('nav.home')}
               </Link>
               <Link
                 to="/inventory"
@@ -99,7 +103,7 @@ const Navbar = () => {
                 } hover:text-navy transition-colors`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Samochody
+                {t('nav.cars')}
               </Link>
               <Link
                 to="/imports"
@@ -108,7 +112,7 @@ const Navbar = () => {
                 } hover:text-navy transition-colors`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Import
+                {t('nav.import')}
               </Link>
               <Link
                 to="/inspection"
@@ -117,7 +121,7 @@ const Navbar = () => {
                 } hover:text-navy transition-colors`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Inspekcje
+                {t('nav.inspection')}
               </Link>
               <Link
                 to="/contact"
@@ -126,7 +130,7 @@ const Navbar = () => {
                 } hover:text-navy transition-colors`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Kontakt
+                {t('nav.contact')}
               </Link>
             </div>
           </div>

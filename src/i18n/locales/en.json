@@ -1,0 +1,29 @@
+{
+  "nav": {
+    "home": "Home",
+    "cars": "Cars",
+    "import": "Import",
+    "inspection": "Inspection",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Discover Your Dream Car",
+    "subtitle": "Luxury vehicles, professional import and detailed inspections for demanding drivers.",
+    "viewCars": "View Cars",
+    "orderInspection": "Order Inspection"
+  },
+  "inspection": {
+    "title": "Professional Car Selection",
+    "subtitle": "Leave your contact details and we will contact you to discuss the details",
+    "form": {
+      "name": "Your name",
+      "phone": "Phone number",
+      "description": "Describe which car interests you",
+      "submit": "Send request"
+    },
+    "cases": {
+      "title": "Our Successful Selections",
+      "loadMore": "Show more"
+    }
+  }
+}
