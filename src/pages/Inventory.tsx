@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import CarCard from "@/components/CarCard";
@@ -29,14 +28,14 @@ interface Car {
 }
 
 const Inventory = () => {
-  const [category, setCategory] = useState<string>("");
-  const [transmission, setTransmission] = useState<string>("");
-  const [fuelType, setFuelType] = useState<string>("");
-  const [make, setMake] = useState<string>("");
-  const [model, setModel] = useState<string>("");
+  const [category, setCategory] = useState<string>("all");
+  const [transmission, setTransmission] = useState<string>("all");
+  const [fuelType, setFuelType] = useState<string>("all");
+  const [make, setMake] = useState<string>("all");
+  const [model, setModel] = useState<string>("all");
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
-  const [sortBy, setSortBy] = useState<string>("");
+  const [sortBy, setSortBy] = useState<string>("default");
 
   const cars: Car[] = [
     {
@@ -132,15 +131,15 @@ const Inventory = () => {
   ];
 
   const uniqueMakes = Array.from(new Set(cars.map(car => car.make)));
-  const uniqueModels = Array.from(new Set(cars.filter(car => !make || car.make === make).map(car => car.model)));
+  const uniqueModels = Array.from(new Set(cars.filter(car => make === "all" || car.make === make).map(car => car.model)));
 
   const filteredCars = cars
     .filter(car => {
-      if (category && car.category !== category) return false;
-      if (transmission && car.transmission !== transmission) return false;
-      if (fuelType && car.fuelType !== fuelType) return false;
-      if (make && car.make !== make) return false;
-      if (model && car.model !== model) return false;
+      if (category !== "all" && car.category !== category) return false;
+      if (transmission !== "all" && car.transmission !== transmission) return false;
+      if (fuelType !== "all" && car.fuelType !== fuelType) return false;
+      if (make !== "all" && car.make !== make) return false;
+      if (model !== "all" && car.model !== model) return false;
       if (minPrice && car.priceNumber < parseInt(minPrice)) return false;
       if (maxPrice && car.priceNumber > parseInt(maxPrice)) return false;
       return true;
@@ -170,12 +169,12 @@ const Inventory = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="space-y-2">
             <Label>Марка</Label>
-            <Select onValueChange={(value) => setMake(value)}>
+            <Select value={make} onValueChange={(value) => setMake(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Виберіть марку" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Всі марки</SelectItem>
+                <SelectItem value="all">Всі марки</SelectItem>
                 {uniqueMakes.map((make) => (
                   <SelectItem key={make} value={make}>{make}</SelectItem>
                 ))}
@@ -185,12 +184,12 @@ const Inventory = () => {
 
           <div className="space-y-2">
             <Label>Модель</Label>
-            <Select onValueChange={(value) => setModel(value)}>
+            <Select value={model} onValueChange={(value) => setModel(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Виберіть модель" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Всі моделі</SelectItem>
+                <SelectItem value="all">Всі моделі</SelectItem>
                 {uniqueModels.map((model) => (
                   <SelectItem key={model} value={model}>{model}</SelectItem>
                 ))}
@@ -220,12 +219,12 @@ const Inventory = () => {
 
           <div className="space-y-2">
             <Label>Тип кузова</Label>
-            <Select onValueChange={(value) => setCategory(value)}>
+            <Select value={category} onValueChange={(value) => setCategory(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Тип кузова" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Всі типи</SelectItem>
+                <SelectItem value="all">Всі типи</SelectItem>
                 <SelectItem value="Седан">Седан</SelectItem>
                 <SelectItem value="SUV">SUV</SelectItem>
                 <SelectItem value="Купе">Купе</SelectItem>
@@ -236,12 +235,12 @@ const Inventory = () => {
 
           <div className="space-y-2">
             <Label>Коробка передач</Label>
-            <Select onValueChange={(value) => setTransmission(value)}>
+            <Select value={transmission} onValueChange={(value) => setTransmission(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Коробка передач" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Всі типи</SelectItem>
+                <SelectItem value="all">Всі типи</SelectItem>
                 <SelectItem value="Автомат">Автомат</SelectItem>
                 <SelectItem value="Механіка">Механіка</SelectItem>
               </SelectContent>
@@ -250,12 +249,12 @@ const Inventory = () => {
 
           <div className="space-y-2">
             <Label>Тип палива</Label>
-            <Select onValueChange={(value) => setFuelType(value)}>
+            <Select value={fuelType} onValueChange={(value) => setFuelType(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Тип палива" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Всі типи</SelectItem>
+                <SelectItem value="all">Всі типи</SelectItem>
                 <SelectItem value="Бензин">Бензин</SelectItem>
                 <SelectItem value="Дизель">Дизель</SelectItem>
                 <SelectItem value="Гібрид">Гібрид</SelectItem>
@@ -266,12 +265,12 @@ const Inventory = () => {
 
           <div className="space-y-2">
             <Label>Сортування</Label>
-            <Select onValueChange={(value) => setSortBy(value)}>
+            <Select value={sortBy} onValueChange={(value) => setSortBy(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Сортувати за" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">За замовчуванням</SelectItem>
+                <SelectItem value="default">За замовчуванням</SelectItem>
                 <SelectItem value="price-asc">Ціна (від низької до високої)</SelectItem>
                 <SelectItem value="price-desc">Ціна (від високої до низької)</SelectItem>
                 <SelectItem value="year-desc">Рік (новіші спочатку)</SelectItem>
