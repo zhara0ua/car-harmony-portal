@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import CarCard from "@/components/CarCard";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,7 @@ const Inventory = () => {
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("default");
+  const [visibleCars, setVisibleCars] = useState(9);
 
   const cars: Car[] = [
     {
@@ -302,6 +304,13 @@ const Inventory = () => {
       }
     });
 
+  const visibleFilteredCars = filteredCars.slice(0, visibleCars);
+  const hasMoreCars = visibleCars < filteredCars.length;
+
+  const loadMore = () => {
+    setVisibleCars(prev => prev + 9);
+  };
+
   return (
     <div className="min-h-screen bg-silver">
       <Navbar />
@@ -438,11 +447,25 @@ const Inventory = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredCars.map((car, index) => (
+          {visibleFilteredCars.map((car, index) => (
             <CarCard key={index} {...car} />
           ))}
         </div>
+
+        {hasMoreCars && (
+          <div className="mt-12 text-center">
+            <Button 
+              variant="outline"
+              onClick={loadMore}
+              className="px-8"
+            >
+              Завантажити ще
+            </Button>
+          </div>
+        )}
       </div>
+
+      <Footer />
     </div>
   );
 };
