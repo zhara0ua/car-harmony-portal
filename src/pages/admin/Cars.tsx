@@ -8,6 +8,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const Cars = () => {
   const cars = [
@@ -18,7 +20,13 @@ const Cars = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Управління автомобілями</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Управління автомобілями</h1>
+        <Button>
+          <Plus className="mr-2" />
+          Додати автомобіль
+        </Button>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Список автомобілів</CardTitle>

@@ -8,6 +8,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const Inspections = () => {
   const inspections = [
@@ -18,7 +20,13 @@ const Inspections = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Управління інспекціями</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Управління інспекціями</h1>
+        <Button>
+          <Plus className="mr-2" />
+          Створити інспекцію
+        </Button>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Список інспекцій</CardTitle>
