@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -10,54 +11,120 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, X, Image } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Car {
+  id: number;
+  name: string;
+  price: string;
+  year: number;
+  mileage: string;
+  category: string;
+  transmission: string;
+  fuel_type: string;
+  engine_size: string;
+  engine_power: string;
+  description: string | null;
+  features: string[] | null;
+  images: string[];
+}
 
 const CarDetails = () => {
   const { id } = useParams();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [car, setCar] = useState<Car | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
-  
-  // This would typically come from an API or database
-  const carDetails = {
-    name: "Mercedes-Benz S-Class",
-    price: "85.000 zł",
-    year: 2023,
-    mileage: "24.000 km",
-    category: "Седан",
-    transmission: "Автомат",
-    fuelType: "Бензин",
-    engineSize: "3.0л",
-    enginePower: "435 к.с.",
-    description: "Mercedes-Benz S-Class - втілення розкоші та інновацій. Цей автомобіль обладнаний найсучаснішими технологіями та забезпечує неперевершений комфорт.",
-    features: [
-      "Панорамний дах",
-      "Масаж сидінь",
-      "Преміум аудіосистема Burmester",
-      "Система нічного бачення",
-      "Активний круїз-контроль",
-      "4-зонний клімат-контроль"
-    ],
-    images: [
-      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1553440569-bcc63803a83d?auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1616422285623-13ff0162193c?auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1619362280286-f1f8fd5032ed?auto=format&fit=crop&q=80"
-    ]
-  };
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchCar = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('cars')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          setCar({
+            ...data,
+            description: data.description || "Опис відсутній",
+            features: data.features || [],
+            images: data.images ? 
+              (Array.isArray(data.images) ? data.images : [data.image]) 
+              : [data.image]
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching car:', error);
+        toast({
+          title: "Помилка",
+          description: "Не вдалося завантажити інформацію про автомобіль",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(setIsLoading);
+      }
+    };
+
+    if (id) {
+      fetchCar();
+    }
+  }, [id, toast]);
 
   const nextImage = () => {
+    if (!car) return;
     setCurrentImageIndex((prev) => 
-      prev === carDetails.images.length - 1 ? 0 : prev + 1
+      prev === car.images.length - 1 ? 0 : prev + 1
     );
   };
 
   const prevImage = () => {
+    if (!car) return;
     setCurrentImageIndex((prev) => 
-      prev === 0 ? carDetails.images.length - 1 : prev - 1
+      prev === 0 ? car.images.length - 1 : prev - 1
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-silver">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-3/4 mb-8"></div>
+            <div className="h-96 bg-gray-200 rounded mb-8"></div>
+            <div className="space-y-4">
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!car) {
+    return (
+      <div className="min-h-screen bg-silver">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-navy mb-4">Автомобіль не знайдено</h1>
+            <p className="text-gray-600">На жаль, інформація про цей автомобіль відсутня.</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-silver">
@@ -65,7 +132,6 @@ const CarDetails = () => {
       
       <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {/* Image Gallery */}
           <div className="p-4 sm:p-6">
             {isMobile ? (
               <div className="relative">
@@ -73,15 +139,15 @@ const CarDetails = () => {
                   <DialogTrigger asChild>
                     <div className="relative cursor-pointer">
                       <img
-                        src={carDetails.images[0]}
-                        alt={`${carDetails.name} - головне фото`}
+                        src={car.images[0]}
+                        alt={`${car.name} - головне фото`}
                         className="w-full h-[300px] object-cover rounded-lg"
                       />
                       <div className="absolute bottom-4 right-4 bg-white/90 rounded-full p-2">
                         <Image className="w-6 h-6" />
                       </div>
                       <div className="absolute bottom-4 left-4 bg-white/90 rounded-full px-3 py-1">
-                        <span className="text-sm font-medium">1 / {carDetails.images.length}</span>
+                        <span className="text-sm font-medium">1 / {car.images.length}</span>
                       </div>
                     </div>
                   </DialogTrigger>
@@ -96,8 +162,8 @@ const CarDetails = () => {
                         <X className="h-4 w-4" />
                       </Button>
                       <img
-                        src={carDetails.images[currentImageIndex]}
-                        alt={`${carDetails.name} - фото ${currentImageIndex + 1}`}
+                        src={car.images[currentImageIndex]}
+                        alt={`${car.name} - фото ${currentImageIndex + 1}`}
                         className="w-full h-full object-contain"
                       />
                       <Button
@@ -128,12 +194,12 @@ const CarDetails = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {carDetails.images.map((image, index) => (
+                {car.images.map((image, index) => (
                   <Dialog key={index} open={isGalleryOpen && currentImageIndex === index} onOpenChange={setIsGalleryOpen}>
                     <DialogTrigger asChild>
                       <img
                         src={image}
-                        alt={`${carDetails.name} - фото ${index + 1}`}
+                        alt={`${car.name} - фото ${index + 1}`}
                         className="w-full h-64 object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
                         onClick={() => setCurrentImageIndex(index)}
                       />
@@ -149,8 +215,8 @@ const CarDetails = () => {
                           <X className="h-4 w-4" />
                         </Button>
                         <img
-                          src={carDetails.images[currentImageIndex]}
-                          alt={`${carDetails.name} - фото ${currentImageIndex + 1}`}
+                          src={car.images[currentImageIndex]}
+                          alt={`${car.name} - фото ${currentImageIndex + 1}`}
                           className="w-full h-full object-contain"
                         />
                         <Button
@@ -183,66 +249,67 @@ const CarDetails = () => {
             )}
           </div>
           
-          {/* Car Information */}
           <div className="p-6 space-y-6">
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="text-3xl font-bold text-navy">{carDetails.name}</h1>
-                <p className="text-gray-600">Рік випуску: {carDetails.year}</p>
+                <h1 className="text-3xl font-bold text-navy">{car.name}</h1>
+                <p className="text-gray-600">Рік випуску: {car.year}</p>
               </div>
               <div className="text-right">
-                <p className="text-3xl font-bold text-navy">{carDetails.price}</p>
-                <p className="text-gray-600">Пробіг: {carDetails.mileage}</p>
+                <p className="text-3xl font-bold text-navy">{car.price}</p>
+                <p className="text-gray-600">Пробіг: {car.mileage}</p>
               </div>
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg">
               <div>
                 <p className="text-gray-600">Тип кузова</p>
-                <p className="font-semibold">{carDetails.category}</p>
+                <p className="font-semibold">{car.category}</p>
               </div>
               <div>
                 <p className="text-gray-600">Коробка передач</p>
-                <p className="font-semibold">{carDetails.transmission}</p>
+                <p className="font-semibold">{car.transmission}</p>
               </div>
               <div>
                 <p className="text-gray-600">Паливо</p>
-                <p className="font-semibold">{carDetails.fuelType}</p>
+                <p className="font-semibold">{car.fuel_type}</p>
               </div>
               <div>
                 <p className="text-gray-600">Двигун</p>
-                <p className="font-semibold">{carDetails.engineSize} / {carDetails.enginePower}</p>
+                <p className="font-semibold">{car.engine_size} / {car.engine_power}</p>
               </div>
             </div>
             
             <div>
               <h2 className="text-xl font-semibold mb-3">Опис</h2>
-              <p className="text-gray-700">{carDetails.description}</p>
+              <p className="text-gray-700">{car.description}</p>
             </div>
             
-            <div>
-              <h2 className="text-xl font-semibold mb-3">Комплектація</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {carDetails.features.map((feature, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <svg
-                      className="w-5 h-5 text-green-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    <span>{feature}</span>
-                  </div>
-                ))}
+            {car.features && car.features.length > 0 && (
+              <div>
+                <h2 className="text-xl font-semibold mb-3">Комплектація</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {car.features.map((feature, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <svg
+                        className="w-5 h-5 text-green-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      <span>{feature}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </main>
