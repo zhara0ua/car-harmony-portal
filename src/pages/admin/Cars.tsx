@@ -52,12 +52,14 @@ const Cars = () => {
 
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
+    const priceNumber = parseInt(formData.get('price') as string);
 
     const newCar = {
       name: `${make} ${model}`,
       make: make,
       model: model,
-      price: parseInt(formData.get('price') as string),
+      price: `${priceNumber.toLocaleString()} zł`,
+      price_number: priceNumber,
       year: parseInt(formData.get('year') as string),
       mileage: formData.get('mileage') as string,
       category: formData.get('category') as string,
@@ -106,12 +108,14 @@ const Cars = () => {
 
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
+    const priceNumber = parseInt(formData.get('price') as string);
 
     const updatedCar = {
       name: `${make} ${model}`,
       make: make,
       model: model,
-      price: parseInt(formData.get('price') as string),
+      price: `${priceNumber.toLocaleString()} zł`,
+      price_number: priceNumber,
       year: parseInt(formData.get('year') as string),
       mileage: formData.get('mileage') as string,
       category: formData.get('category') as string,
