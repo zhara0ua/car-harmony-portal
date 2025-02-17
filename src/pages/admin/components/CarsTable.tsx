@@ -60,7 +60,7 @@ export const CarsTable = ({ cars, onEdit, onDelete, onSave, editingCar }: CarsTa
             <TableCell>{car.make}</TableCell>
             <TableCell>{car.model}</TableCell>
             <TableCell>{car.year}</TableCell>
-            <TableCell>{car.price.toLocaleString()} zł</TableCell>
+            <TableCell>{car.price}</TableCell>
             <TableCell className="space-x-2">
               <Dialog>
                 <DialogTrigger asChild>
