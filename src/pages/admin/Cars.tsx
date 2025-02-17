@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -92,10 +91,13 @@ const Cars = () => {
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
 
+    const make = formData.get('make') as string;
+    const model = formData.get('model') as string;
+
     const newCar = {
-      name: formData.get('name') as string,
-      make: formData.get('make') as string,
-      model: formData.get('model') as string,
+      name: `${make} ${model}`,
+      make: make,
+      model: model,
       price: formData.get('price') as string,
       price_number: parseInt(formData.get('price_number') as string),
       year: parseInt(formData.get('year') as string),
@@ -144,10 +146,13 @@ const Cars = () => {
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
 
+    const make = formData.get('make') as string;
+    const model = formData.get('model') as string;
+
     const updatedCar = {
-      name: formData.get('name') as string,
-      make: formData.get('make') as string,
-      model: formData.get('model') as string,
+      name: `${make} ${model}`,
+      make: make,
+      model: model,
       price: formData.get('price') as string,
       price_number: parseInt(formData.get('price_number') as string),
       year: parseInt(formData.get('year') as string),
