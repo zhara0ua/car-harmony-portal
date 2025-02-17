@@ -20,8 +20,15 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,9 +41,18 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+interface Inspection {
+  id: number;
+  car: string;
+  client: string;
+  date: string;
+  status: string;
+  created_at: string;
+}
+
 const Inspections = () => {
-  const [inspections, setInspections] = useState([]);
-  const [editingInspection, setEditingInspection] = useState(null);
+  const [inspections, setInspections] = useState<Inspection[]>([]);
+  const [editingInspection, setEditingInspection] = useState<Inspection | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { toast } = useToast();
 
@@ -48,7 +64,7 @@ const Inspections = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setInspections(data);
+      setInspections(data || []);
     } catch (error) {
       console.error('Error fetching inspections:', error);
       toast({
@@ -63,18 +79,16 @@ const Inspections = () => {
     fetchInspections();
   }, []);
 
-  const handleEdit = (inspection) => {
-    setEditingInspection(inspection);
-  };
-
-  const handleCreate = async (e) => {
+  const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.target;
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+
     const newInspection = {
-      car: form.car.value,
-      client: form.client.value,
-      date: form.date.value,
-      status: form.status.value,
+      car: formData.get('car') as string,
+      client: formData.get('client') as string,
+      date: formData.get('date') as string,
+      status: formData.get('status') as string,
     };
 
     try {
@@ -102,22 +116,25 @@ const Inspections = () => {
     }
   };
 
-  const handleSave = async (e) => {
+  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.target;
+    if (!editingInspection) return;
+
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+
     const updatedInspection = {
-      ...editingInspection,
-      car: form.car.value,
-      client: form.client.value,
-      date: form.date.value,
-      status: form.status.value,
+      car: formData.get('car') as string,
+      client: formData.get('client') as string,
+      date: formData.get('date') as string,
+      status: formData.get('status') as string,
     };
 
     try {
       const { error } = await supabase
         .from('inspections')
         .update(updatedInspection)
-        .eq('id', updatedInspection.id);
+        .eq('id', editingInspection.id);
 
       if (error) throw error;
 
@@ -138,7 +155,7 @@ const Inspections = () => {
     }
   };
 
-  const handleDelete = async (inspectionId) => {
+  const handleDelete = async (inspectionId: number) => {
     try {
       const { error } = await supabase
         .from('inspections')
@@ -163,6 +180,41 @@ const Inspections = () => {
     }
   };
 
+  const InspectionForm = ({ inspection, onSubmit }: { 
+    inspection?: Inspection; 
+    onSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  }) => (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="car">Автомобіль</Label>
+        <Input id="car" name="car" defaultValue={inspection?.car} required />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="client">Клієнт</Label>
+        <Input id="client" name="client" defaultValue={inspection?.client} required />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="date">Дата</Label>
+        <Input id="date" name="date" type="date" defaultValue={inspection?.date} required />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="status">Статус</Label>
+        <Select name="status" defaultValue={inspection?.status || "Новий"}>
+          <SelectTrigger>
+            <SelectValue placeholder="Виберіть статус" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Новий">Новий</SelectItem>
+            <SelectItem value="В процесі">В процесі</SelectItem>
+            <SelectItem value="Завершено">Завершено</SelectItem>
+            <SelectItem value="Скасовано">Скасовано</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <Button type="submit">{inspection ? "Зберегти" : "Створити"}</Button>
+    </form>
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -178,28 +230,11 @@ const Inspections = () => {
             <DialogHeader>
               <DialogTitle>Створити інспекцію</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="car">Автомобіль</Label>
-                <Input id="car" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="client">Клієнт</Label>
-                <Input id="client" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="date">Дата</Label>
-                <Input id="date" type="date" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Статус</Label>
-                <Input id="status" required />
-              </div>
-              <Button type="submit">Створити</Button>
-            </form>
+            <InspectionForm onSubmit={handleCreate} />
           </DialogContent>
         </Dialog>
       </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Список інспекцій</CardTitle>
@@ -227,7 +262,11 @@ const Inspections = () => {
                   <TableCell className="space-x-2">
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(inspection)}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setEditingInspection(inspection)}
+                        >
                           <Pencil className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
@@ -235,27 +274,13 @@ const Inspections = () => {
                         <DialogHeader>
                           <DialogTitle>Редагувати інспекцію</DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handleSave} className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="car">Автомобіль</Label>
-                            <Input id="car" defaultValue={inspection.car} />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="client">Клієнт</Label>
-                            <Input id="client" defaultValue={inspection.client} />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="date">Дата</Label>
-                            <Input id="date" type="date" defaultValue={inspection.date} />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="status">Статус</Label>
-                            <Input id="status" defaultValue={inspection.status} />
-                          </div>
-                          <Button type="submit">Зберегти</Button>
-                        </form>
+                        <InspectionForm 
+                          inspection={inspection} 
+                          onSubmit={handleUpdate} 
+                        />
                       </DialogContent>
                     </Dialog>
+
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="outline" size="sm">
@@ -266,12 +291,15 @@ const Inspections = () => {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Видалити інспекцію?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Ця дія не може бути скасована. Інспекція буде назавжди видалена з системи.
+                            Ця дія не може бути скасована. Інспекцію буде назавжди видалено з системи.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Скасувати</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(inspection.id)} className="bg-red-500 hover:bg-red-600">
+                          <AlertDialogAction 
+                            onClick={() => handleDelete(inspection.id)} 
+                            className="bg-red-500 hover:bg-red-600"
+                          >
                             Видалити
                           </AlertDialogAction>
                         </AlertDialogFooter>
