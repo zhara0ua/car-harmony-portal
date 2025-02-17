@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +12,12 @@ import InspectionCase from "./pages/InspectionCase";
 import Imports from "./pages/Imports";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import AdminDashboard from "./pages/admin/Dashboard";
+import Users from "./pages/admin/Users";
+import Cars from "./pages/admin/Cars";
+import Inspections from "./pages/admin/Inspections";
+import Statistics from "./pages/admin/Statistics";
+import Settings from "./pages/admin/Settings";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +35,13 @@ const App = () => (
           <Route path="/inspection/:id" element={<InspectionCase />} />
           <Route path="/imports" element={<Imports />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/admin" element={<AdminDashboard />}>
+            <Route path="users" element={<Users />} />
+            <Route path="cars" element={<Cars />} />
+            <Route path="inspections" element={<Inspections />} />
+            <Route path="statistics" element={<Statistics />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
