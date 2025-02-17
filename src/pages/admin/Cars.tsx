@@ -30,7 +30,14 @@ const Cars = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCars(data || []);
+
+      // Форматуємо ціни для всіх автомобілів
+      const formattedCars = data?.map(car => ({
+        ...car,
+        price: `${car.price_number.toLocaleString()} zł`
+      })) || [];
+
+      setCars(formattedCars);
     } catch (error) {
       console.error('Error fetching cars:', error);
       toast({
