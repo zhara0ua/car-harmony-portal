@@ -25,9 +25,11 @@ interface Car {
   fuel_type: string;
   engine_size: string;
   engine_power: string;
-  description: string | null;
-  features: string[] | null;
-  images: string[];
+  image: string;
+  make: string;
+  model: string;
+  price_number: number;
+  created_at: string;
 }
 
 const CarDetails = () => {
@@ -45,20 +47,13 @@ const CarDetails = () => {
         const { data, error } = await supabase
           .from('cars')
           .select('*')
-          .eq('id', id)
+          .eq('id', Number(id))
           .single();
 
         if (error) throw error;
 
         if (data) {
-          setCar({
-            ...data,
-            description: data.description || "Опис відсутній",
-            features: data.features || [],
-            images: data.images ? 
-              (Array.isArray(data.images) ? data.images : [data.image]) 
-              : [data.image]
-          });
+          setCar(data);
         }
       } catch (error) {
         console.error('Error fetching car:', error);
@@ -68,7 +63,7 @@ const CarDetails = () => {
           variant: "destructive",
         });
       } finally {
-        setIsLoading(setIsLoading);
+        setIsLoading(false);
       }
     };
 
@@ -79,16 +74,12 @@ const CarDetails = () => {
 
   const nextImage = () => {
     if (!car) return;
-    setCurrentImageIndex((prev) => 
-      prev === car.images.length - 1 ? 0 : prev + 1
-    );
+    setCurrentImageIndex(0); // Оскільки у нас зараз тільки одне фото
   };
 
   const prevImage = () => {
     if (!car) return;
-    setCurrentImageIndex((prev) => 
-      prev === 0 ? car.images.length - 1 : prev - 1
-    );
+    setCurrentImageIndex(0); // Оскільки у нас зараз тільки одне фото
   };
 
   if (isLoading) {
@@ -139,7 +130,7 @@ const CarDetails = () => {
                   <DialogTrigger asChild>
                     <div className="relative cursor-pointer">
                       <img
-                        src={car.images[0]}
+                        src={car.image}
                         alt={`${car.name} - головне фото`}
                         className="w-full h-[300px] object-cover rounded-lg"
                       />
@@ -147,7 +138,7 @@ const CarDetails = () => {
                         <Image className="w-6 h-6" />
                       </div>
                       <div className="absolute bottom-4 left-4 bg-white/90 rounded-full px-3 py-1">
-                        <span className="text-sm font-medium">1 / {car.images.length}</span>
+                        <span className="text-sm font-medium">1 / 1</span>
                       </div>
                     </div>
                   </DialogTrigger>
@@ -162,89 +153,42 @@ const CarDetails = () => {
                         <X className="h-4 w-4" />
                       </Button>
                       <img
-                        src={car.images[currentImageIndex]}
-                        alt={`${car.name} - фото ${currentImageIndex + 1}`}
+                        src={car.image}
+                        alt={`${car.name}`}
                         className="w-full h-full object-contain"
                       />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="absolute left-4 top-1/2 transform -translate-y-1/2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          prevImage();
-                        }}
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          nextImage();
-                        }}
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
                     </div>
                   </DialogContent>
                 </Dialog>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {car.images.map((image, index) => (
-                  <Dialog key={index} open={isGalleryOpen && currentImageIndex === index} onOpenChange={setIsGalleryOpen}>
-                    <DialogTrigger asChild>
+              <div className="grid grid-cols-1 gap-4">
+                <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
+                  <DialogTrigger asChild>
+                    <img
+                      src={car.image}
+                      alt={car.name}
+                      className="w-full h-96 object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+                    />
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl h-[80vh] p-0">
+                    <div className="relative h-full">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-2 z-50"
+                        onClick={() => setIsGalleryOpen(false)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                       <img
-                        src={image}
-                        alt={`${car.name} - фото ${index + 1}`}
-                        className="w-full h-64 object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
-                        onClick={() => setCurrentImageIndex(index)}
+                        src={car.image}
+                        alt={car.name}
+                        className="w-full h-full object-contain"
                       />
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl h-[80vh] p-0">
-                      <div className="relative h-full">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-2 top-2 z-50"
-                          onClick={() => setIsGalleryOpen(false)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                        <img
-                          src={car.images[currentImageIndex]}
-                          alt={`${car.name} - фото ${currentImageIndex + 1}`}
-                          className="w-full h-full object-contain"
-                        />
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="absolute left-4 top-1/2 transform -translate-y-1/2"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            prevImage();
-                          }}
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            nextImage();
-                          }}
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                ))}
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             )}
           </div>
@@ -280,36 +224,16 @@ const CarDetails = () => {
               </div>
             </div>
             
-            <div>
-              <h2 className="text-xl font-semibold mb-3">Опис</h2>
-              <p className="text-gray-700">{car.description}</p>
-            </div>
-            
-            {car.features && car.features.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <h2 className="text-xl font-semibold mb-3">Комплектація</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {car.features.map((feature, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <svg
-                        className="w-5 h-5 text-green-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      <span>{feature}</span>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-gray-600">Марка</p>
+                <p className="font-semibold">{car.make}</p>
               </div>
-            )}
+              <div>
+                <p className="text-gray-600">Модель</p>
+                <p className="font-semibold">{car.model}</p>
+              </div>
+            </div>
           </div>
         </div>
       </main>
