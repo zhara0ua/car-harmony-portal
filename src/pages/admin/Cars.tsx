@@ -31,10 +31,11 @@ const Cars = () => {
 
       if (error) throw error;
 
-      // Форматуємо ціни для всіх автомобілів
+      // Форматуємо ціни та пробіг для всіх автомобілів
       const formattedCars = data?.map(car => ({
         ...car,
-        price: `${car.price_number.toLocaleString()} zł`
+        price: `${car.price_number.toLocaleString()} zł`,
+        mileage: `${car.mileage} km.`
       })) || [];
 
       setCars(formattedCars);
@@ -60,6 +61,7 @@ const Cars = () => {
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
     const priceNumber = parseInt(formData.get('price') as string);
+    const mileage = `${formData.get('mileage')}`;
 
     const newCar = {
       name: `${make} ${model}`,
@@ -68,7 +70,7 @@ const Cars = () => {
       price: `${priceNumber.toLocaleString()} zł`,
       price_number: priceNumber,
       year: parseInt(formData.get('year') as string),
-      mileage: formData.get('mileage') as string,
+      mileage: mileage,
       category: formData.get('category') as string,
       transmission: formData.get('transmission') as string,
       fuel_type: formData.get('fuel_type') as string,
@@ -116,6 +118,7 @@ const Cars = () => {
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
     const priceNumber = parseInt(formData.get('price') as string);
+    const mileage = `${formData.get('mileage')}`;
 
     const updatedCar = {
       name: `${make} ${model}`,
@@ -124,7 +127,7 @@ const Cars = () => {
       price: `${priceNumber.toLocaleString()} zł`,
       price_number: priceNumber,
       year: parseInt(formData.get('year') as string),
-      mileage: formData.get('mileage') as string,
+      mileage: mileage,
       category: formData.get('category') as string,
       transmission: formData.get('transmission') as string,
       fuel_type: formData.get('fuel_type') as string,
