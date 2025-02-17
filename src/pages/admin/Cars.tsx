@@ -9,14 +9,46 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 const Cars = () => {
-  const cars = [
+  const [cars, setCars] = useState([
     { id: 1, brand: "Toyota", model: "Camry", year: 2020, price: "25000", status: "В наявності" },
     { id: 2, brand: "Honda", model: "Civic", year: 2021, price: "22000", status: "Продано" },
     { id: 3, brand: "BMW", model: "X5", year: 2019, price: "45000", status: "В наявності" },
-  ];
+  ]);
+
+  const [editingCar, setEditingCar] = useState(null);
+
+  const handleEdit = (car) => {
+    setEditingCar(car);
+  };
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const updatedCar = {
+      ...editingCar,
+      brand: form.brand.value,
+      model: form.model.value,
+      year: parseInt(form.year.value),
+      price: form.price.value,
+      status: form.status.value,
+    };
+
+    setCars(cars.map(car => car.id === updatedCar.id ? updatedCar : car));
+    setEditingCar(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -41,6 +73,7 @@ const Cars = () => {
                 <TableHead>Рік</TableHead>
                 <TableHead>Ціна ($)</TableHead>
                 <TableHead>Статус</TableHead>
+                <TableHead>Дії</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -52,6 +85,43 @@ const Cars = () => {
                   <TableCell>{car.year}</TableCell>
                   <TableCell>{car.price}</TableCell>
                   <TableCell>{car.status}</TableCell>
+                  <TableCell>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(car)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Редагувати автомобіль</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleSave} className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="brand">Марка</Label>
+                            <Input id="brand" defaultValue={car.brand} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="model">Модель</Label>
+                            <Input id="model" defaultValue={car.model} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="year">Рік</Label>
+                            <Input id="year" type="number" defaultValue={car.year} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="price">Ціна ($)</Label>
+                            <Input id="price" defaultValue={car.price} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="status">Статус</Label>
+                            <Input id="status" defaultValue={car.status} />
+                          </div>
+                          <Button type="submit">Зберегти</Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
