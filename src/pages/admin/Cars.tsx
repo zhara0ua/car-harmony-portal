@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -9,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +19,17 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Cars = () => {
   const [cars, setCars] = useState([
@@ -48,6 +58,10 @@ const Cars = () => {
 
     setCars(cars.map(car => car.id === updatedCar.id ? updatedCar : car));
     setEditingCar(null);
+  };
+
+  const handleDelete = (carId) => {
+    setCars(cars.filter(car => car.id !== carId));
   };
 
   return (
@@ -85,7 +99,7 @@ const Cars = () => {
                   <TableCell>{car.year}</TableCell>
                   <TableCell>{car.price}</TableCell>
                   <TableCell>{car.status}</TableCell>
-                  <TableCell>
+                  <TableCell className="space-x-2">
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm" onClick={() => handleEdit(car)}>
@@ -121,6 +135,27 @@ const Cars = () => {
                         </form>
                       </DialogContent>
                     </Dialog>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Видалити автомобіль?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Ця дія не може бути скасована. Автомобіль буде назавжди видалений з с��стеми.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Скасувати</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(car.id)} className="bg-red-500 hover:bg-red-600">
+                            Видалити
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))}

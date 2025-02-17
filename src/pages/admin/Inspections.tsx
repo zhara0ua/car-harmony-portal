@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -9,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +19,17 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Inspections = () => {
   const [inspections, setInspections] = useState([
@@ -49,6 +59,10 @@ const Inspections = () => {
       inspection.id === updatedInspection.id ? updatedInspection : inspection
     ));
     setEditingInspection(null);
+  };
+
+  const handleDelete = (inspectionId) => {
+    setInspections(inspections.filter(inspection => inspection.id !== inspectionId));
   };
 
   return (
@@ -84,7 +98,7 @@ const Inspections = () => {
                   <TableCell>{inspection.client}</TableCell>
                   <TableCell>{inspection.date}</TableCell>
                   <TableCell>{inspection.status}</TableCell>
-                  <TableCell>
+                  <TableCell className="space-x-2">
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm" onClick={() => handleEdit(inspection)}>
@@ -97,7 +111,7 @@ const Inspections = () => {
                         </DialogHeader>
                         <form onSubmit={handleSave} className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="car">Автомобіль</Label>
+                            <Label htmlFor="car">Авто��обіль</Label>
                             <Input id="car" defaultValue={inspection.car} />
                           </div>
                           <div className="space-y-2">
@@ -116,6 +130,27 @@ const Inspections = () => {
                         </form>
                       </DialogContent>
                     </Dialog>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Видалити інспекцію?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Ця дія не може бути скасована. Інспекція буде назавжди видалена з системи.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Скасувати</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(inspection.id)} className="bg-red-500 hover:bg-red-600">
+                            Видалити
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))}
