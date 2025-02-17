@@ -1,8 +1,10 @@
+
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 interface CarCardProps {
+  id: number;
   image: string;
   name: string;
   price: string;
@@ -10,12 +12,13 @@ interface CarCardProps {
   mileage: string;
   category: string;
   transmission: string;
-  fuelType: string;
-  engineSize: string;
-  enginePower: string;
+  fuel_type: string;
+  engine_size: string;
+  engine_power: string;
 }
 
 const CarCard = ({ 
+  id,
   image, 
   name, 
   price, 
@@ -23,9 +26,9 @@ const CarCard = ({
   mileage,
   category,
   transmission,
-  fuelType,
-  engineSize,
-  enginePower 
+  fuel_type,
+  engine_size,
+  engine_power 
 }: CarCardProps) => {
   const navigate = useNavigate();
 
@@ -42,9 +45,9 @@ const CarCard = ({
               <span>Пробіг: {mileage}</span>
               <span>Тип: {category}</span>
               <span>КПП: {transmission}</span>
-              <span>Паливо: {fuelType}</span>
-              <span>Об'єм: {engineSize}</span>
-              <span className="col-span-2">Потужність: {enginePower}</span>
+              <span>Паливо: {fuel_type}</span>
+              <span>Об'єм: {engine_size}</span>
+              <span className="col-span-2">Потужність: {engine_power}</span>
             </div>
           </div>
         </div>
@@ -52,7 +55,7 @@ const CarCard = ({
       <CardFooter className="p-3 sm:p-4 pt-0">
         <Button 
           className="w-full bg-navy hover:bg-navy/90 text-sm sm:text-base"
-          onClick={() => navigate(`/car/1`)}
+          onClick={() => navigate(`/car/${id}`)}
         >
           Дізнатись більше
         </Button>

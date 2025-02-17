@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/collapsible";
 
 interface Car {
+  id: number;
   image: string;
   name: string;
   make: string;
@@ -31,11 +32,12 @@ interface Car {
   price_number: number;
   year: number;
   mileage: string;
-  category: "Седан" | "SUV" | "Купе" | "Універсал";
-  transmission: "Автомат" | "Механіка";
-  fuel_type: "Бензин" | "Дизель" | "Гібрид" | "Електро";
+  category: string;
+  transmission: string;
+  fuel_type: string;
   engine_size: string;
   engine_power: string;
+  created_at: string;
 }
 
 const Inventory = () => {
@@ -100,7 +102,7 @@ const Inventory = () => {
       const { data, error } = await query;
 
       if (error) throw error;
-      setCars(data);
+      setCars(data || []);
     } catch (error) {
       console.error('Error fetching cars:', error);
       toast({
@@ -261,8 +263,8 @@ const Inventory = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {visibleFilteredCars.map((car, index) => (
-            <CarCard key={index} {...car} />
+          {visibleFilteredCars.map((car) => (
+            <CarCard key={car.id} {...car} />
           ))}
         </div>
 
