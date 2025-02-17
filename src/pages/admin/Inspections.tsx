@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -18,7 +19,9 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,19 +35,39 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const Inspections = () => {
-  const [inspections, setInspections] = useState([
-    { id: 1, car: "Toyota Camry", client: "Іван Петров", date: "2024-03-15", status: "Заплановано" },
-    { id: 2, car: "Honda Civic", client: "Марія Коваль", date: "2024-03-14", status: "Завершено" },
-    { id: 3, car: "BMW X5", client: "Петро Сидоренко", date: "2024-03-13", status: "В процесі" },
-  ]);
-
+  const [inspections, setInspections] = useState([]);
   const [editingInspection, setEditingInspection] = useState(null);
+  const { toast } = useToast();
+
+  // Отримання даних з Supabase
+  const fetchInspections = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('inspections')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setInspections(data);
+    } catch (error) {
+      console.error('Error fetching inspections:', error);
+      toast({
+        title: "Помилка",
+        description: "Не вдалося завантажити дані інспекцій",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchInspections();
+  }, []);
 
   const handleEdit = (inspection) => {
     setEditingInspection(inspection);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     const form = e.target;
     const updatedInspection = {
@@ -55,14 +78,54 @@ const Inspections = () => {
       status: form.status.value,
     };
 
-    setInspections(inspections.map(inspection => 
-      inspection.id === updatedInspection.id ? updatedInspection : inspection
-    ));
-    setEditingInspection(null);
+    try {
+      const { error } = await supabase
+        .from('inspections')
+        .update(updatedInspection)
+        .eq('id', updatedInspection.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Успішно",
+        description: "Інспекцію оновлено",
+      });
+
+      fetchInspections();
+      setEditingInspection(null);
+    } catch (error) {
+      console.error('Error updating inspection:', error);
+      toast({
+        title: "Помилка",
+        description: "Не вдалося оновити інспекцію",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDelete = (inspectionId) => {
-    setInspections(inspections.filter(inspection => inspection.id !== inspectionId));
+  const handleDelete = async (inspectionId) => {
+    try {
+      const { error } = await supabase
+        .from('inspections')
+        .delete()
+        .eq('id', inspectionId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Успішно",
+        description: "Інспекцію видалено",
+      });
+
+      fetchInspections();
+    } catch (error) {
+      console.error('Error deleting inspection:', error);
+      toast({
+        title: "Помилка",
+        description: "Не вдалося видалити інспекцію",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -111,7 +174,7 @@ const Inspections = () => {
                         </DialogHeader>
                         <form onSubmit={handleSave} className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="car">Авто��обіль</Label>
+                            <Label htmlFor="car">Автомобіль</Label>
                             <Input id="car" defaultValue={inspection.car} />
                           </div>
                           <div className="space-y-2">
