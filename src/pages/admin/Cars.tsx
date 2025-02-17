@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -30,7 +31,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Select,
@@ -217,11 +218,6 @@ const Cars = () => {
 
   const CarForm = ({ car, onSubmit }: { car?: Car; onSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void> }) => (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Назва</Label>
-        <Input id="name" name="name" defaultValue={car?.name} required />
-      </div>
-      
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="make">Марка</Label>
