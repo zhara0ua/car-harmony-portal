@@ -31,7 +31,7 @@ export const CarForm = ({ car, onSubmit }: CarFormProps) => (
 
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
-        <Label htmlFor="price">Ціна (PLN)</Label>
+        <Label htmlFor="price">Ціна (zł)</Label>
         <Input id="price" name="price" type="number" defaultValue={car?.price} required />
       </div>
       <div className="space-y-2">

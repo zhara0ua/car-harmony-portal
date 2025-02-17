@@ -48,7 +48,7 @@ export const CarsTable = ({ cars, onEdit, onDelete, onSave, editingCar }: CarsTa
           <TableHead>Марка</TableHead>
           <TableHead>Модель</TableHead>
           <TableHead>Рік</TableHead>
-          <TableHead>Ціна (PLN)</TableHead>
+          <TableHead>Ціна</TableHead>
           <TableHead>Дії</TableHead>
         </TableRow>
       </TableHeader>
@@ -60,7 +60,7 @@ export const CarsTable = ({ cars, onEdit, onDelete, onSave, editingCar }: CarsTa
             <TableCell>{car.make}</TableCell>
             <TableCell>{car.model}</TableCell>
             <TableCell>{car.year}</TableCell>
-            <TableCell>{car.price.toLocaleString()} PLN</TableCell>
+            <TableCell>{car.price.toLocaleString()} zł</TableCell>
             <TableCell className="space-x-2">
               <Dialog>
                 <DialogTrigger asChild>
