@@ -31,24 +31,18 @@ export const CarForm = ({ car, onSubmit }: CarFormProps) => (
 
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
-        <Label htmlFor="price">Ціна ($)</Label>
-        <Input id="price" name="price" defaultValue={car?.price} required />
+        <Label htmlFor="price">Ціна (PLN)</Label>
+        <Input id="price" name="price" type="number" defaultValue={car?.price} required />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="price_number">Ціна (число)</Label>
-        <Input id="price_number" name="price_number" type="number" defaultValue={car?.price_number} required />
-      </div>
-    </div>
-
-    <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
         <Label htmlFor="year">Рік</Label>
         <Input id="year" name="year" type="number" defaultValue={car?.year} required />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="mileage">Пробіг</Label>
-        <Input id="mileage" name="mileage" defaultValue={car?.mileage} required />
-      </div>
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="mileage">Пробіг</Label>
+      <Input id="mileage" name="mileage" defaultValue={car?.mileage} required />
     </div>
 
     <div className="space-y-2">
