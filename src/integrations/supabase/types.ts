@@ -9,6 +9,60 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      cars: {
+        Row: {
+          category: string
+          created_at: string
+          engine_power: string
+          engine_size: string
+          fuel_type: string
+          id: number
+          image: string
+          make: string
+          mileage: string
+          model: string
+          name: string
+          price: string
+          price_number: number
+          transmission: string
+          year: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          engine_power: string
+          engine_size: string
+          fuel_type: string
+          id?: number
+          image: string
+          make: string
+          mileage: string
+          model: string
+          name: string
+          price: string
+          price_number: number
+          transmission: string
+          year: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          engine_power?: string
+          engine_size?: string
+          fuel_type?: string
+          id?: number
+          image?: string
+          make?: string
+          mileage?: string
+          model?: string
+          name?: string
+          price?: string
+          price_number?: number
+          transmission?: string
+          year?: number
+        }
+        Relationships: []
+      }
       inspections: {
         Row: {
           car: string
