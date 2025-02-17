@@ -37,9 +37,9 @@ import {
 const Inspections = () => {
   const [inspections, setInspections] = useState([]);
   const [editingInspection, setEditingInspection] = useState(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  // Отримання даних з Supabase
   const fetchInspections = async () => {
     try {
       const { data, error } = await supabase
@@ -65,6 +65,41 @@ const Inspections = () => {
 
   const handleEdit = (inspection) => {
     setEditingInspection(inspection);
+  };
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const newInspection = {
+      car: form.car.value,
+      client: form.client.value,
+      date: form.date.value,
+      status: form.status.value,
+    };
+
+    try {
+      const { error } = await supabase
+        .from('inspections')
+        .insert(newInspection);
+
+      if (error) throw error;
+
+      toast({
+        title: "Успішно",
+        description: "Інспекцію створено",
+      });
+
+      fetchInspections();
+      setIsCreateDialogOpen(false);
+      form.reset();
+    } catch (error) {
+      console.error('Error creating inspection:', error);
+      toast({
+        title: "Помилка",
+        description: "Не вдалося створити інспекцію",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSave = async (e) => {
@@ -132,10 +167,38 @@ const Inspections = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Управління інспекціями</h1>
-        <Button>
-          <Plus className="mr-2" />
-          Створити інспекцію
-        </Button>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2" />
+              Створити інспекцію
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Створити інспекцію</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="car">Автомобіль</Label>
+                <Input id="car" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="client">Клієнт</Label>
+                <Input id="client" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="date">Дата</Label>
+                <Input id="date" type="date" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Статус</Label>
+                <Input id="status" required />
+              </div>
+              <Button type="submit">Створити</Button>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
       <Card>
         <CardHeader>
