@@ -14,10 +14,17 @@ const Auctions = () => {
   const { data: auctions, isLoading } = useQuery({
     queryKey: ['auctions', filter],
     queryFn: async () => {
-      let query = supabase
+      const query = supabase
         .from('auctions')
         .select(`
-          *,
+          id,
+          car_id,
+          start_price,
+          current_price,
+          end_date,
+          status,
+          winner_id,
+          created_at,
           cars (
             name,
             image,
@@ -27,13 +34,13 @@ const Auctions = () => {
         `);
 
       if (filter !== 'all') {
-        query = query.eq('status', filter);
+        query.eq('status', filter);
       }
 
       const { data, error } = await query;
       
       if (error) throw error;
-      return data as AuctionWithCar[];
+      return data as unknown as AuctionWithCar[];
     }
   });
 
