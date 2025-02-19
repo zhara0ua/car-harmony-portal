@@ -9,7 +9,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -17,11 +16,13 @@ serve(async (req) => {
   try {
     console.log('Starting scraping process...');
     
-    // Отримуємо HTML сторінку
-    console.log('Fetching page...');
-    const response = await fetch('https://caroutlet.eu/cars', {
+    const response = await fetch('https://caroutlet.eu', {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
       }
     });
 
@@ -32,41 +33,72 @@ serve(async (req) => {
 
     const html = await response.text();
     console.log('Page content length:', html.length);
+    
+    // Логуємо частину HTML для аналізу структури
+    console.log('Sample HTML:', html.substring(0, 1000));
 
-    // Парсимо HTML
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
     if (!doc) {
       throw new Error("Failed to parse HTML");
     }
 
-    const carElements = doc.querySelectorAll('.car-listing');
+    // Спробуємо різні селектори
+    const carElements = doc.querySelectorAll('.vehicle-card, .car-item, article');
+    console.log('Found elements:', carElements.length);
+
     const cars = [];
 
     for (const element of carElements) {
       try {
-        const title = element.querySelector('.car-title')?.textContent?.trim();
-        const priceText = element.querySelector('.car-price')?.textContent?.trim();
+        console.log('Processing element:', element.outerHTML);
+        
+        // Пробуємо різні селектори для кожного елемента
+        const title = 
+          element.querySelector('h2, .title, .vehicle-title')?.textContent?.trim() ||
+          element.querySelector('a')?.textContent?.trim();
+        
+        const priceText = 
+          element.querySelector('.price, .vehicle-price')?.textContent?.trim() ||
+          Array.from(element.querySelectorAll('*'))
+            .find(el => el.textContent?.includes('€'))?.textContent?.trim();
+        
         const price = priceText ? parseFloat(priceText.replace(/[^0-9.]/g, '')) : 0;
-        const yearText = element.querySelector('.car-year')?.textContent?.trim();
-        const year = yearText ? parseInt(yearText) : null;
-        const externalUrl = element.querySelector('a')?.getAttribute('href');
-        const external_id = externalUrl?.split('/').pop() || Date.now().toString();
+        
+        // Генеруємо унікальний ID
+        const external_id = `car_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Знаходимо URL зображення
+        const image_url = element.querySelector('img')?.getAttribute('src') ||
+                         element.querySelector('img')?.getAttribute('data-src');
+        
+        // Знаходимо посилання
+        const link = element.querySelector('a')?.getAttribute('href');
+        const external_url = link ? (link.startsWith('http') ? link : `https://caroutlet.eu${link}`) : null;
 
-        if (title && price && external_id) {
-          cars.push({
+        if (title && price) {
+          const car = {
             external_id,
             title,
             price,
-            year,
-            mileage: element.querySelector('.car-mileage')?.textContent?.trim() || null,
-            fuel_type: element.querySelector('.car-fuel')?.textContent?.trim()?.toLowerCase() || null,
-            transmission: element.querySelector('.car-transmission')?.textContent?.trim()?.toLowerCase() || null,
-            location: element.querySelector('.car-location')?.textContent?.trim() || null,
-            image_url: element.querySelector('img')?.getAttribute('src') || null,
-            external_url: externalUrl ? `https://caroutlet.eu${externalUrl}` : null,
+            year: null, // Будемо витягувати з назви пізніше
+            mileage: null,
+            fuel_type: null,
+            transmission: null,
+            location: null,
+            image_url,
+            external_url,
             source: 'caroutlet'
-          });
+          };
+
+          // Спробуємо витягнути рік з назви
+          const yearMatch = title.match(/\b(19|20)\d{2}\b/);
+          if (yearMatch) {
+            car.year = parseInt(yearMatch[0]);
+          }
+
+          cars.push(car);
+          console.log('Processed car:', car);
         }
       } catch (elementError) {
         console.error('Error parsing car element:', elementError);
@@ -76,7 +108,7 @@ serve(async (req) => {
     console.log(`Found ${cars.length} cars`);
 
     if (cars.length === 0) {
-      // Якщо не знайдено реальних даних, використовуємо тестові
+      // Використовуємо тестові дані тільки якщо нічого не знайдено
       console.log('No cars found, using test data');
       cars.push(
         {
@@ -108,7 +140,6 @@ serve(async (req) => {
       );
     }
 
-    // Зберігаємо дані в Supabase
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
