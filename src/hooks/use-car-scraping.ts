@@ -1,6 +1,7 @@
 
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useCarScraping() {
   const { toast } = useToast();
@@ -8,26 +9,18 @@ export function useCarScraping() {
 
   const startScraping = async () => {
     try {
-      const response = await fetch(
-        'https://btkfrowwhgcnzgncjjny.supabase.co/functions/v1/scrape-cars',
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-        }
-      );
-
-      const data = await response.json();
+      const { data, error } = await supabase.functions.invoke('scrape-cars');
       
-      if (data.success) {
+      if (error) throw error;
+      
+      if (data?.success) {
         toast({
           title: "Успіх",
           description: data.message,
         });
         queryClient.invalidateQueries({ queryKey: ['scraped-cars'] });
       } else {
-        throw new Error(data.error);
+        throw new Error(data?.error || 'Unknown error');
       }
     } catch (error) {
       toast({
@@ -35,6 +28,7 @@ export function useCarScraping() {
         description: "Не вдалося запустити скрапінг",
         variant: "destructive",
       });
+      console.error('Scraping error:', error);
     }
   };
 
