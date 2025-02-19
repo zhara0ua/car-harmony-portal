@@ -30,7 +30,7 @@ serve(async (req) => {
     }
 
     const html = await response.text();
-    console.log('Received HTML content');
+    console.log('Raw HTML content:', html.substring(0, 500)); // Log first 500 chars of HTML
 
     const parser = new DOMParser();
     const document = parser.parseFromString(html, 'text/html');
@@ -39,29 +39,41 @@ serve(async (req) => {
       throw new Error('Failed to parse HTML');
     }
 
-    const cars = [];
-    // Updated selector to match the actual grid items
-    const carElements = document.querySelectorAll('div[class*="CarTile_container"]');
-    console.log(`Found ${carElements.length} car elements`);
+    // Log the full document structure
+    console.log('Document structure:', document.documentElement.outerHTML.substring(0, 1000));
 
-    carElements.forEach((element) => {
+    const cars = [];
+    // Try different selectors
+    const carElements = document.querySelectorAll('article, div[class*="card"], div[class*="tile"], .car-item');
+    console.log(`Found ${carElements.length} car elements using broader selectors`);
+
+    // Log the first car element if found
+    if (carElements.length > 0) {
+      console.log('First car element HTML:', carElements[0].outerHTML);
+    }
+
+    carElements.forEach((element, index) => {
       try {
-        // Updated selectors based on actual HTML structure
-        const titleEl = element.querySelector('h2[class*="CarTile_title"]');
+        console.log(`Parsing car element ${index + 1}:`, element.outerHTML);
+
+        // Try multiple possible selectors for each field
+        const titleEl = element.querySelector('h2, h3, [class*="title"], .name');
         const title = titleEl?.textContent?.trim() || '';
         
-        const priceEl = element.querySelector('p[class*="CarTile_price"]');
+        const priceEl = element.querySelector('[class*="price"], .price, span:contains("€")');
         const priceText = priceEl?.textContent?.trim() || '0';
         const price = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
         
-        const detailsEl = element.querySelectorAll('div[class*="CarTile_parameters"] span');
+        const details = element.querySelectorAll('[class*="details"] span, [class*="specs"] span, .parameters span');
         let year = new Date().getFullYear();
         let mileage = '0 km';
         let fuelType = '';
         let transmission = '';
         
-        detailsEl.forEach((detail) => {
+        details.forEach((detail) => {
           const text = detail.textContent?.trim() || '';
+          console.log('Detail text:', text);
+          
           if (/^\d{4}$/.test(text)) {
             year = parseInt(text);
           } else if (text.includes('км')) {
@@ -73,10 +85,23 @@ serve(async (req) => {
           }
         });
 
-        const location = element.querySelector('div[class*="CarTile_location"]')?.textContent?.trim() || '';
+        const location = element.querySelector('[class*="location"], .location')?.textContent?.trim() || '';
         const imageUrl = element.querySelector('img')?.getAttribute('src') || '';
         const link = element.querySelector('a')?.getAttribute('href') || '';
-        const id = link.split('/').pop() || Math.random().toString();
+        const id = link.split('/').pop() || `car-${index + 1}`;
+
+        // Log the extracted data
+        console.log('Extracted car data:', {
+          title,
+          price,
+          year,
+          mileage,
+          fuelType,
+          transmission,
+          location,
+          imageUrl,
+          link
+        });
 
         cars.push({
           external_id: id,
@@ -92,8 +117,6 @@ serve(async (req) => {
           source: 'caroutlet',
           created_at: new Date().toISOString()
         });
-
-        console.log('Parsed car:', { title, price, year, mileage });
       } catch (err) {
         console.error('Error parsing car element:', err);
       }
