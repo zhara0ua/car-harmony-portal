@@ -9,7 +9,7 @@ interface ScrapedCarsFiltersProps {
 
 export function ScrapedCarsFilters({ onFilterChange }: ScrapedCarsFiltersProps) {
   const handleFilterChange = (key: keyof Filters, value: string | number | undefined) => {
-    onFilterChange({ [key]: value });
+    onFilterChange({ [key]: value === "all" ? undefined : value });
   };
 
   return (
@@ -48,7 +48,7 @@ export function ScrapedCarsFilters({ onFilterChange }: ScrapedCarsFiltersProps) 
             <SelectValue placeholder="Тип палива" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Всі</SelectItem>
+            <SelectItem value="all">Всі</SelectItem>
             <SelectItem value="petrol">Бензин</SelectItem>
             <SelectItem value="diesel">Дизель</SelectItem>
             <SelectItem value="hybrid">Гібрид</SelectItem>
@@ -62,7 +62,7 @@ export function ScrapedCarsFilters({ onFilterChange }: ScrapedCarsFiltersProps) 
             <SelectValue placeholder="КПП" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Всі</SelectItem>
+            <SelectItem value="all">Всі</SelectItem>
             <SelectItem value="automatic">Автомат</SelectItem>
             <SelectItem value="manual">Механіка</SelectItem>
           </SelectContent>
