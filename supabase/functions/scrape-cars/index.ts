@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
-import { parse } from 'https://deno.land/x/dom/deno-dom-wasm.ts';
+import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -34,7 +34,12 @@ serve(async (req) => {
     console.log('Page content length:', html.length);
 
     // Парсимо HTML
-    const doc = parse(html);
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    if (!doc) {
+      throw new Error("Failed to parse HTML");
+    }
+
     const carElements = doc.querySelectorAll('.car-listing');
     const cars = [];
 
