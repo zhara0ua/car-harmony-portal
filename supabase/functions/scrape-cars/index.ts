@@ -1,7 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
-import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,8 +15,7 @@ serve(async (req) => {
   try {
     console.log('Starting scraping process...');
     
-    // На даний момент використовуємо тестові дані, оскільки сайт недоступний
-    console.log('Using test data...');
+    // Тестові дані
     const cars = [
       {
         external_id: "test1",
@@ -25,9 +23,9 @@ serve(async (req) => {
         price: 25000,
         year: 2019,
         mileage: "50000 km",
-        fuel_type: "diesel",
-        transmission: "automatic",
-        location: "Berlin",
+        fuel_type: "дизель",
+        transmission: "автомат",
+        location: "Берлін",
         image_url: "https://example.com/bmw.jpg",
         external_url: "https://caroutlet.eu/cars/test1",
         source: "caroutlet"
@@ -38,9 +36,9 @@ serve(async (req) => {
         price: 35000,
         year: 2020,
         mileage: "30000 km",
-        fuel_type: "petrol",
-        transmission: "automatic",
-        location: "Munich",
+        fuel_type: "бензин",
+        transmission: "автомат",
+        location: "Мюнхен",
         image_url: "https://example.com/audi.jpg",
         external_url: "https://caroutlet.eu/cars/test2",
         source: "caroutlet"
@@ -54,12 +52,20 @@ serve(async (req) => {
 
     console.log('Saving cars to database...');
     let savedCount = 0;
+    
     for (const car of cars) {
       const { error } = await supabaseAdmin
         .from('scraped_cars')
-        .upsert(car, { 
-          onConflict: 'external_id,source'
-        });
+        .upsert(
+          {
+            ...car,
+            created_at: new Date().toISOString()
+          },
+          { 
+            onConflict: 'external_id',
+            ignoreDuplicates: false
+          }
+        );
       
       if (error) {
         console.error('Error saving car:', error);
@@ -68,6 +74,8 @@ serve(async (req) => {
         savedCount++;
       }
     }
+
+    console.log(`Successfully saved ${savedCount} cars`);
 
     return new Response(
       JSON.stringify({ 
