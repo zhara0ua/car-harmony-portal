@@ -13,7 +13,7 @@ export const triggerScraping = async () => {
 
     if (healthCheckError) {
       console.error('Database connection error:', healthCheckError);
-      throw new Error('Помилка з'єднання з базою даних');
+      throw new Error("Помилка з'єднання з базою даних");
     }
 
     // Викликаємо функцію скрапінгу
@@ -28,12 +28,12 @@ export const triggerScraping = async () => {
         name: error.name,
         status: error.status,
       });
-      throw new Error('Помилка при виконанні функції скрапінгу');
+      throw new Error("Помилка при виконанні функції скрапінгу");
     }
     
     if (!data || !data.success) {
       console.error('Invalid response from function:', data);
-      throw new Error(data?.error || 'Неочікувана відповідь від сервера');
+      throw new Error(data?.error || "Неочікувана відповідь від сервера");
     }
     
     console.log('Function response:', data);
