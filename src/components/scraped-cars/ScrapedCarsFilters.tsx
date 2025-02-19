@@ -51,12 +51,12 @@ export const ScrapedCarsFilters = ({ onFilterChange }: ScrapedCarsFiltersProps) 
       </div>
       <div className="grid gap-2">
         <Label>Паливо</Label>
-        <Select onValueChange={(value) => onFilterChange({ fuelType: value })}>
+        <Select onValueChange={(value) => onFilterChange({ fuelType: value === "all" ? undefined : value })}>
           <SelectTrigger>
             <SelectValue placeholder="Всі типи" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Всі типи</SelectItem>
+            <SelectItem value="all">Всі типи</SelectItem>
             <SelectItem value="petrol">Бензин</SelectItem>
             <SelectItem value="diesel">Дизель</SelectItem>
             <SelectItem value="hybrid">Гібрид</SelectItem>
@@ -66,12 +66,12 @@ export const ScrapedCarsFilters = ({ onFilterChange }: ScrapedCarsFiltersProps) 
       </div>
       <div className="grid gap-2">
         <Label>КПП</Label>
-        <Select onValueChange={(value) => onFilterChange({ transmission: value })}>
+        <Select onValueChange={(value) => onFilterChange({ transmission: value === "all" ? undefined : value })}>
           <SelectTrigger>
             <SelectValue placeholder="Всі типи" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Всі типи</SelectItem>
+            <SelectItem value="all">Всі типи</SelectItem>
             <SelectItem value="automatic">Автомат</SelectItem>
             <SelectItem value="manual">Механіка</SelectItem>
           </SelectContent>
