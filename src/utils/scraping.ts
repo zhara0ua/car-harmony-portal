@@ -1,35 +1,31 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { PostgrestError } from "@supabase/supabase-js";
 
 export const triggerScraping = async () => {
   try {
     console.log('Starting database connection check...');
     
-    // Розширена перевірка з'єднання з базою даних
-    const healthCheck = await Promise.race([
-      supabase
-        .from('scraped_cars')
-        .select('count(*)', { count: 'exact' })
-        .limit(0),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Timeout: Database connection took too long")), 5000)
-      )
-    ]);
+    // Спрощена перевірка з'єднання з базою даних
+    const { data, error: healthCheckError } = await supabase
+      .from('scraped_cars')
+      .select('id')
+      .limit(1);
 
-    if ('error' in healthCheck) {
-      console.error('Database health check failed:', healthCheck.error);
-      if (healthCheck.error.code === 'PGRST301') {
+    if (healthCheckError) {
+      console.error('Database health check failed:', healthCheckError);
+      if (healthCheckError.code === 'PGRST301') {
         throw new Error("Помилка аутентифікації з базою даних");
-      } else if (healthCheck.error.code === '57P03') {
+      } else if (healthCheckError.code === '57P03') {
         throw new Error("База даних не відповідає. Спробуйте пізніше");
       } else {
-        throw new Error("Помилка з'єднання з базою даних: " + healthCheck.error.message);
+        throw new Error("Помилка з'єднання з базою даних: " + healthCheckError.message);
       }
     }
 
     console.log('Database connection successful, starting scraping...');
     
-    const { data, error } = await supabase.functions.invoke('scrape-cars', {
+    const { data: scrapingData, error } = await supabase.functions.invoke('scrape-cars', {
       method: 'POST',
       body: {},
     });
@@ -43,13 +39,13 @@ export const triggerScraping = async () => {
       throw new Error("Помилка при виконанні функції скрапінгу");
     }
     
-    if (!data || !data.success) {
-      console.error('Invalid response from function:', data);
-      throw new Error(data?.error || "Неочікувана відповідь від сервера");
+    if (!scrapingData || !scrapingData.success) {
+      console.error('Invalid response from function:', scrapingData);
+      throw new Error(scrapingData?.error || "Неочікувана відповідь від сервера");
     }
     
-    console.log('Function response:', data);
-    return data;
+    console.log('Function response:', scrapingData);
+    return scrapingData;
   } catch (error) {
     console.error('Error triggering scraping:', error);
     throw error;
