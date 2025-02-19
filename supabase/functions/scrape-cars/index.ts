@@ -30,7 +30,7 @@ serve(async (req) => {
     const response = await fetch('https://caroutlet.eu/cars', { headers });
     const html = await response.text();
     
-    console.log('Fetched HTML, parsing...');
+    console.log('HTML content received:', html.substring(0, 500) + '...');
     
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -39,22 +39,41 @@ serve(async (req) => {
       throw new Error('Failed to parse HTML');
     }
 
-    const cars = [];
-    const carElements = doc.querySelectorAll('.car-card');
+    // Log the document structure
+    console.log('Document structure:', doc.querySelector('body')?.innerHTML?.substring(0, 500) + '...');
 
-    console.log(`Found ${carElements.length} car elements`);
+    // Try different selectors
+    const carElements = doc.querySelectorAll('.card, .vehicle-card, article');
+    console.log(`Found ${carElements.length} car elements with broader selectors`);
+
+    const cars = [];
 
     for (const carElement of carElements) {
       try {
-        const titleElement = carElement.querySelector('.car-title');
-        const priceElement = carElement.querySelector('.car-price');
-        const yearElement = carElement.querySelector('.car-year');
-        const mileageElement = carElement.querySelector('.car-mileage');
-        const locationElement = carElement.querySelector('.car-location');
+        console.log('Processing car element:', carElement.outerHTML);
+
+        // Try multiple possible selectors for each field
+        const titleElement = carElement.querySelector('h2, h3, .title, [class*="title"]');
+        const priceElement = carElement.querySelector('[class*="price"], .price, .amount');
+        const yearElement = carElement.querySelector('[class*="year"], .year');
+        const mileageElement = carElement.querySelector('[class*="mileage"], .mileage, [class*="odometer"]');
+        const locationElement = carElement.querySelector('[class*="location"], .location');
         const imageElement = carElement.querySelector('img');
-        const linkElement = carElement.querySelector('a');
-        const fuelTypeElement = carElement.querySelector('.car-fuel');
-        const transmissionElement = carElement.querySelector('.car-transmission');
+        const linkElement = carElement.querySelector('a[href*="/cars/"]');
+        const fuelTypeElement = carElement.querySelector('[class*="fuel"], [class*="engine"]');
+        const transmissionElement = carElement.querySelector('[class*="transmission"], [class*="gearbox"]');
+
+        console.log('Found elements:', {
+          title: titleElement?.textContent,
+          price: priceElement?.textContent,
+          year: yearElement?.textContent,
+          mileage: mileageElement?.textContent,
+          location: locationElement?.textContent,
+          image: imageElement?.getAttribute('src'),
+          link: linkElement?.getAttribute('href'),
+          fuel: fuelTypeElement?.textContent,
+          transmission: transmissionElement?.textContent
+        });
 
         const id = linkElement?.getAttribute('href')?.split('/').pop() || '';
         const title = titleElement?.textContent?.trim() || '';
@@ -64,7 +83,11 @@ serve(async (req) => {
         const mileage = mileageElement?.textContent?.trim() || '';
         const location = locationElement?.textContent?.trim() || '';
         const imageUrl = imageElement?.getAttribute('src') || '';
-        const externalUrl = `https://caroutlet.eu${linkElement?.getAttribute('href')}` || '';
+        const externalUrl = linkElement ? 
+          (linkElement.getAttribute('href')?.startsWith('http') ? 
+            linkElement.getAttribute('href') : 
+            `https://caroutlet.eu${linkElement.getAttribute('href')}`) : 
+          '';
         const fuelType = fuelTypeElement?.textContent?.trim().toLowerCase() || '';
         const transmission = transmissionElement?.textContent?.trim().toLowerCase() || '';
 
@@ -88,10 +111,13 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Parsed ${cars.length} cars successfully`);
+    console.log(`Parsed ${cars.length} cars successfully:`, cars);
 
     if (cars.length === 0) {
-      throw new Error('No cars found on the page');
+      throw new Error('No cars found on the page. This might be due to:' + 
+        '\n1. Different HTML structure than expected' +
+        '\n2. Dynamic content loading' +
+        '\n3. Bot protection');
     }
 
     const supabaseAdmin = createClient(
