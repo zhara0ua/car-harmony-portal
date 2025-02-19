@@ -11,9 +11,6 @@ export function useCarScraping() {
     try {
       console.log('Starting car scraping...');
       
-      // Перевіряємо URL функції
-      console.log('Function URL:', `${supabase.functions.url}/scrape-cars`);
-      
       const { data, error } = await supabase.functions.invoke('scrape-cars', {
         method: 'POST'
       });
