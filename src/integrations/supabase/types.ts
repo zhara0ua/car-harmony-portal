@@ -131,6 +131,54 @@ export type Database = {
         }
         Relationships: []
       }
+      scraped_cars: {
+        Row: {
+          created_at: string | null
+          external_id: string
+          external_url: string
+          fuel_type: string | null
+          id: number
+          image_url: string | null
+          location: string | null
+          mileage: string | null
+          price: number
+          source: string
+          title: string
+          transmission: string | null
+          year: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          external_id: string
+          external_url: string
+          fuel_type?: string | null
+          id?: number
+          image_url?: string | null
+          location?: string | null
+          mileage?: string | null
+          price: number
+          source?: string
+          title: string
+          transmission?: string | null
+          year?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          external_id?: string
+          external_url?: string
+          fuel_type?: string | null
+          id?: number
+          image_url?: string | null
+          location?: string | null
+          mileage?: string | null
+          price?: number
+          source?: string
+          title?: string
+          transmission?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

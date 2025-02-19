@@ -40,27 +40,27 @@ export default function ScrapedCars() {
   const { data: cars, isLoading, refetch } = useQuery({
     queryKey: ['scraped-cars', filters],
     queryFn: async () => {
-      let query = supabase
+      const query = supabase
         .from('scraped_cars')
-        .select('*');
+        .select('*') as any;
       
       if (filters.minYear) {
-        query = query.gte('year', filters.minYear);
+        query.gte('year', filters.minYear);
       }
       if (filters.maxYear) {
-        query = query.lte('year', filters.maxYear);
+        query.lte('year', filters.maxYear);
       }
       if (filters.minPrice) {
-        query = query.gte('price', filters.minPrice);
+        query.gte('price', filters.minPrice);
       }
       if (filters.maxPrice) {
-        query = query.lte('price', filters.maxPrice);
+        query.lte('price', filters.maxPrice);
       }
       if (filters.fuelType) {
-        query = query.eq('fuel_type', filters.fuelType);
+        query.eq('fuel_type', filters.fuelType);
       }
       if (filters.transmission) {
-        query = query.eq('transmission', filters.transmission);
+        query.eq('transmission', filters.transmission);
       }
 
       const { data, error } = await query;
@@ -76,7 +76,7 @@ export default function ScrapedCars() {
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
           },
         }
       );
