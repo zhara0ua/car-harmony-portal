@@ -9,6 +9,47 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      auctions: {
+        Row: {
+          car_id: number | null
+          created_at: string | null
+          current_price: number
+          end_date: string
+          id: number
+          start_price: number
+          status: string
+          winner_id: string | null
+        }
+        Insert: {
+          car_id?: number | null
+          created_at?: string | null
+          current_price: number
+          end_date: string
+          id?: number
+          start_price: number
+          status?: string
+          winner_id?: string | null
+        }
+        Update: {
+          car_id?: number | null
+          created_at?: string | null
+          current_price?: number
+          end_date?: string
+          id?: number
+          start_price?: number
+          status?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auctions_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cars: {
         Row: {
           category: string
