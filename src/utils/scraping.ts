@@ -3,20 +3,32 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const triggerScraping = async () => {
   try {
-    console.log('Calling scrape-cars function...');
+    console.log('Starting database connection check...');
     
-    // Перевіряємо з'єднання з Supabase
-    const { error: healthCheckError } = await supabase
-      .from('scraped_cars')
-      .select('count(*)', { count: 'exact' })
-      .limit(0);
+    // Розширена перевірка з'єднання з базою даних
+    const healthCheck = await Promise.race([
+      supabase
+        .from('scraped_cars')
+        .select('count(*)', { count: 'exact' })
+        .limit(0),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Timeout: Database connection took too long")), 5000)
+      )
+    ]);
 
-    if (healthCheckError) {
-      console.error('Database connection error:', healthCheckError);
-      throw new Error("Помилка з'єднання з базою даних");
+    if ('error' in healthCheck) {
+      console.error('Database health check failed:', healthCheck.error);
+      if (healthCheck.error.code === 'PGRST301') {
+        throw new Error("Помилка аутентифікації з базою даних");
+      } else if (healthCheck.error.code === '57P03') {
+        throw new Error("База даних не відповідає. Спробуйте пізніше");
+      } else {
+        throw new Error("Помилка з'єднання з базою даних: " + healthCheck.error.message);
+      }
     }
 
-    // Викликаємо функцію скрапінгу
+    console.log('Database connection successful, starting scraping...');
+    
     const { data, error } = await supabase.functions.invoke('scrape-cars', {
       method: 'POST',
       body: {},
