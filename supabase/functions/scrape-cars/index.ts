@@ -19,8 +19,7 @@ serve(async (req) => {
   try {
     console.log('Starting scraping process...');
     
-    // Fetch the main page
-    const response = await fetch('https://caroutlet.eu/cars', {
+    const response = await fetch('https://caroutlet.eu/uk/cars', {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       }
@@ -41,20 +40,40 @@ serve(async (req) => {
     }
 
     const cars = [];
-    const carElements = document.querySelectorAll('.car-card'); // Adjust selector based on actual HTML
+    // Updated selector to match the actual grid items
+    const carElements = document.querySelectorAll('div[class*="CarTile_container"]');
+    console.log(`Found ${carElements.length} car elements`);
 
     carElements.forEach((element) => {
       try {
-        // These selectors need to be adjusted based on the actual HTML structure
-        const title = element.querySelector('.car-title')?.textContent?.trim() || '';
-        const priceText = element.querySelector('.car-price')?.textContent?.trim() || '0';
+        // Updated selectors based on actual HTML structure
+        const titleEl = element.querySelector('h2[class*="CarTile_title"]');
+        const title = titleEl?.textContent?.trim() || '';
+        
+        const priceEl = element.querySelector('p[class*="CarTile_price"]');
+        const priceText = priceEl?.textContent?.trim() || '0';
         const price = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
-        const yearText = element.querySelector('.car-year')?.textContent?.trim() || '';
-        const year = parseInt(yearText) || new Date().getFullYear();
-        const mileage = element.querySelector('.car-mileage')?.textContent?.trim() || '0 km';
-        const fuelType = element.querySelector('.car-fuel')?.textContent?.toLowerCase().trim() || '';
-        const transmission = element.querySelector('.car-transmission')?.textContent?.toLowerCase().trim() || '';
-        const location = element.querySelector('.car-location')?.textContent?.trim() || '';
+        
+        const detailsEl = element.querySelectorAll('div[class*="CarTile_parameters"] span');
+        let year = new Date().getFullYear();
+        let mileage = '0 km';
+        let fuelType = '';
+        let transmission = '';
+        
+        detailsEl.forEach((detail) => {
+          const text = detail.textContent?.trim() || '';
+          if (/^\d{4}$/.test(text)) {
+            year = parseInt(text);
+          } else if (text.includes('км')) {
+            mileage = text;
+          } else if (['бензин', 'дизель', 'гібрид', 'електро'].some(fuel => text.toLowerCase().includes(fuel))) {
+            fuelType = text.toLowerCase();
+          } else if (['автомат', 'механіка'].some(trans => text.toLowerCase().includes(trans))) {
+            transmission = text.toLowerCase();
+          }
+        });
+
+        const location = element.querySelector('div[class*="CarTile_location"]')?.textContent?.trim() || '';
         const imageUrl = element.querySelector('img')?.getAttribute('src') || '';
         const link = element.querySelector('a')?.getAttribute('href') || '';
         const id = link.split('/').pop() || Math.random().toString();
@@ -73,12 +92,14 @@ serve(async (req) => {
           source: 'caroutlet',
           created_at: new Date().toISOString()
         });
+
+        console.log('Parsed car:', { title, price, year, mileage });
       } catch (err) {
         console.error('Error parsing car element:', err);
       }
     });
 
-    console.log(`Parsed ${cars.length} cars from the webpage`);
+    console.log(`Successfully parsed ${cars.length} cars from the webpage`);
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
