@@ -1,9 +1,11 @@
+
 {
   "nav": {
     "home": "Home",
     "cars": "Cars",
     "import": "Import",
     "inspection": "Inspection",
+    "auctions": "Auctions",
     "contact": "Contact"
   },
   "hero": {
