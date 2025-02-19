@@ -3,16 +3,19 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ScrapedCarsFilters } from "@/components/scraped-cars/ScrapedCarsFilters";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrapedCarCard } from "@/components/scraped-cars/ScrapedCarCard";
-import { useCarScraping } from "@/hooks/use-car-scraping";
+import { ScrapedCarsFilters } from "@/components/scraped-cars/ScrapedCarsFilters";
+import { ScrapedCarForm } from "@/components/scraped-cars/ScrapedCarForm";
+import { useToast } from "@/components/ui/use-toast";
 import { type Filters, type ScrapedCar } from "@/types/scraped-car";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export default function ScrapedCars() {
   const [filters, setFilters] = useState<Filters>({});
-  const { startScraping } = useCarScraping();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const { toast } = useToast();
   
   const { data: cars, isLoading, error, refetch } = useQuery({
     queryKey: ['scraped-cars', filters],
@@ -44,14 +47,52 @@ export default function ScrapedCars() {
 
       const { data, error } = await query;
       console.log('Fetched cars:', data);
-      if (error) {
-        console.error('Error fetching cars:', error);
-        throw error;
-      }
+      if (error) throw error;
       return data as ScrapedCar[];
-    },
-    refetchOnWindowFocus: false
+    }
   });
+
+  const handleAddCar = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    try {
+      const newCar = {
+        title: formData.get('title') as string,
+        price: parseInt(formData.get('price') as string),
+        year: parseInt(formData.get('year') as string),
+        mileage: formData.get('mileage') as string,
+        fuel_type: formData.get('fuel_type') as string,
+        transmission: formData.get('transmission') as string,
+        location: formData.get('location') as string,
+        image_url: formData.get('image_url') as string,
+        external_url: formData.get('external_url') as string,
+        external_id: crypto.randomUUID(), // Generate a unique ID
+        source: 'manual'
+      };
+
+      const { error } = await supabase
+        .from('scraped_cars')
+        .insert(newCar);
+
+      if (error) throw error;
+
+      toast({
+        title: "Успіх",
+        description: "Автомобіль успішно додано",
+      });
+
+      setIsAddDialogOpen(false);
+      refetch();
+    } catch (error) {
+      console.error('Error adding car:', error);
+      toast({
+        title: "Помилка",
+        description: "Не вдалося додати автомобіль",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleFilterChange = (newFilters: Partial<Filters>) => {
     console.log('Applying new filters:', newFilters);
@@ -70,15 +111,19 @@ export default function ScrapedCars() {
         <div className="space-y-8">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Автомобілі з CarOutlet</h1>
-            <Button 
-              onClick={async () => {
-                await startScraping();
-                refetch();
-              }} 
-              variant="default"
-            >
-              Оновити дані
-            </Button>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="default">
+                  Додати автомобіль
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Додати автомобіль</DialogTitle>
+                </DialogHeader>
+                <ScrapedCarForm onSubmit={handleAddCar} />
+              </DialogContent>
+            </Dialog>
           </div>
 
           <ScrapedCarsFilters onFilterChange={handleFilterChange} />

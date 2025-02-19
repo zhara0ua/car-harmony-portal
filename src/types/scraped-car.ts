@@ -5,13 +5,14 @@ export interface ScrapedCar {
   title: string;
   price: number;
   year: number;
-  mileage: string;
-  fuel_type: string;
-  transmission: string;
-  location: string;
-  image_url: string;
+  mileage: string | null;
+  fuel_type: string | null;
+  transmission: string | null;
+  location: string | null;
+  image_url: string | null;
   external_url: string;
   source: string;
+  created_at?: string;
 }
 
 export interface Filters {
