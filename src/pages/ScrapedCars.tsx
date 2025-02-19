@@ -74,7 +74,7 @@ export default function ScrapedCars() {
     }
   };
 
-  const handleAddCar = async (car: ScrapedCar) => {
+  const handleAddCar = async (car: Partial<ScrapedCar>) => {
     try {
       const { error } = await supabase
         .from('scraped_cars')

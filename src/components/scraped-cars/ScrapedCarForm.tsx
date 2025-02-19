@@ -10,15 +10,37 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { type ScrapedCar } from "@/types/scraped-car";
+import { FormEvent } from "react";
 
 interface ScrapedCarFormProps {
   car?: ScrapedCar;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  onSubmit: (car: Partial<ScrapedCar>) => Promise<void>;
 }
 
 export const ScrapedCarForm = ({ car, onSubmit }: ScrapedCarFormProps) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    const newCar: Partial<ScrapedCar> = {
+      title: formData.get('title') as string,
+      price: Number(formData.get('price')),
+      year: Number(formData.get('year')),
+      mileage: formData.get('mileage') as string,
+      fuel_type: formData.get('fuel_type') as string,
+      transmission: formData.get('transmission') as string,
+      location: formData.get('location') as string,
+      image_url: formData.get('image_url') as string,
+      external_url: formData.get('external_url') as string,
+      source: 'manual',
+      external_id: car?.external_id || crypto.randomUUID()
+    };
+
+    await onSubmit(newCar);
+  };
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="title">Назва</Label>
         <Input id="title" name="title" defaultValue={car?.title} required />
