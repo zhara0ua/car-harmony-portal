@@ -4,12 +4,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { type Filters } from "@/types/scraped-car";
 
 interface ScrapedCarsFiltersProps {
-  onFilterChange: (filters: Filters) => void;
+  onFilterChange: (filters: Partial<Filters>) => void;
 }
 
 export function ScrapedCarsFilters({ onFilterChange }: ScrapedCarsFiltersProps) {
   const handleFilterChange = (key: keyof Filters, value: string | number | undefined) => {
-    onFilterChange(prev => ({ ...prev, [key]: value }));
+    onFilterChange({ [key]: value });
   };
 
   return (

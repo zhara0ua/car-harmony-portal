@@ -46,6 +46,10 @@ export default function ScrapedCars() {
     }
   });
 
+  const handleFilterChange = (newFilters: Partial<Filters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -59,7 +63,7 @@ export default function ScrapedCars() {
             </Button>
           </div>
 
-          <ScrapedCarsFilters onFilterChange={setFilters} />
+          <ScrapedCarsFilters onFilterChange={handleFilterChange} />
 
           {isLoading ? (
             <div className="text-center">Завантаження...</div>
