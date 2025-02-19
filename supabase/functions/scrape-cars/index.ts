@@ -9,6 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -22,7 +23,7 @@ serve(async (req) => {
     await page.goto('https://caroutlet.eu/cars');
     
     // Чекаємо поки завантажаться елементи
-    await page.waitForSelector('.car-card');
+    await page.waitForSelector('.car-card', { timeout: 10000 });
     
     console.log('Scraping car data...');
     const cars = await page.evaluate(() => {
@@ -47,11 +48,12 @@ serve(async (req) => {
           price,
           year,
           mileage,
-          fuel_type: fuelType,
-          transmission,
+          fuel_type: fuelType?.toLowerCase(),
+          transmission: transmission?.toLowerCase(),
           location,
           image_url: imageUrl,
           external_url: externalUrl,
+          source: 'caroutlet'
         };
       });
     });
@@ -61,19 +63,22 @@ serve(async (req) => {
     await browser.close();
     
     // Зберігаємо дані в Supabase
-    const supabase = createClient(
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     console.log('Saving to database...');
     for (const car of cars) {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('scraped_cars')
-        .upsert(car, { 
-          onConflict: 'external_id,source',
-          ignoreDuplicates: true 
-        });
+        .upsert(
+          { ...car },
+          { 
+            onConflict: 'external_id,source',
+            ignoreDuplicates: false 
+          }
+        );
       
       if (error) {
         console.error('Error saving car:', error);
@@ -81,15 +86,32 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, message: `Scraped ${cars.length} cars` }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ 
+        success: true, 
+        message: `Успішно оновлено ${cars.length} автомобілів` 
+      }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
     );
 
   } catch (error) {
     console.error('Scraping error:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      JSON.stringify({ 
+        success: false, 
+        error: error.message 
+      }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        }, 
+        status: 500 
+      }
     );
   }
 });
