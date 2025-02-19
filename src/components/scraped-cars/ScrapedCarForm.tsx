@@ -22,18 +22,21 @@ export const ScrapedCarForm = ({ car, onSubmit }: ScrapedCarFormProps) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    const newCar: Partial<ScrapedCar> = {
-      title: formData.get('title') as string,
-      price: Number(formData.get('price')),
+    // Generate random ID if not provided
+    const external_id = car?.external_id || crypto.randomUUID();
+    
+    const newCar = {
+      external_id, // Required
+      title: formData.get('title') as string, // Required
+      price: Number(formData.get('price')), // Required
       year: Number(formData.get('year')),
       mileage: formData.get('mileage') as string,
       fuel_type: formData.get('fuel_type') as string,
       transmission: formData.get('transmission') as string,
       location: formData.get('location') as string,
       image_url: formData.get('image_url') as string,
-      external_url: formData.get('external_url') as string,
-      source: 'manual',
-      external_id: car?.external_id || crypto.randomUUID()
+      external_url: formData.get('external_url') as string || `https://manual-entry/${external_id}`, // Required
+      source: 'manual' // Required with default value
     };
 
     await onSubmit(newCar);

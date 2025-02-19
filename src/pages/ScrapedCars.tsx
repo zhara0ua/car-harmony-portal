@@ -74,11 +74,28 @@ export default function ScrapedCars() {
     }
   };
 
-  const handleAddCar = async (car: Partial<ScrapedCar>) => {
+  const handleAddCar = async (carData: Partial<ScrapedCar>) => {
     try {
+      // Validate required fields
+      if (!carData.external_id || !carData.title || !carData.price || !carData.external_url) {
+        throw new Error('Missing required fields');
+      }
+
       const { error } = await supabase
         .from('scraped_cars')
-        .insert([car]);
+        .insert({
+          external_id: carData.external_id,
+          title: carData.title,
+          price: carData.price,
+          external_url: carData.external_url,
+          source: carData.source || 'manual',
+          year: carData.year,
+          mileage: carData.mileage,
+          fuel_type: carData.fuel_type,
+          transmission: carData.transmission,
+          location: carData.location,
+          image_url: carData.image_url
+        });
 
       if (error) throw error;
 
