@@ -16,99 +16,76 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting GraphQL API request...');
-    
+    console.log('Starting API request...');
+
+    // Simulate real browser headers
     const headers = {
-      'Accept': 'application/json',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
       'Accept-Language': 'uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7',
-      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Cookie': '', // Empty cookie to start fresh
+      'DNT': '1',
+      'Pragma': 'no-cache',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'none',
+      'Sec-Fetch-User': '?1',
+      'Upgrade-Insecure-Requests': '1',
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     };
 
-    // GraphQL query for cars
-    const query = {
-      query: `
-        query GetCars {
-          cars {
-            id
-            title
-            price
-            year
-            mileage
-            fuelType
-            transmission
-            location
-            image
-            make
-            model
-          }
-        }
-      `
-    };
-
-    // Make request to the GraphQL API endpoint
-    const response = await fetch('https://caroutlet.eu/api/graphql', {
-      method: 'POST',
+    // First, get the initial page to get cookies and build_id
+    const initialResponse = await fetch('https://caroutlet.eu/uk/cars', {
       headers,
-      body: JSON.stringify(query)
+      redirect: 'follow'
     });
 
-    console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Failed to fetch:', response.status, response.statusText);
-      console.error('Error response:', errorText);
-      throw new Error(`API responded with status: ${response.status}`);
+    if (!initialResponse.ok) {
+      throw new Error(`Initial page fetch failed with status: ${initialResponse.status}`);
     }
 
-    const responseText = await response.text();
-    console.log('Raw response:', responseText);
+    const html = await initialResponse.text();
+    console.log('Initial response length:', html.length);
 
-    const data = JSON.parse(responseText);
-    console.log('Parsed API response:', data);
+    // Extract build ID from Next.js data
+    const buildIdMatch = html.match(/"buildId":"([^"]+)"/);
+    const buildId = buildIdMatch ? buildIdMatch[1] : null;
+    console.log('Found build ID:', buildId);
+
+    if (!buildId) {
+      throw new Error('Could not extract build ID from the page');
+    }
+
+    // Get cookies from the initial response
+    const cookies = initialResponse.headers.get('set-cookie');
+    console.log('Received cookies:', cookies);
+
+    // Make the actual data request using Next.js API route
+    const dataResponse = await fetch(`https://caroutlet.eu/_next/data/${buildId}/uk/cars.json`, {
+      headers: {
+        ...headers,
+        'Accept': 'application/json',
+        'Cookie': cookies || '',
+      }
+    });
+
+    if (!dataResponse.ok) {
+      throw new Error(`Data fetch failed with status: ${dataResponse.status}`);
+    }
+
+    const data = await dataResponse.json();
+    console.log('API response structure:', Object.keys(data));
 
     // Extract cars from the API response
-    const apiCars = data?.data?.cars || [];
+    const apiCars = data.pageProps?.cars || [];
     console.log(`Found ${apiCars.length} cars in API response`);
 
     if (apiCars.length === 0) {
-      // If GraphQL fails, try fetching directly from the page's script data
-      console.log('No cars found in GraphQL response, trying to fetch from page...');
-      
-      const pageResponse = await fetch('https://caroutlet.eu/uk/cars', {
-        headers: {
-          ...headers,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
-        }
-      });
-
-      if (!pageResponse.ok) {
-        throw new Error(`Page fetch failed with status: ${pageResponse.status}`);
-      }
-
-      const html = await pageResponse.text();
-      
-      // Try to extract the JSON data from the script tag
-      const scriptDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/);
-      if (scriptDataMatch && scriptDataMatch[1]) {
-        const pageData = JSON.parse(scriptDataMatch[1]);
-        console.log('Found page data:', pageData);
-        
-        // Extract cars from the page data
-        const pageCars = pageData.props?.pageProps?.cars || [];
-        if (pageCars.length > 0) {
-          console.log(`Found ${pageCars.length} cars in page data`);
-          apiCars.push(...pageCars);
-        }
-      }
+      throw new Error('No cars found in API response');
     }
 
-    if (apiCars.length === 0) {
-      throw new Error('No cars found in any data source');
-    }
-
+    // Transform the data
     const cars = apiCars.map((car: any) => ({
       external_id: car.id || String(Math.random()),
       title: car.title || `${car.make} ${car.model}`,
@@ -124,7 +101,7 @@ serve(async (req) => {
       created_at: new Date().toISOString()
     }));
 
-    console.log('Transformed cars data:', cars.slice(0, 2)); // Log first 2 cars for debugging
+    console.log('Transformed cars data:', cars.slice(0, 2));
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
