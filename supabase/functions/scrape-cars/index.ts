@@ -26,7 +26,16 @@ Deno.serve(async (req) => {
 
     if (!supabaseUrl || !supabaseKey) {
       console.error('Missing Supabase credentials');
-      throw new Error('Configuration error: Missing Supabase credentials');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Configuration error: Missing Supabase credentials'
+        }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
@@ -40,10 +49,18 @@ Deno.serve(async (req) => {
 
     if (dbError) {
       console.error('Database connection error:', dbError);
-      throw new Error('Database connection failed');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Database connection failed'
+        }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
-    // Add your scraping logic here
     console.log('Database connection successful, scraping completed');
     
     // Return success response
@@ -54,10 +71,7 @@ Deno.serve(async (req) => {
       }),
       { 
         status: 200,
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   } catch (error) {
@@ -69,11 +83,8 @@ Deno.serve(async (req) => {
         error: error instanceof Error ? error.message : 'Unexpected error occurred'
       }),
       { 
-        status: 200, // Змінюємо на 200, щоб уникнути помилки non-2xx
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
