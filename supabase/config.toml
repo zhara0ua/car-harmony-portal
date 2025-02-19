@@ -1,2 +1,5 @@
 
 project_id = "btkfrowwhgcnzgncjjny"
+
+[functions.scrape-cars]
+verify_jwt = false
