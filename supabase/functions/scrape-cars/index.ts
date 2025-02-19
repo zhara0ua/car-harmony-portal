@@ -16,73 +16,49 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting API request...');
+    console.log('Starting page scraping...');
 
     // Simulate real browser headers
     const headers = {
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
       'Accept-Language': 'uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7',
       'Cache-Control': 'no-cache',
       'Connection': 'keep-alive',
-      'Cookie': '', // Empty cookie to start fresh
-      'DNT': '1',
-      'Pragma': 'no-cache',
-      'Sec-Fetch-Dest': 'document',
-      'Sec-Fetch-Mode': 'navigate',
-      'Sec-Fetch-Site': 'none',
-      'Sec-Fetch-User': '?1',
-      'Upgrade-Insecure-Requests': '1',
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     };
 
-    // First, get the initial page to get cookies and build_id
-    const initialResponse = await fetch('https://caroutlet.eu/uk/cars', {
+    // Fetch the page HTML
+    const pageResponse = await fetch('https://caroutlet.eu/uk/cars', {
       headers,
       redirect: 'follow'
     });
 
-    if (!initialResponse.ok) {
-      throw new Error(`Initial page fetch failed with status: ${initialResponse.status}`);
+    if (!pageResponse.ok) {
+      throw new Error(`Page fetch failed with status: ${pageResponse.status}`);
     }
 
-    const html = await initialResponse.text();
-    console.log('Initial response length:', html.length);
+    const html = await pageResponse.text();
+    console.log('Page HTML length:', html.length);
 
-    // Extract build ID from Next.js data
-    const buildIdMatch = html.match(/"buildId":"([^"]+)"/);
-    const buildId = buildIdMatch ? buildIdMatch[1] : null;
-    console.log('Found build ID:', buildId);
-
-    if (!buildId) {
-      throw new Error('Could not extract build ID from the page');
+    // Try to extract the JSON data from the __NEXT_DATA__ script tag
+    const scriptDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s);
+    if (!scriptDataMatch || !scriptDataMatch[1]) {
+      console.error('Could not find __NEXT_DATA__ script in HTML');
+      throw new Error('Could not extract car data from page');
     }
 
-    // Get cookies from the initial response
-    const cookies = initialResponse.headers.get('set-cookie');
-    console.log('Received cookies:', cookies);
+    console.log('Found __NEXT_DATA__ script');
+    
+    // Parse the JSON data
+    const pageData = JSON.parse(scriptDataMatch[1]);
+    console.log('Page data structure:', Object.keys(pageData));
 
-    // Make the actual data request using Next.js API route
-    const dataResponse = await fetch(`https://caroutlet.eu/_next/data/${buildId}/uk/cars.json`, {
-      headers: {
-        ...headers,
-        'Accept': 'application/json',
-        'Cookie': cookies || '',
-      }
-    });
-
-    if (!dataResponse.ok) {
-      throw new Error(`Data fetch failed with status: ${dataResponse.status}`);
-    }
-
-    const data = await dataResponse.json();
-    console.log('API response structure:', Object.keys(data));
-
-    // Extract cars from the API response
-    const apiCars = data.pageProps?.cars || [];
-    console.log(`Found ${apiCars.length} cars in API response`);
+    // Extract cars from the page data
+    const apiCars = pageData.props?.pageProps?.cars || [];
+    console.log(`Found ${apiCars.length} cars in page data`);
 
     if (apiCars.length === 0) {
-      throw new Error('No cars found in API response');
+      throw new Error('No cars found in page data');
     }
 
     // Transform the data
