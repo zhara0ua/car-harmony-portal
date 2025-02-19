@@ -11,8 +11,6 @@ import Inspection from "./pages/Inspection";
 import InspectionCase from "./pages/InspectionCase";
 import Imports from "./pages/Imports";
 import Contact from "./pages/Contact";
-import Auctions from "./pages/Auctions";
-import ScrapedCars from "./pages/ScrapedCars";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/Dashboard";
 import Users from "./pages/admin/Users";
@@ -36,8 +34,6 @@ const App = () => (
           <Route path="/inspection" element={<Inspection />} />
           <Route path="/inspection/:id" element={<InspectionCase />} />
           <Route path="/imports" element={<Imports />} />
-          <Route path="/auctions" element={<Auctions />} />
-          <Route path="/scraped-cars" element={<ScrapedCars />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/admin" element={<AdminDashboard />}>
             <Route path="users" element={<Users />} />

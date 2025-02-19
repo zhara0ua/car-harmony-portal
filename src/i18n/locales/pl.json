@@ -1,11 +1,9 @@
-
 {
   "nav": {
     "home": "Strona główna",
     "cars": "Samochody",
     "import": "Import",
     "inspection": "Inspekcje",
-    "auctions": "Aukcje",
     "contact": "Kontakt"
   },
   "hero": {
