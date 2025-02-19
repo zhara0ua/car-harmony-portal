@@ -16,14 +16,23 @@ serve(async (req) => {
 
   try {
     console.log('Starting browser...');
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
     const page = await browser.newPage();
     
+    // Встановлюємо більший таймаут та користувацький агент
+    page.setDefaultNavigationTimeout(30000);
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
+
     console.log('Navigating to caroutlet.eu...');
-    await page.goto('https://caroutlet.eu/cars');
+    await page.goto('https://caroutlet.eu/cars', { waitUntil: 'networkidle0' });
     
-    // Чекаємо поки завантажаться елементи
-    await page.waitForSelector('.car-card', { timeout: 10000 });
+    console.log('Waiting for car cards to load...');
+    await page.waitForSelector('.car-card', { timeout: 30000 });
+    
+    // Даємо додатковий час для завантаження всього контенту
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
     console.log('Scraping car data...');
     const cars = await page.evaluate(() => {
