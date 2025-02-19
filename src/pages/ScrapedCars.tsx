@@ -10,7 +10,7 @@ import { type Filters, type ScrapedCar } from "@/types/scraped-car";
 import { triggerScraping } from "@/utils/scraping";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
 
 export default function ScrapedCars() {
   const [filters, setFilters] = useState<Filters>({});
@@ -22,6 +22,7 @@ export default function ScrapedCars() {
   const { data: cars, isLoading, refetch } = useQuery({
     queryKey: ['scraped-cars', filters],
     queryFn: async () => {
+      console.log('Fetching cars with filters:', filters);
       let query = supabase
         .from('scraped_cars')
         .select('*')
@@ -47,6 +48,9 @@ export default function ScrapedCars() {
       }
 
       const { data, error } = await query;
+      
+      console.log('Query result:', { data, error });
+      
       if (error) throw error;
       return data as ScrapedCar[];
     }
@@ -73,6 +77,7 @@ export default function ScrapedCars() {
   };
 
   const handleFilterChange = (newFilters: Filters) => {
+    console.log('Applying new filters:', newFilters);
     setFilters(newFilters);
   };
 
