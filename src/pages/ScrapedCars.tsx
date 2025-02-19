@@ -14,41 +14,51 @@ export default function ScrapedCars() {
   const [filters, setFilters] = useState<Filters>({});
   const { startScraping } = useCarScraping();
   
-  const { data: cars, isLoading } = useQuery({
+  const { data: cars, isLoading, error } = useQuery({
     queryKey: ['scraped-cars', filters],
     queryFn: async () => {
-      const query = supabase
+      console.log('Fetching cars with filters:', filters);
+      let query = supabase
         .from('scraped_cars')
         .select('*') as any;
       
       if (filters.minYear) {
-        query.gte('year', filters.minYear);
+        query = query.gte('year', filters.minYear);
       }
       if (filters.maxYear) {
-        query.lte('year', filters.maxYear);
+        query = query.lte('year', filters.maxYear);
       }
       if (filters.minPrice) {
-        query.gte('price', filters.minPrice);
+        query = query.gte('price', filters.minPrice);
       }
       if (filters.maxPrice) {
-        query.lte('price', filters.maxPrice);
+        query = query.lte('price', filters.maxPrice);
       }
       if (filters.fuelType) {
-        query.eq('fuel_type', filters.fuelType);
+        query = query.eq('fuel_type', filters.fuelType);
       }
       if (filters.transmission) {
-        query.eq('transmission', filters.transmission);
+        query = query.eq('transmission', filters.transmission);
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      console.log('Fetched cars:', data);
+      if (error) {
+        console.error('Error fetching cars:', error);
+        throw error;
+      }
       return data as ScrapedCar[];
     }
   });
 
   const handleFilterChange = (newFilters: Partial<Filters>) => {
+    console.log('Applying new filters:', newFilters);
     setFilters(prev => ({ ...prev, ...newFilters }));
   };
+
+  if (error) {
+    console.error('Error in ScrapedCars component:', error);
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -58,7 +68,7 @@ export default function ScrapedCars() {
         <div className="space-y-8">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Автомобілі з CarOutlet</h1>
-            <Button onClick={startScraping}>
+            <Button onClick={startScraping} variant="default">
               Оновити дані
             </Button>
           </div>
@@ -66,9 +76,12 @@ export default function ScrapedCars() {
           <ScrapedCarsFilters onFilterChange={handleFilterChange} />
 
           {isLoading ? (
-            <div className="text-center">Завантаження...</div>
+            <div className="text-center py-8">
+              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+              <p className="mt-2 text-muted-foreground">Завантаження...</p>
+            </div>
           ) : !cars?.length ? (
-            <div className="text-center text-muted-foreground">
+            <div className="text-center py-8 text-muted-foreground">
               Немає доступних автомобілів
             </div>
           ) : (
