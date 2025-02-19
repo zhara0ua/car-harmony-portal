@@ -25,27 +25,36 @@ export const triggerScraping = async () => {
 
     console.log('Database connection successful, starting scraping...');
     
-    const { data: scrapingData, error } = await supabase.functions.invoke('scrape-cars', {
-      method: 'POST',
-      body: {},
-    });
-    
-    if (error) {
-      console.error('Function error details:', {
-        message: error.message,
-        name: error.name,
-        status: error.status,
+    try {
+      const { data: scrapingData, error } = await supabase.functions.invoke('scrape-cars', {
+        method: 'POST',
+        body: {},
       });
-      throw new Error("Помилка при виконанні функції скрапінгу");
+      
+      if (error) {
+        console.error('Function error details:', {
+          message: error.message,
+          name: error.name,
+          status: error.status,
+        });
+        throw new Error("Помилка при виконанні функції скрапінгу: " + error.message);
+      }
+      
+      if (!scrapingData) {
+        throw new Error("Функція не повернула дані");
+      }
+      
+      if (!scrapingData.success) {
+        console.error('Invalid response from function:', scrapingData);
+        throw new Error(scrapingData?.error || "Неочікувана відповідь від сервера");
+      }
+      
+      console.log('Function response:', scrapingData);
+      return scrapingData;
+    } catch (functionError) {
+      console.error('Edge function execution error:', functionError);
+      throw functionError;
     }
-    
-    if (!scrapingData || !scrapingData.success) {
-      console.error('Invalid response from function:', scrapingData);
-      throw new Error(scrapingData?.error || "Неочікувана відповідь від сервера");
-    }
-    
-    console.log('Function response:', scrapingData);
-    return scrapingData;
   } catch (error) {
     console.error('Error triggering scraping:', error);
     throw error;
