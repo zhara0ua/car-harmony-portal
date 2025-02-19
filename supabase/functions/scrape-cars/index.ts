@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
+import puppeteer from "https://deno.land/x/puppeteer@16.2.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,41 +17,69 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting API fetching...');
+    console.log('Starting Puppeteer scraping...');
 
-    const headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    };
+    // Launch browser
+    const browser = await puppeteer.launch({
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    const page = await browser.newPage();
 
-    // Fetch cars data from API
-    const response = await fetch('https://caroutlet.eu/api/v1/cars', { headers });
-    const data = await response.json();
-    
-    console.log('API response received:', data);
+    // Set viewport and user agent
+    await page.setViewport({ width: 1920, height: 1080 });
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
-    if (!Array.isArray(data)) {
-      throw new Error('Invalid API response format');
-    }
+    // Navigate to the page
+    console.log('Navigating to CarOutlet...');
+    await page.goto('https://caroutlet.eu/cars', {
+      waitUntil: 'networkidle0',
+      timeout: 30000
+    });
 
-    const cars = data.map(car => ({
-      external_id: car.id.toString(),
-      title: car.title || `${car.make} ${car.model} ${car.year}`,
-      price: parseFloat(car.price),
-      year: parseInt(car.year),
-      mileage: car.mileage,
-      fuel_type: car.fuel_type?.toLowerCase(),
-      transmission: car.transmission?.toLowerCase(),
-      location: car.location,
-      image_url: car.image_url,
-      external_url: `https://caroutlet.eu/cars/${car.id}`,
-      source: 'caroutlet'
-    }));
+    // Wait for car elements to load
+    await page.waitForSelector('.vehicle-card, .card, article', { timeout: 5000 });
 
-    console.log(`Processed ${cars.length} cars:`, cars);
+    // Extract car data
+    console.log('Extracting car data...');
+    const cars = await page.evaluate(() => {
+      const carElements = document.querySelectorAll('.vehicle-card, .card, article');
+      return Array.from(carElements).map(el => {
+        const titleEl = el.querySelector('h2, h3, .title, [class*="title"]');
+        const priceEl = el.querySelector('[class*="price"], .price, .amount');
+        const yearEl = el.querySelector('[class*="year"], .year');
+        const mileageEl = el.querySelector('[class*="mileage"], .mileage, [class*="odometer"]');
+        const locationEl = el.querySelector('[class*="location"], .location');
+        const imageEl = el.querySelector('img');
+        const linkEl = el.querySelector('a[href*="/cars/"]');
+        const fuelEl = el.querySelector('[class*="fuel"], [class*="engine"]');
+        const transmissionEl = el.querySelector('[class*="transmission"], [class*="gearbox"]');
+
+        const href = linkEl?.getAttribute('href') || '';
+        const id = href.split('/').pop() || '';
+
+        return {
+          external_id: id,
+          title: titleEl?.textContent?.trim() || '',
+          price: parseFloat((priceEl?.textContent?.match(/\d+/g) || []).join('')) || 0,
+          year: parseInt(yearEl?.textContent?.trim() || '') || 0,
+          mileage: mileageEl?.textContent?.trim() || '',
+          fuel_type: fuelEl?.textContent?.trim().toLowerCase() || '',
+          transmission: transmissionEl?.textContent?.trim().toLowerCase() || '',
+          location: locationEl?.textContent?.trim() || '',
+          image_url: imageEl?.getAttribute('src') || '',
+          external_url: href.startsWith('http') ? href : `https://caroutlet.eu${href}`,
+          source: 'caroutlet'
+        };
+      }).filter(car => car.external_id && car.title && car.price > 0);
+    });
+
+    // Close browser
+    await browser.close();
+
+    console.log(`Found ${cars.length} cars:`, cars);
 
     if (cars.length === 0) {
-      throw new Error('No cars found in API response');
+      throw new Error('No cars found on the page');
     }
 
     const supabaseAdmin = createClient(
@@ -93,11 +122,11 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('API error:', error);
+    console.error('Scraping error:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error instanceof Error ? error.message : 'Помилка при отриманні даних з API',
+        error: error instanceof Error ? error.message : 'Помилка при скрапінгу сторінки',
       }),
       { 
         headers: { 
