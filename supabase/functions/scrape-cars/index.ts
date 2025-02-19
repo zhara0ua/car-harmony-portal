@@ -16,37 +16,103 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting API request...');
+    console.log('Starting GraphQL API request...');
     
     const headers = {
       'Accept': 'application/json',
       'Accept-Language': 'uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7',
+      'Content-Type': 'application/json',
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     };
 
-    // Make request to the API endpoint
-    const response = await fetch('https://caroutlet.eu/_next/data/latest/uk/cars.json', { headers });
+    // GraphQL query for cars
+    const query = {
+      query: `
+        query GetCars {
+          cars {
+            id
+            title
+            price
+            year
+            mileage
+            fuelType
+            transmission
+            location
+            image
+            make
+            model
+          }
+        }
+      `
+    };
+
+    // Make request to the GraphQL API endpoint
+    const response = await fetch('https://caroutlet.eu/api/graphql', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(query)
+    });
+
+    console.log('Response status:', response.status);
+    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
+      const errorText = await response.text();
       console.error('Failed to fetch:', response.status, response.statusText);
+      console.error('Error response:', errorText);
       throw new Error(`API responded with status: ${response.status}`);
     }
 
-    const data = await response.json();
-    console.log('API response:', data);
+    const responseText = await response.text();
+    console.log('Raw response:', responseText);
+
+    const data = JSON.parse(responseText);
+    console.log('Parsed API response:', data);
 
     // Extract cars from the API response
-    const apiCars = data.pageProps?.cars || [];
+    const apiCars = data?.data?.cars || [];
     console.log(`Found ${apiCars.length} cars in API response`);
 
     if (apiCars.length === 0) {
-      throw new Error('No cars found in API response');
+      // If GraphQL fails, try fetching directly from the page's script data
+      console.log('No cars found in GraphQL response, trying to fetch from page...');
+      
+      const pageResponse = await fetch('https://caroutlet.eu/uk/cars', {
+        headers: {
+          ...headers,
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
+        }
+      });
+
+      if (!pageResponse.ok) {
+        throw new Error(`Page fetch failed with status: ${pageResponse.status}`);
+      }
+
+      const html = await pageResponse.text();
+      
+      // Try to extract the JSON data from the script tag
+      const scriptDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/);
+      if (scriptDataMatch && scriptDataMatch[1]) {
+        const pageData = JSON.parse(scriptDataMatch[1]);
+        console.log('Found page data:', pageData);
+        
+        // Extract cars from the page data
+        const pageCars = pageData.props?.pageProps?.cars || [];
+        if (pageCars.length > 0) {
+          console.log(`Found ${pageCars.length} cars in page data`);
+          apiCars.push(...pageCars);
+        }
+      }
+    }
+
+    if (apiCars.length === 0) {
+      throw new Error('No cars found in any data source');
     }
 
     const cars = apiCars.map((car: any) => ({
       external_id: car.id || String(Math.random()),
       title: car.title || `${car.make} ${car.model}`,
-      price: parseInt(car.price?.replace(/[^0-9]/g, '')) || 0,
+      price: typeof car.price === 'number' ? car.price : parseInt(String(car.price).replace(/[^0-9]/g, '')) || 0,
       year: car.year || new Date().getFullYear(),
       mileage: car.mileage || '0 km',
       fuel_type: car.fuelType?.toLowerCase() || '',
