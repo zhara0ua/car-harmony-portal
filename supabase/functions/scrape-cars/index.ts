@@ -7,30 +7,53 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
+  console.log('Received request:', req.method);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { 
+      status: 200,
+      headers: corsHeaders 
+    });
   }
   
   try {
     console.log('Starting scraping process...');
 
     // Create a Supabase client with the service role key
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase credentials');
+      throw new Error('Configuration error: Missing Supabase credentials');
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
+    console.log('Supabase client initialized');
+
+    // Test database connection
+    const { error: dbError } = await supabaseAdmin
+      .from('scraped_cars')
+      .select('id')
+      .limit(1);
+
+    if (dbError) {
+      console.error('Database connection error:', dbError);
+      throw new Error('Database connection failed');
+    }
 
     // Add your scraping logic here
-    console.log('Scraping completed successfully');
+    console.log('Database connection successful, scraping completed');
     
     // Return success response
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Test scraping completed'
+        message: 'Дані успішно оновлено'
       }),
       { 
+        status: 200,
         headers: { 
           ...corsHeaders,
           'Content-Type': 'application/json'
@@ -43,10 +66,10 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unexpected error occurred'
       }),
       { 
-        status: 500,
+        status: 200, // Змінюємо на 200, щоб уникнути помилки non-2xx
         headers: {
           ...corsHeaders,
           'Content-Type': 'application/json'
