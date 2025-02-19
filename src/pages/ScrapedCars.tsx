@@ -14,13 +14,14 @@ export default function ScrapedCars() {
   const [filters, setFilters] = useState<Filters>({});
   const { startScraping } = useCarScraping();
   
-  const { data: cars, isLoading, error } = useQuery({
+  const { data: cars, isLoading, error, refetch } = useQuery({
     queryKey: ['scraped-cars', filters],
     queryFn: async () => {
       console.log('Fetching cars with filters:', filters);
       let query = supabase
         .from('scraped_cars')
-        .select('*') as any;
+        .select('*')
+        .order('created_at', { ascending: false });
       
       if (filters.minYear) {
         query = query.gte('year', filters.minYear);
@@ -48,7 +49,8 @@ export default function ScrapedCars() {
         throw error;
       }
       return data as ScrapedCar[];
-    }
+    },
+    refetchOnWindowFocus: false
   });
 
   const handleFilterChange = (newFilters: Partial<Filters>) => {
@@ -68,7 +70,13 @@ export default function ScrapedCars() {
         <div className="space-y-8">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Автомобілі з CarOutlet</h1>
-            <Button onClick={startScraping} variant="default">
+            <Button 
+              onClick={async () => {
+                await startScraping();
+                refetch();
+              }} 
+              variant="default"
+            >
               Оновити дані
             </Button>
           </div>
