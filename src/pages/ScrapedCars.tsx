@@ -10,10 +10,13 @@ import { type Filters, type ScrapedCar } from "@/types/scraped-car";
 import { triggerScraping } from "@/utils/scraping";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 
 export default function ScrapedCars() {
   const [filters, setFilters] = useState<Filters>({});
   const [isScrapingInProgress, setIsScrapingInProgress] = useState(false);
+  const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const { toast } = useToast();
   
   const { data: cars, isLoading, refetch } = useQuery({
@@ -62,11 +65,8 @@ export default function ScrapedCars() {
       refetch();
     } catch (error) {
       console.error('Error during scraping:', error);
-      toast({
-        title: "Помилка",
-        description: "Не вдалося отримати дані з сайту",
-        variant: "destructive",
-      });
+      setErrorMessage(error instanceof Error ? error.message : "Не вдалося отримати дані з сайту");
+      setIsErrorDialogOpen(true);
     } finally {
       setIsScrapingInProgress(false);
     }
@@ -115,6 +115,22 @@ export default function ScrapedCars() {
       </main>
 
       <Footer />
+
+      <AlertDialog open={isErrorDialogOpen} onOpenChange={setIsErrorDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Помилка</AlertDialogTitle>
+            <AlertDialogDescription>
+              {errorMessage}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setIsErrorDialogOpen(false)}>
+              Зрозуміло
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
