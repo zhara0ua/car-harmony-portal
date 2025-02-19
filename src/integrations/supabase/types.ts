@@ -9,6 +9,47 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      auctions: {
+        Row: {
+          car_id: number | null
+          created_at: string | null
+          current_price: number
+          end_date: string
+          id: number
+          start_price: number
+          status: string
+          winner_id: string | null
+        }
+        Insert: {
+          car_id?: number | null
+          created_at?: string | null
+          current_price: number
+          end_date: string
+          id?: number
+          start_price: number
+          status?: string
+          winner_id?: string | null
+        }
+        Update: {
+          car_id?: number | null
+          created_at?: string | null
+          current_price?: number
+          end_date?: string
+          id?: number
+          start_price?: number
+          status?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auctions_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cars: {
         Row: {
           category: string
@@ -87,6 +128,54 @@ export type Database = {
           date?: string
           id?: number
           status?: string
+        }
+        Relationships: []
+      }
+      scraped_cars: {
+        Row: {
+          created_at: string | null
+          external_id: string
+          external_url: string
+          fuel_type: string | null
+          id: number
+          image_url: string | null
+          location: string | null
+          mileage: string | null
+          price: number
+          source: string
+          title: string
+          transmission: string | null
+          year: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          external_id: string
+          external_url: string
+          fuel_type?: string | null
+          id?: number
+          image_url?: string | null
+          location?: string | null
+          mileage?: string | null
+          price: number
+          source?: string
+          title: string
+          transmission?: string | null
+          year?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          external_id?: string
+          external_url?: string
+          fuel_type?: string | null
+          id?: number
+          image_url?: string | null
+          location?: string | null
+          mileage?: string | null
+          price?: number
+          source?: string
+          title?: string
+          transmission?: string | null
+          year?: number | null
         }
         Relationships: []
       }
