@@ -29,12 +29,12 @@ export const ScrapedCarForm = ({ car, onSubmit }: ScrapedCarFormProps) => {
       external_id, // Required
       title: formData.get('title') as string, // Required
       price: Number(formData.get('price')), // Required
-      year: Number(formData.get('year')),
-      mileage: formData.get('mileage') as string,
-      fuel_type: formData.get('fuel_type') as string,
-      transmission: formData.get('transmission') as string,
-      location: formData.get('location') as string,
-      image_url: formData.get('image_url') as string,
+      year: Number(formData.get('year')) || null,
+      mileage: formData.get('mileage') as string || null,
+      fuel_type: formData.get('fuel_type') as string || null,
+      transmission: formData.get('transmission') as string || null,
+      location: formData.get('location') as string || null,
+      image_url: formData.get('image_url') as string || null,
       external_url: formData.get('external_url') as string || `https://manual-entry/${external_id}`, // Required
       source: 'manual' // Required with default value
     };
@@ -45,8 +45,8 @@ export const ScrapedCarForm = ({ car, onSubmit }: ScrapedCarFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="title">Назва</Label>
-        <Input id="title" name="title" defaultValue={car?.title} required />
+        <Label htmlFor="title">Назва авто</Label>
+        <Input id="title" name="title" defaultValue={car?.title} required placeholder="Наприклад: BMW 520d 2019" />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -58,6 +58,7 @@ export const ScrapedCarForm = ({ car, onSubmit }: ScrapedCarFormProps) => {
             type="number" 
             defaultValue={car?.price} 
             required 
+            placeholder="25000"
           />
         </div>
         <div className="space-y-2">
@@ -67,14 +68,19 @@ export const ScrapedCarForm = ({ car, onSubmit }: ScrapedCarFormProps) => {
             name="year" 
             type="number" 
             defaultValue={car?.year} 
-            required 
+            placeholder="2019"
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="mileage">Пробіг</Label>
-        <Input id="mileage" name="mileage" defaultValue={car?.mileage} />
+        <Label htmlFor="mileage">Пробіг (км)</Label>
+        <Input 
+          id="mileage" 
+          name="mileage" 
+          defaultValue={car?.mileage} 
+          placeholder="100000"
+        />
       </div>
 
       <div className="space-y-2">
@@ -107,20 +113,37 @@ export const ScrapedCarForm = ({ car, onSubmit }: ScrapedCarFormProps) => {
 
       <div className="space-y-2">
         <Label htmlFor="location">Локація</Label>
-        <Input id="location" name="location" defaultValue={car?.location} />
+        <Input 
+          id="location" 
+          name="location" 
+          defaultValue={car?.location} 
+          placeholder="Київ"
+        />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="image_url">URL зображення</Label>
-        <Input id="image_url" name="image_url" defaultValue={car?.image_url} />
+        <Label htmlFor="image_url">Посилання на фото</Label>
+        <Input 
+          id="image_url" 
+          name="image_url" 
+          defaultValue={car?.image_url} 
+          placeholder="https://example.com/car-image.jpg"
+        />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="external_url">Посилання на оголошення</Label>
-        <Input id="external_url" name="external_url" defaultValue={car?.external_url} />
+        <Input 
+          id="external_url" 
+          name="external_url" 
+          defaultValue={car?.external_url} 
+          placeholder="https://example.com/car-listing"
+        />
       </div>
 
-      <Button type="submit">{car ? "Зберегти" : "Додати"}</Button>
+      <Button type="submit" className="w-full">
+        {car ? "Зберегти" : "Додати автомобіль"}
+      </Button>
     </form>
   );
 };
