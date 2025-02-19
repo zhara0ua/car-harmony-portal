@@ -9,7 +9,6 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   console.log('Received request:', req.method);
   
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       status: 200,
@@ -20,7 +19,6 @@ Deno.serve(async (req) => {
   try {
     console.log('Starting scraping process...');
 
-    // Create a Supabase client with the service role key
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -41,18 +39,50 @@ Deno.serve(async (req) => {
     const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
     console.log('Supabase client initialized');
 
-    // Test database connection
-    const { error: dbError } = await supabaseAdmin
-      .from('scraped_cars')
-      .select('id')
-      .limit(1);
+    // Тестові дані для додавання
+    const testCars = [
+      {
+        external_id: 'test-1',
+        title: 'BMW X5 2020',
+        price: 35000,
+        year: 2020,
+        mileage: '50000 km',
+        fuel_type: 'Дизель',
+        transmission: 'Автомат',
+        location: 'Київ',
+        image_url: 'https://example.com/bmw.jpg',
+        external_url: 'https://example.com/bmw-x5',
+        source: 'caroutlet'
+      },
+      {
+        external_id: 'test-2',
+        title: 'Audi Q7 2021',
+        price: 45000,
+        year: 2021,
+        mileage: '30000 km',
+        fuel_type: 'Бензин',
+        transmission: 'Автомат',
+        location: 'Львів',
+        image_url: 'https://example.com/audi.jpg',
+        external_url: 'https://example.com/audi-q7',
+        source: 'caroutlet'
+      }
+    ];
 
-    if (dbError) {
-      console.error('Database connection error:', dbError);
+    // Додавання тестових даних до бази
+    const { error: insertError } = await supabaseAdmin
+      .from('scraped_cars')
+      .upsert(testCars, {
+        onConflict: 'external_id',
+        ignoreDuplicates: false
+      });
+
+    if (insertError) {
+      console.error('Error inserting test data:', insertError);
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Database connection failed'
+          error: 'Failed to insert test data'
         }),
         { 
           status: 200,
@@ -61,9 +91,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('Database connection successful, scraping completed');
+    console.log('Test data inserted successfully');
     
-    // Return success response
     return new Response(
       JSON.stringify({
         success: true,
