@@ -8,7 +8,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       headers: corsHeaders,
@@ -19,35 +18,30 @@ serve(async (req) => {
   try {
     console.log('Starting scraping process...');
     
-    // Тестові дані
-    const cars = [
-      {
-        external_id: "test1",
-        title: "BMW 520d 2019",
-        price: 25000,
-        year: 2019,
-        mileage: "50000 km",
-        fuel_type: "дизель",
-        transmission: "автомат",
-        location: "Берлін",
-        image_url: "https://example.com/bmw.jpg",
-        external_url: "https://caroutlet.eu/cars/test1",
-        source: "caroutlet"
+    // Fetch data from CarOutlet API
+    const response = await fetch('https://api.caroutlet.eu/api/cars/list', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-      {
-        external_id: "test2",
-        title: "Audi A6 2020",
-        price: 35000,
-        year: 2020,
-        mileage: "30000 km",
-        fuel_type: "бензин",
-        transmission: "автомат",
-        location: "Мюнхен",
-        image_url: "https://example.com/audi.jpg",
-        external_url: "https://caroutlet.eu/cars/test2",
-        source: "caroutlet"
-      }
-    ];
+      body: JSON.stringify({
+        page: 1,
+        limit: 50,
+        filters: {},
+        sort: { created_at: -1 }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`CarOutlet API responded with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Received data from CarOutlet:', data);
+
+    if (!data.cars || !Array.isArray(data.cars)) {
+      throw new Error('Invalid response format from CarOutlet API');
+    }
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -57,19 +51,28 @@ serve(async (req) => {
     console.log('Saving cars to database...');
     let savedCount = 0;
     
-    for (const car of cars) {
+    for (const carData of data.cars) {
+      const car = {
+        external_id: carData.id.toString(),
+        title: `${carData.make} ${carData.model} ${carData.year}`,
+        price: carData.price,
+        year: carData.year,
+        mileage: `${carData.mileage} km`,
+        fuel_type: carData.fuel_type?.toLowerCase(),
+        transmission: carData.transmission?.toLowerCase(),
+        location: carData.location,
+        image_url: carData.image_url,
+        external_url: `https://caroutlet.eu/car/${carData.id}`,
+        source: 'caroutlet',
+        created_at: new Date().toISOString()
+      };
+
       const { error } = await supabaseAdmin
         .from('scraped_cars')
-        .upsert(
-          {
-            ...car,
-            created_at: new Date().toISOString()
-          },
-          { 
-            onConflict: 'external_id',
-            ignoreDuplicates: false
-          }
-        );
+        .upsert(car, {
+          onConflict: 'external_id',
+          ignoreDuplicates: false
+        });
       
       if (error) {
         console.error('Error saving car:', error);
@@ -112,7 +115,7 @@ serve(async (req) => {
           ...corsHeaders, 
           'Content-Type': 'application/json' 
         }, 
-        status: 200 // Changed from 500 to 200 to prevent non-2xx status
+        status: 200
       }
     );
   }
