@@ -65,39 +65,41 @@ Deno.serve(async (req) => {
       scrapeOptions: {
         selectors: {
           cars: {
-            selector: '.car-card',
+            selector: '.vehicle-card',
             type: 'list',
             data: {
-              title: '.car-title',
+              title: 'h2.vehicle-card__title',
               price: {
-                selector: '.car-price',
+                selector: '.vehicle-card__price',
                 transform: (price) => parseInt(price.replace(/[^0-9]/g, ''))
               },
               year: {
-                selector: '.car-year',
+                selector: '.vehicle-card__year',
                 transform: (year) => parseInt(year)
               },
-              mileage: '.car-mileage',
-              fuel_type: '.car-fuel',
-              transmission: '.car-transmission',
-              location: '.car-location',
+              mileage: '.vehicle-card__mileage',
+              fuel_type: '.vehicle-card__fuel-type',
+              transmission: '.vehicle-card__transmission',
+              location: '.vehicle-card__location',
               image_url: {
-                selector: '.car-image',
+                selector: '.vehicle-card__image img',
                 attr: 'src'
               },
               external_url: {
-                selector: '.car-link',
+                selector: '.vehicle-card__link',
                 attr: 'href'
               },
               external_id: {
-                selector: '.car-id',
-                attr: 'data-id'
+                selector: '.vehicle-card',
+                attr: 'data-vehicle-id'
               }
             }
           }
         }
       }
     });
+
+    console.log('Crawl result:', crawlResult);
 
     if (!crawlResult.success) {
       console.error('Crawling failed:', crawlResult.error);
@@ -110,6 +112,7 @@ Deno.serve(async (req) => {
     }));
 
     console.log(`Found ${cars.length} cars`);
+    console.log('Sample car data:', cars[0]);
 
     // Додаємо або оновлюємо дані в базі
     const { error: insertError } = await supabaseAdmin
