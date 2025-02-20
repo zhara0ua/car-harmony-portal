@@ -57,41 +57,26 @@ Deno.serve(async (req) => {
 
     // Ініціалізуємо Firecrawl
     const firecrawl = new FirecrawlApp({ apiKey: firecrawlApiKey });
+    console.log('Firecrawl initialized with API key');
     
-    // Скрапимо дані з CarOutlet
-    console.log('Starting CarOutlet scraping...');
-    const crawlResult = await firecrawl.crawlUrl('https://caroutlet.eu/cars', {
-      limit: 100,
+    // Спробуємо спочатку отримати HTML сторінки
+    const urlToCrawl = 'https://caroutlet.eu/cars';
+    console.log('Attempting to crawl URL:', urlToCrawl);
+    
+    // Спрощений скрапінг для тестування
+    const crawlResult = await firecrawl.crawlUrl(urlToCrawl, {
+      limit: 10,
       scrapeOptions: {
         selectors: {
           cars: {
-            selector: '.vehicle-card',
+            selector: '.car-box',
             type: 'list',
             data: {
-              title: 'h2.vehicle-card__title',
-              price: {
-                selector: '.vehicle-card__price',
-                transform: (price) => parseInt(price.replace(/[^0-9]/g, ''))
-              },
-              year: {
-                selector: '.vehicle-card__year',
-                transform: (year) => parseInt(year)
-              },
-              mileage: '.vehicle-card__mileage',
-              fuel_type: '.vehicle-card__fuel-type',
-              transmission: '.vehicle-card__transmission',
-              location: '.vehicle-card__location',
-              image_url: {
-                selector: '.vehicle-card__image img',
-                attr: 'src'
-              },
+              title: '.car-box__title',
+              price: '.car-box__price',
               external_url: {
-                selector: '.vehicle-card__link',
+                selector: 'a',
                 attr: 'href'
-              },
-              external_id: {
-                selector: '.vehicle-card',
-                attr: 'data-vehicle-id'
               }
             }
           }
@@ -99,20 +84,30 @@ Deno.serve(async (req) => {
       }
     });
 
-    console.log('Crawl result:', crawlResult);
+    console.log('Raw crawl result:', JSON.stringify(crawlResult, null, 2));
 
     if (!crawlResult.success) {
       console.error('Crawling failed:', crawlResult.error);
-      throw new Error('Failed to crawl CarOutlet');
+      throw new Error(`Failed to crawl CarOutlet: ${crawlResult.error || 'Unknown error'}`);
     }
 
-    const cars = crawlResult.data.cars.map(car => ({
+    if (!crawlResult.data || !crawlResult.data.cars || !Array.isArray(crawlResult.data.cars)) {
+      console.error('Invalid data structure received:', crawlResult);
+      throw new Error('Invalid data structure received from CarOutlet');
+    }
+
+    const cars = crawlResult.data.cars.map((car, index) => ({
       ...car,
+      external_id: `caroutlet-${Date.now()}-${index}`,
       source: 'caroutlet'
     }));
 
+    console.log('Processed cars data:', JSON.stringify(cars, null, 2));
     console.log(`Found ${cars.length} cars`);
-    console.log('Sample car data:', cars[0]);
+
+    if (cars.length === 0) {
+      throw new Error('No cars found on the page');
+    }
 
     // Додаємо або оновлюємо дані в базі
     const { error: insertError } = await supabaseAdmin
@@ -141,7 +136,8 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Дані успішно оновлено'
+        message: 'Дані успішно оновлено',
+        carsCount: cars.length
       }),
       { 
         status: 200,
