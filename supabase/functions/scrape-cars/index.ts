@@ -55,32 +55,55 @@ Deno.serve(async (req) => {
     const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
     console.log('Supabase client initialized');
 
-    // Ініціалізуємо Firecrawl
-    const firecrawl = new FirecrawlApp({ apiKey: firecrawlApiKey });
-    console.log('Firecrawl initialized with API key:', firecrawlApiKey);
+    // Ініціалізуємо Firecrawl з розширеними налаштуваннями
+    const firecrawl = new FirecrawlApp({ 
+      apiKey: firecrawlApiKey,
+      defaultOptions: {
+        timeout: 60000,
+        maxRetries: 3
+      }
+    });
+    console.log('Firecrawl initialized with custom configuration');
 
-    // Спробуємо отримати HTML-контент сторінки
+    // Спробуємо отримати контент з більш конкретними налаштуваннями
+    console.log('Starting crawl request...');
     const crawlResult = await firecrawl.crawlUrl('https://caroutlet.eu/cars', {
-      waitUntil: 'networkidle0',
-      timeout: 30000,
-      format: 'html'
+      waitUntil: 'domcontentloaded',
+      timeout: 60000,
+      maxRetries: 3,
+      scrapeOptions: {
+        formats: ['html'],
+        waitForSelectors: ['.car-item', '.car-listing', '.vehicle-item'],
+        headless: true,
+        javascript: true
+      }
     });
 
-    console.log('Raw crawl response:', crawlResult);
+    console.log('Crawl request completed');
+    console.log('Response success:', crawlResult.success);
+    console.log('Response type:', typeof crawlResult.data);
+    console.log('Response data preview:', 
+      typeof crawlResult.data === 'string' 
+        ? crawlResult.data.substring(0, 200) 
+        : 'Not a string'
+    );
 
     if (!crawlResult.success) {
+      console.error('Crawl failed with error:', crawlResult.error);
       throw new Error('Failed to crawl page: ' + (crawlResult.error || 'Unknown error'));
     }
 
-    if (!crawlResult.data || typeof crawlResult.data !== 'string') {
-      throw new Error('Invalid response format from crawling');
+    // Перевіряємо отримані дані
+    if (!crawlResult.data) {
+      console.error('No data received from crawl');
+      throw new Error('No data received from crawling');
     }
 
-    // Отримали HTML, можемо повернути успішну відповідь
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'HTML контент отримано успішно'
+        message: 'Скрапінг успішно завершено',
+        dataReceived: !!crawlResult.data
       }),
       { 
         status: 200,
@@ -90,6 +113,11 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error in scrape-cars function:', error);
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     
     return new Response(
       JSON.stringify({
