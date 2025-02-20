@@ -57,71 +57,37 @@ Deno.serve(async (req) => {
 
     // Ініціалізуємо Firecrawl
     const firecrawl = new FirecrawlApp({ apiKey: firecrawlApiKey });
-    console.log('Firecrawl initialized with API key');
+    console.log('Firecrawl initialized with API key:', firecrawlApiKey);
 
-    // Використовуємо простий HTTP запит для отримання контенту
+    // Спробуємо отримати HTML-контент сторінки
     const crawlResult = await firecrawl.crawlUrl('https://caroutlet.eu/cars', {
-      limit: 1,
-      format: 'html',
-      waitForSelector: '.cars-list'
+      waitUntil: 'networkidle0',
+      timeout: 30000,
+      format: 'html'
     });
 
-    console.log('Raw crawl result:', JSON.stringify(crawlResult, null, 2));
+    console.log('Raw crawl response:', crawlResult);
 
-    // Створюємо тестові дані для перевірки роботи бази даних
-    const testCars = [
-      {
-        external_id: `test-${Date.now()}-1`,
-        title: 'Test Car 1',
-        price: 15000,
-        year: 2020,
-        mileage: '50000 km',
-        fuel_type: 'Petrol',
-        transmission: 'Automatic',
-        location: 'Test Location',
-        image_url: 'https://example.com/car1.jpg',
-        external_url: 'https://caroutlet.eu/cars/1',
-        source: 'caroutlet'
-      }
-    ];
-
-    console.log('Attempting to save test car data');
-
-    // Додаємо тестові дані в базу
-    const { error: insertError } = await supabaseAdmin
-      .from('scraped_cars')
-      .upsert(testCars, {
-        onConflict: 'external_id',
-        ignoreDuplicates: false
-      });
-
-    if (insertError) {
-      console.error('Error inserting test data:', insertError);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Failed to save test data'
-        }),
-        { 
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+    if (!crawlResult.success) {
+      throw new Error('Failed to crawl page: ' + (crawlResult.error || 'Unknown error'));
     }
 
-    console.log('Test data saved successfully');
-    
+    if (!crawlResult.data || typeof crawlResult.data !== 'string') {
+      throw new Error('Invalid response format from crawling');
+    }
+
+    // Отримали HTML, можемо повернути успішну відповідь
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Тестові дані успішно додано',
-        carsCount: testCars.length
+        message: 'HTML контент отримано успішно'
       }),
       { 
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
+
   } catch (error) {
     console.error('Error in scrape-cars function:', error);
     
