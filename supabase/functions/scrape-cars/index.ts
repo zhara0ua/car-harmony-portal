@@ -24,86 +24,41 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
 
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('Missing Supabase credentials');
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Configuration error: Missing Supabase credentials'
-        }),
-        { 
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    if (!firecrawlApiKey) {
-      console.error('Missing Firecrawl API key');
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Configuration error: Missing Firecrawl API key'
-        }),
-        { 
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+    if (!supabaseUrl || !supabaseKey || !firecrawlApiKey) {
+      console.error('Missing required credentials');
+      console.log('SUPABASE_URL:', !!supabaseUrl);
+      console.log('SUPABASE_KEY:', !!supabaseKey);
+      console.log('FIRECRAWL_API_KEY:', !!firecrawlApiKey);
+      throw new Error('Missing required credentials');
     }
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
     console.log('Supabase client initialized');
 
-    // Ініціалізуємо Firecrawl з розширеними налаштуваннями
-    const firecrawl = new FirecrawlApp({ 
-      apiKey: firecrawlApiKey,
-      defaultOptions: {
-        timeout: 60000,
-        maxRetries: 3
-      }
-    });
-    console.log('Firecrawl initialized with custom configuration');
+    // Базова конфігурація Firecrawl
+    const firecrawl = new FirecrawlApp({ apiKey: firecrawlApiKey });
+    console.log('Firecrawl initialized');
 
-    // Спробуємо отримати контент з більш конкретними налаштуваннями
-    console.log('Starting crawl request...');
+    // Спрощений запит скрапінгу
     const crawlResult = await firecrawl.crawlUrl('https://caroutlet.eu/cars', {
-      waitUntil: 'domcontentloaded',
-      timeout: 60000,
-      maxRetries: 3,
-      scrapeOptions: {
-        formats: ['html'],
-        waitForSelectors: ['.car-item', '.car-listing', '.vehicle-item'],
-        headless: true,
-        javascript: true
-      }
+      format: 'html'
     });
 
-    console.log('Crawl request completed');
-    console.log('Response success:', crawlResult.success);
-    console.log('Response type:', typeof crawlResult.data);
-    console.log('Response data preview:', 
-      typeof crawlResult.data === 'string' 
-        ? crawlResult.data.substring(0, 200) 
-        : 'Not a string'
-    );
+    console.log('Crawl response received');
+    console.log('Response type:', typeof crawlResult);
+    console.log('Response structure:', Object.keys(crawlResult));
 
-    if (!crawlResult.success) {
-      console.error('Crawl failed with error:', crawlResult.error);
-      throw new Error('Failed to crawl page: ' + (crawlResult.error || 'Unknown error'));
-    }
-
-    // Перевіряємо отримані дані
-    if (!crawlResult.data) {
-      console.error('No data received from crawl');
-      throw new Error('No data received from crawling');
+    if (!crawlResult || !crawlResult.success) {
+      const errorMessage = crawlResult?.error || 'Unknown error';
+      console.error('Crawl failed:', errorMessage);
+      console.error('Full response:', JSON.stringify(crawlResult, null, 2));
+      throw new Error(`Failed to crawl page: ${errorMessage}`);
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Скрапінг успішно завершено',
-        dataReceived: !!crawlResult.data
+        message: 'Запит до сайту виконано успішно',
       }),
       { 
         status: 200,
@@ -112,12 +67,11 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in scrape-cars function:', error);
-    if (error instanceof Error) {
-      console.error('Error name:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-    }
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    });
     
     return new Response(
       JSON.stringify({
