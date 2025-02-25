@@ -22,9 +22,14 @@ export default function Inventory() {
   });
   const [visibleCars, setVisibleCars] = useState(9);
   const [isScrapingInProgress, setIsScrapingInProgress] = useState(false);
+  const [isOpen, setIsOpen] = useState(true); // State for filters collapsible
   const { toast } = useToast();
 
   const { cars } = useCars(filters);
+
+  // Calculate unique makes and models from available cars
+  const uniqueMakes = Array.from(new Set(cars.map(car => car.make))).sort();
+  const uniqueModels = Array.from(new Set(cars.map(car => car.model))).sort();
 
   const handleLoadMore = () => {
     setVisibleCars(prev => prev + 9);
@@ -72,8 +77,26 @@ export default function Inventory() {
         </div>
 
         <CarFilters 
-          filters={filters} 
-          onFilterChange={setFilters}
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          category={filters.category}
+          setCategory={(value) => setFilters(prev => ({ ...prev, category: value }))}
+          transmission={filters.transmission}
+          setTransmission={(value) => setFilters(prev => ({ ...prev, transmission: value }))}
+          fuelType={filters.fuelType}
+          setFuelType={(value) => setFilters(prev => ({ ...prev, fuelType: value }))}
+          make={filters.make}
+          setMake={(value) => setFilters(prev => ({ ...prev, make: value }))}
+          model={filters.model}
+          setModel={(value) => setFilters(prev => ({ ...prev, model: value }))}
+          minPrice={filters.minPrice}
+          setMinPrice={(value) => setFilters(prev => ({ ...prev, minPrice: value }))}
+          maxPrice={filters.maxPrice}
+          setMaxPrice={(value) => setFilters(prev => ({ ...prev, maxPrice: value }))}
+          sortBy={filters.sortBy}
+          setSortBy={(value) => setFilters(prev => ({ ...prev, sortBy: value }))}
+          uniqueMakes={uniqueMakes}
+          uniqueModels={uniqueModels}
         />
         
         <div className="mt-8">
