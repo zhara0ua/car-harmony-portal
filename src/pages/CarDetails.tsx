@@ -142,12 +142,12 @@ const CarDetails = () => {
                       </div>
                     </div>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl h-[80vh] p-0">
-                    <div className="relative h-full">
+                  <DialogContent className="max-w-[95vw] h-[90vh] p-0 sm:max-w-4xl">
+                    <div className="relative h-full w-full flex items-center justify-center bg-black/90">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute right-2 top-2 z-50"
+                        className="absolute right-2 top-2 z-50 text-white hover:text-white hover:bg-white/20"
                         onClick={() => setIsGalleryOpen(false)}
                       >
                         <X className="h-4 w-4" />
@@ -155,7 +155,7 @@ const CarDetails = () => {
                       <img
                         src={car.image}
                         alt={`${car.name}`}
-                        className="w-full h-full object-contain"
+                        className="max-h-full max-w-full object-contain p-4"
                       />
                     </div>
                   </DialogContent>
@@ -171,12 +171,12 @@ const CarDetails = () => {
                       className="w-full h-96 object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
                     />
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl h-[80vh] p-0">
-                    <div className="relative h-full">
+                  <DialogContent className="max-w-[95vw] h-[90vh] p-0 sm:max-w-4xl">
+                    <div className="relative h-full w-full flex items-center justify-center bg-black/90">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute right-2 top-2 z-50"
+                        className="absolute right-2 top-2 z-50 text-white hover:text-white hover:bg-white/20"
                         onClick={() => setIsGalleryOpen(false)}
                       >
                         <X className="h-4 w-4" />
@@ -184,7 +184,7 @@ const CarDetails = () => {
                       <img
                         src={car.image}
                         alt={car.name}
-                        className="w-full h-full object-contain"
+                        className="max-h-full max-w-full object-contain p-4"
                       />
                     </div>
                   </DialogContent>
