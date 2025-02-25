@@ -57,8 +57,8 @@ const CarFilters = ({
   setMaxPrice,
   sortBy,
   setSortBy,
-  uniqueMakes,
-  uniqueModels,
+  uniqueMakes = [], // Add default empty array
+  uniqueModels = [], // Add default empty array
 }: CarFiltersProps) => {
   return (
     <div className="mb-8">
