@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -101,26 +102,32 @@ const Inspection = () => {
           
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-6">
-                <Wrench className="w-12 h-12 text-navy mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Технічна Перевірка</h3>
-                <p className="text-gray-600">Повна діагностика всіх систем автомобіля професійними механіками</p>
+              <CardContent className="p-6 flex flex-col items-center">
+                <div className="flex items-center justify-center w-full mb-4">
+                  <Wrench className="w-12 h-12 text-navy" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2 text-center">Технічна Перевірка</h3>
+                <p className="text-gray-600 text-center">Повна діагностика всіх систем автомобіля професійними механіками</p>
               </CardContent>
             </Card>
             
             <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-6">
-                <CheckCircle className="w-12 h-12 text-navy mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Юридична Чистота</h3>
-                <p className="text-gray-600">Перевірка історії автомобіля та всієї документації</p>
+              <CardContent className="p-6 flex flex-col items-center">
+                <div className="flex items-center justify-center w-full mb-4">
+                  <CheckCircle className="w-12 h-12 text-navy" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2 text-center">Юридична Чистота</h3>
+                <p className="text-gray-600 text-center">Перевірка історії автомобіля та всієї документації</p>
               </CardContent>
             </Card>
             
             <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-6">
-                <Car className="w-12 h-12 text-navy mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Тест-Драйв</h3>
-                <p className="text-gray-600">Повноцінне тестування автомобіля в різних режимах</p>
+              <CardContent className="p-6 flex flex-col items-center">
+                <div className="flex items-center justify-center w-full mb-4">
+                  <Car className="w-12 h-12 text-navy" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2 text-center">Тест-Драйв</h3>
+                <p className="text-gray-600 text-center">Повноцінне тестування автомобіля в різних режимах</p>
               </CardContent>
             </Card>
           </div>
