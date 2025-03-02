@@ -100,6 +100,18 @@ export const invokeScrapingFunction = async () => {
       throw new Error("Функція повернула порожню відповідь");
     }
     
+    // Make sure we have the HTML content somewhere
+    if (data.debug && data.debug.htmlContent) {
+      console.log('HTML content found in data.debug');
+    } else if (data.htmlContent) {
+      console.log('HTML content found directly in data');
+      // Move it to the debug property for consistency
+      if (!data.debug) data.debug = {};
+      data.debug.htmlContent = data.htmlContent;
+    } else {
+      console.log('No HTML content found in the response');
+    }
+    
     return data;
   } catch (error) {
     console.error('Error invoking edge function:', error);
@@ -205,6 +217,43 @@ export const triggerScraping = async () => {
     const validatedData = validateScrapingResults(scrapingData);
     
     console.log('Scraping completed successfully:', validatedData);
+    
+    // For mock data responses, make sure we include some HTML
+    if (validatedData.message && 
+       (validatedData.message.includes("mock data") || 
+        validatedData.message.includes("fallback data")) &&
+       (!validatedData.debug || !validatedData.debug.htmlContent)) {
+      // Create mock HTML content
+      const mockHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Mock HTML Content</title>
+        </head>
+        <body>
+          <div class="car-listing-container">
+            <h1>Mock Car Listings</h1>
+            <p>This is mock HTML content for demonstration purposes</p>
+            <div class="car-listings">
+              ${validatedData.cars && validatedData.cars.map(car => `
+                <div class="car-listing">
+                  <h2>${car.title}</h2>
+                  <p>Price: ${car.price}</p>
+                  <p>Year: ${car.year}</p>
+                  <p>Mileage: ${car.mileage || 'N/A'}</p>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      if (!validatedData.debug) validatedData.debug = {};
+      validatedData.debug.htmlContent = mockHtml;
+      console.log('Added mock HTML content to the response');
+    }
+    
     return validatedData;
   } catch (error) {
     console.error('Error triggering scraping:', error);

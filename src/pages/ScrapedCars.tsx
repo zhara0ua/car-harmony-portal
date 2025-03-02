@@ -75,11 +75,26 @@ export default function ScrapedCars() {
       console.log('Starting scraping process...');
       const result = await triggerScraping();
       
+      console.log('Scraping result:', result);
+      
+      // Check if debug info with HTML content exists
       if (result.debug && result.debug.htmlContent) {
+        console.log('HTML content found in result.debug');
         setHtmlContent(result.debug.htmlContent);
-        setIsHtmlDialogOpen(true);
+      } else if (result.htmlContent) {
+        console.log('HTML content found directly in result');
+        setHtmlContent(result.htmlContent);
+      } else if (result.success === false && result.error) {
+        console.log('Error found in result:', result.error);
+        // Handle error but still show HTML if available
+        const errorObj = result.error as any;
+        if (errorObj?.htmlContent) {
+          setHtmlContent(errorObj.htmlContent);
+        }
       } else {
-        setHtmlContent(null);
+        console.log('No HTML content found in result');
+        // Make sure we don't reset existing HTML content
+        // setHtmlContent(null);
       }
       
       toast({
@@ -103,9 +118,8 @@ export default function ScrapedCars() {
       
       const errorObj = error as any;
       if (errorObj?.htmlContent) {
+        console.log('HTML content found in error object');
         setHtmlContent(errorObj.htmlContent);
-      } else {
-        setHtmlContent(null);
       }
       
       setErrorMessage(errorMsg);
