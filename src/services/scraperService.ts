@@ -20,7 +20,7 @@ export const scraperService = {
         method: 'POST',
         body: { 
           useRandomUserAgent: true,
-          useProxy: false // Disable proxy as requested
+          useProxy: false // Keeping proxy disabled
         }
       });
       

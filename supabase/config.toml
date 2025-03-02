@@ -34,4 +34,5 @@ file_size_limit = "50MiB"
 
 # Edge Functions configuration
 [functions]
+# Port for Edge Functions
 port = 9999
