@@ -6,10 +6,13 @@ import HTMLDisplay from '@/components/scraped-cars/HTMLDisplay';
 import ScraperControls from '@/components/scraped-cars/ScraperControls';
 import { ScraperResult, ScrapedCar } from '@/types/scraped-car';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Info, Clock, ServerCrash } from 'lucide-react';
+import { AlertCircle, Info, Clock, ServerCrash, Terminal } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 
 const Auctions = () => {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [scrapedData, setScrapedData] = useState<ScraperResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [usingMockData, setUsingMockData] = useState(false);
@@ -22,7 +25,8 @@ const Auctions = () => {
     if (result.error && (
       result.error.includes("Edge Function") ||
       result.error.includes("Network error") ||
-      result.error.includes("Failed to invoke")
+      result.error.includes("Failed to invoke") ||
+      result.error.includes("Failed to send")
     )) {
       setEdgeFunctionError(result.error);
     } else {
@@ -31,6 +35,16 @@ const Auctions = () => {
     
     // Check if we're using mock data
     setUsingMockData(result.note?.includes('mock data') || false);
+  };
+
+  const copyDeployCommand = () => {
+    const command = 'supabase functions deploy scrape-openlane scrape-findcar --project-ref btkfrowwhgcnzgncjjny';
+    navigator.clipboard.writeText(command);
+    toast({
+      title: "Command Copied",
+      description: "Supabase functions deploy command copied to clipboard",
+      duration: 3000,
+    });
   };
 
   return (
@@ -46,15 +60,38 @@ const Auctions = () => {
           <ServerCrash className="h-4 w-4" />
           <AlertTitle>Edge Function Error</AlertTitle>
           <AlertDescription>
-            <p>{edgeFunctionError}</p>
-            <div className="mt-2 text-sm">
-              <p>Steps to fix this issue:</p>
-              <ol className="list-decimal pl-5 mt-1 space-y-1">
-                <li>Ensure your Supabase project is running</li>
-                <li>Verify that the Edge Functions have been deployed with <code>supabase functions deploy --project-ref YOUR_PROJECT_REF</code></li>
-                <li>Check the Edge Function logs in the Supabase Dashboard</li>
-                <li>Confirm that your environment variables (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY) are set correctly</li>
-              </ol>
+            <p className="font-medium">{edgeFunctionError}</p>
+            
+            <div className="mt-4 space-y-3">
+              <div className="bg-destructive/10 p-3 rounded-md">
+                <h4 className="font-semibold flex items-center gap-1 mb-2">
+                  <Terminal className="h-4 w-4" /> 
+                  Deploy Edge Functions
+                </h4>
+                <p className="text-sm mb-2">Run this command in your terminal to deploy the Edge Functions:</p>
+                <div className="relative">
+                  <pre className="bg-background p-2 rounded border text-xs overflow-x-auto">
+                    supabase functions deploy scrape-openlane scrape-findcar --project-ref btkfrowwhgcnzgncjjny
+                  </pre>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="absolute right-1 top-1 h-6 text-xs"
+                    onClick={copyDeployCommand}
+                  >
+                    Copy
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="space-y-1">
+                <p className="font-medium">Additional troubleshooting steps:</p>
+                <ol className="list-decimal pl-5 mt-1 space-y-1 text-sm">
+                  <li>Ensure your Supabase project is running</li>
+                  <li>Check the Edge Function logs in the <a href="https://supabase.com/dashboard/project/btkfrowwhgcnzgncjjny/functions" target="_blank" rel="noopener noreferrer" className="text-primary underline">Supabase Dashboard</a></li>
+                  <li>Confirm that your environment variables are set correctly (they appear to be correct in your .env file)</li>
+                </ol>
+              </div>
             </div>
           </AlertDescription>
         </Alert>
@@ -86,9 +123,19 @@ const Auctions = () => {
           <AlertDescription>
             <p>The Edge Function could not be reached, so mock data is being displayed instead.</p>
             <p className="mt-2 text-sm">To use real data, please ensure your Supabase Edge Functions are properly deployed using:</p>
-            <pre className="bg-gray-100 p-2 mt-1 rounded text-xs overflow-x-auto">
-              supabase functions deploy scrape-openlane scrape-findcar --project-ref btkfrowwhgcnzgncjjny
-            </pre>
+            <div className="relative mt-1">
+              <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
+                supabase functions deploy scrape-openlane scrape-findcar --project-ref btkfrowwhgcnzgncjjny
+              </pre>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="absolute right-1 top-1 h-6 text-xs"
+                onClick={copyDeployCommand}
+              >
+                Copy
+              </Button>
+            </div>
           </AlertDescription>
         </Alert>
       )}
