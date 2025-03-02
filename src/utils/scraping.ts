@@ -91,10 +91,12 @@ export const validateScrapingResults = (scrapingData: any) => {
     throw new Error(scrapingData.error || "Помилка при скрапінгу: " + scrapingData.error);
   }
   
-  // If the function returns a message about using fallback data due to scraping issues
-  if (scrapingData.message && scrapingData.message.includes("Scraping encountered issues")) {
-    console.log('Using fallback data due to scraping issues');
-    // We still return the data, but log the situation
+  // If the function returns a message about using mock/fallback data
+  if (scrapingData.message && 
+     (scrapingData.message.includes("mock data") || 
+      scrapingData.message.includes("fallback data"))) {
+    console.log('Using mock/fallback data:', scrapingData.message);
+    // Still return the data, but log the situation
   }
   
   // Check if the scraping was not successful based on the success field
