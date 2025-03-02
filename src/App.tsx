@@ -14,7 +14,6 @@ import AdminUsers from "@/pages/admin/Users";
 import AdminInspections from "@/pages/admin/Inspections";
 import AdminSettings from "@/pages/admin/Settings";
 import AdminStatistics from "@/pages/admin/Statistics";
-import ScrapedCars from "@/pages/ScrapedCars";
 import Imports from "@/pages/Imports";
 import TransitCars from "@/pages/TransitCars";
 import "./App.css";
@@ -29,7 +28,6 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/inspection" element={<Inspection />} />
         <Route path="/inspection/:id" element={<InspectionCase />} />
-        <Route path="/scraped-cars" element={<ScrapedCars />} />
         <Route path="/imports" element={<Imports />} />
         <Route path="/transit" element={<TransitCars />} />
         <Route path="/admin" element={<AdminDashboard />}>
