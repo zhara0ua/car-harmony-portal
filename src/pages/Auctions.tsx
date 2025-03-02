@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { ScraperControls } from '@/components/scraped-cars/ScraperControls';
-import { ScrapedCarCard } from '@/components/scraped-cars/ScrapedCarCard';
+import ScrapedCarCard from '@/components/scraped-cars/ScrapedCarCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

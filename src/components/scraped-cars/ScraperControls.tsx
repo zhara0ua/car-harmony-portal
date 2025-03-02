@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { ReloadIcon } from '@radix-ui/react-icons';
-import { LuDatabase } from 'lucide-react';
+import { Database } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ScraperControlsProps {
@@ -41,7 +41,7 @@ export const ScraperControls: React.FC<ScraperControlsProps> = ({
           />
           <div className="flex-1">
             <Label htmlFor="use-mock-data" className="text-base font-medium flex items-center">
-              <LuDatabase className="mr-2" />
+              <Database className="mr-2" size={18} />
               Use mock data
             </Label>
             <p className="text-sm text-muted-foreground">
