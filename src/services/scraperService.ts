@@ -16,8 +16,7 @@ export const scraperService = {
         console.log("Attempting to invoke Edge Function: scrape-openlane");
         const { data, error } = await supabase.functions.invoke('scrape-openlane', {
           body: { 
-            useRandomUserAgent: true,
-            useProxy: true
+            useRandomUserAgent: true
           }
         });
         
