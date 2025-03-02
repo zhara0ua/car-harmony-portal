@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,8 +10,9 @@ import { triggerScraping } from "@/utils/scraping";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
-import { Loader2, AlertTriangle, Code } from "lucide-react";
+import { Loader2, AlertTriangle, Code, FileText } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function ScrapedCars() {
   const [filters, setFilters] = useState<Filters>({});
@@ -75,10 +75,8 @@ export default function ScrapedCars() {
       console.log('Starting scraping process...');
       const result = await triggerScraping();
       
-      // Always check for and set HTML content
       if (result.debug && result.debug.htmlContent) {
         setHtmlContent(result.debug.htmlContent);
-        // Automatically open the HTML dialog even on success
         setIsHtmlDialogOpen(true);
       } else {
         setHtmlContent(null);
@@ -163,6 +161,24 @@ export default function ScrapedCars() {
 
           <ScrapedCarsFilters onFilterChange={handleFilterChange} />
 
+          {htmlContent && (
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  HTML вміст сторінки
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[300px] border rounded-md p-4 bg-muted/50">
+                  <pre className="text-xs whitespace-pre-wrap break-all">
+                    {htmlContent}
+                  </pre>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          )}
+
           {isLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
@@ -184,7 +200,6 @@ export default function ScrapedCars() {
 
       <Footer />
 
-      {/* Error Dialog */}
       <AlertDialog open={isErrorDialogOpen} onOpenChange={setIsErrorDialogOpen}>
         <AlertDialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
           <AlertDialogHeader>
@@ -213,7 +228,6 @@ export default function ScrapedCars() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* HTML Content Dialog - always available with a dedicated button */}
       <AlertDialog open={isHtmlDialogOpen} onOpenChange={setIsHtmlDialogOpen}>
         <AlertDialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
           <AlertDialogHeader>
