@@ -53,11 +53,11 @@ export class BaseScraper {
         const { data, error } = response;
         const endTime = Date.now();
         
-        // Access the status code safely - it might be available in some implementations
-        // but not in the TypeScript type definition
-        const responseStatus = response.status ? Number(response.status) : undefined;
+        // Access the status code safely using type assertion and optional chaining
+        // Since TypeScript doesn't recognize 'status' on the type but it may exist at runtime
+        const responseStatus = (response as any)?.status ? Number((response as any).status) : undefined;
         
-        console.log(`Edge Function response status: ${responseStatus || 'unknown'}`);
+        console.log(`Edge Function response status: ${responseStatus !== undefined ? responseStatus : 'unknown'}`);
         
         if (error) {
           console.error("Error from Supabase Edge Function:", error);
