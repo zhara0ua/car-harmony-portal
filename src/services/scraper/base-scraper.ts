@@ -41,7 +41,7 @@ export class BaseScraper {
       
       try {
         const startTime = Date.now();
-        const { data, error, status } = await supabase.functions.invoke(this.functionName, {
+        const response = await supabase.functions.invoke(this.functionName, {
           body: { 
             useRandomUserAgent: options.useRandomUserAgent ?? true,
             timeout: options.timeout ?? 60000, // Default 60 seconds if not specified
@@ -50,10 +50,14 @@ export class BaseScraper {
           }
         });
         
+        const { data, error } = response;
         const endTime = Date.now();
-        const responseStatus = typeof status === 'number' ? status : undefined;
         
-        console.log(`Edge Function response status: ${responseStatus}`);
+        // Access the status code safely - it might be available in some implementations
+        // but not in the TypeScript type definition
+        const responseStatus = response.status ? Number(response.status) : undefined;
+        
+        console.log(`Edge Function response status: ${responseStatus || 'unknown'}`);
         
         if (error) {
           console.error("Error from Supabase Edge Function:", error);
