@@ -26,6 +26,7 @@ export const scraperService = {
           throw error;
         }
         
+        console.log("Received data from Edge Function:", data);
         return data as ScraperResult;
       } catch (functionError) {
         console.error("Failed to call Supabase Edge Function:", functionError);
