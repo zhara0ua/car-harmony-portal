@@ -25,6 +25,7 @@ export const ScraperControls: React.FC<ScraperControlsProps> = ({
 }) => {
   const [selectedSite, setSelectedSite] = useState('findcar');
   const [url, setUrl] = useState('');
+  const [useProxy, setUseProxy] = useState(true);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +63,29 @@ export const ScraperControls: React.FC<ScraperControlsProps> = ({
             </p>
           </div>
         </div>
+
+        {!useMockData && (
+          <div className={`flex items-center space-x-2 p-4 rounded-md border bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800`}>
+            <Switch
+              id="use-proxy"
+              checked={useProxy}
+              onCheckedChange={setUseProxy}
+              className='data-[state=checked]:bg-amber-600'
+            />
+            <div className="flex-1">
+              <Label htmlFor="use-proxy" className="text-base font-medium flex items-center">
+                <Network className="mr-2 text-amber-700" size={18} />
+                Use proxy
+                <Badge variant="outline" className="ml-2 bg-amber-100 text-amber-800 border-amber-200">
+                  Recommended
+                </Badge>
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Using proxy servers to improve scraping reliability
+              </p>
+            </div>
+          </div>
+        )}
 
         {useMockData && (
           <Alert className="bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950/20 dark:border-blue-800 dark:text-blue-400">

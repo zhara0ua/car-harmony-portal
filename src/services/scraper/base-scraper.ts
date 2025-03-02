@@ -38,7 +38,10 @@ export class BaseScraper {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
         },
-        body: JSON.stringify(options),
+        body: JSON.stringify({
+          ...options,
+          useProxy: true // Add proxy flag to use proxies in edge functions
+        }),
         // Add timeout to prevent hanging requests
         signal: AbortSignal.timeout(options.timeout || 30000)
       });
