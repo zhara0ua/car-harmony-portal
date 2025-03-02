@@ -6,7 +6,8 @@ import CarFilters from "@/components/inventory/CarFilters";
 import CarGrid from "@/components/inventory/CarGrid";
 import { useCars } from "@/hooks/useCars";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Inventory = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -75,15 +76,18 @@ const Inventory = () => {
         
         {error && (
           <Alert variant="destructive" className="mb-6">
-            <AlertTitle>Помилка</AlertTitle>
-            <AlertDescription>
-              Не вдалося завантажити автомобілі. Помилка: {error}
-              <button 
+            <AlertTitle>Помилка з'єднання з базою даних</AlertTitle>
+            <AlertDescription className="flex flex-col gap-2">
+              <p>Не вдалося завантажити автомобілі. Деталі помилки: {error}</p>
+              <p>Перевірте, що змінні середовища VITE_SUPABASE_URL та VITE_SUPABASE_ANON_KEY встановлені правильно.</p>
+              <Button 
                 onClick={refetch} 
-                className="ml-2 underline"
+                variant="outline"
+                className="w-fit flex items-center gap-2"
               >
+                <RefreshCw className="h-4 w-4" />
                 Спробувати знову
-              </button>
+              </Button>
             </AlertDescription>
           </Alert>
         )}

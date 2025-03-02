@@ -6,10 +6,12 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Supabase URL or Anon Key is missing. Please check your environment variables.');
+  console.error('URL available:', !!supabaseUrl);
+  console.error('Anon Key available:', !!supabaseAnonKey);
 }
 
 console.log('Initializing Supabase client with:');
-console.log('URL length:', supabaseUrl?.length || 0);
+console.log('URL:', supabaseUrl);
 console.log('Key available:', !!supabaseAnonKey);
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -26,5 +28,18 @@ supabase.auth.getSession().then(({ data, error }) => {
     console.error('Supabase session error:', error);
   } else {
     console.log('Supabase client initialized successfully');
+    console.log('Session available:', !!data.session);
   }
 });
+
+// Test a simple query to verify database connection
+supabase
+  .from('cars')
+  .select('count(*)', { count: 'exact', head: true })
+  .then(({ count, error }) => {
+    if (error) {
+      console.error('Supabase database connection error:', error);
+    } else {
+      console.log('Supabase database connection working, cars count:', count);
+    }
+  });

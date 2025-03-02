@@ -44,11 +44,14 @@ export const useCars = (filters: UseCarFilters) => {
     
     try {
       console.log("Fetching cars with filters:", filters);
+      console.log("Supabase URL length:", supabase.supabaseUrl?.length || 0);
+      console.log("Supabase Key available:", !!supabase.supabaseKey);
       
       // Check Supabase connection
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) {
         console.error("Supabase session error:", sessionError);
+        throw new Error(`Supabase session error: ${sessionError.message}`);
       }
       
       let query = supabase
@@ -98,7 +101,7 @@ export const useCars = (filters: UseCarFilters) => {
 
       if (error) {
         console.error('Supabase query error:', error);
-        setError(error.message);
+        setError(`${error.code}: ${error.message}`);
         throw error;
       }
       
