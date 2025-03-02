@@ -36,3 +36,4 @@ file_size_limit = "50MiB"
 [functions]
 enabled = true
 port = 9999
+
