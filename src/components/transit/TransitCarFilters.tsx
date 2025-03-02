@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -72,7 +72,7 @@ const TransitCarFilters = ({ cars, onFilterChange }: TransitCarFiltersProps) => 
   };
 
   // Apply filters whenever filter values change
-  useState(() => {
+  useEffect(() => {
     applyFilters();
   }, [make, status, minPrice, maxPrice]);
 
