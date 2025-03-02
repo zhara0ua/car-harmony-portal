@@ -10,9 +10,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Anon Key available:', !!supabaseAnonKey);
 }
 
-console.log('Initializing Supabase client with:');
-console.log('URL:', supabaseUrl);
-console.log('Key available:', !!supabaseAnonKey);
+console.log('Initializing Supabase client with URL:', supabaseUrl);
+console.log('Key length:', supabaseAnonKey ? supabaseAnonKey.length : 0);
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
