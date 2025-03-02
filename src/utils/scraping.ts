@@ -34,12 +34,13 @@ export const invokeScrapingFunction = async () => {
   console.log('Invoking scrape-cars edge function...');
   
   try {
-    // Use empty object to avoid JSON parsing issues
+    // Use proper payload structure with forceRealData flag
     const { data, error } = await supabase.functions.invoke('scrape-cars', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ forceRealData: true }),
     });
     
     console.log('Edge function response received:', data);
