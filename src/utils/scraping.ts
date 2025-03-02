@@ -75,6 +75,12 @@ export const triggerScraping = async () => {
         throw new Error(scrapingData.error || "Помилка при скрапінгу: " + scrapingData.error);
       }
       
+      // Check if the scraping was not successful based on the success field
+      if (scrapingData.success === false) {
+        console.error('Scraping failed:', scrapingData.message);
+        throw new Error(scrapingData.message || "Помилка при скрапінгу");
+      }
+      
       console.log('Scraping completed successfully:', scrapingData);
       return scrapingData;
     } catch (functionError) {
