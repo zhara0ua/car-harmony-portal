@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScraperService } from '@/services/scraperService';
 import { ScrapedCar } from '@/types/scraped-car';
 import { useToast } from '@/components/ui/use-toast';
-import { AlertCircle, Info, Network, NetworkOff } from 'lucide-react';
+import { AlertCircle, Info, Network } from 'lucide-react';
 
 const Auctions = () => {
   const [cars, setCars] = useState<ScrapedCar[]>([]);
@@ -73,7 +73,7 @@ const Auctions = () => {
 
       {useMockData && (
         <Alert className="mb-6 border-blue-500 bg-blue-50 dark:bg-blue-950/20">
-          <NetworkOff className="h-4 w-4 text-blue-700" />
+          <Network className="h-4 w-4 text-blue-700" />
           <AlertTitle className="text-blue-700">Mock Data Mode</AlertTitle>
           <AlertDescription className="text-blue-700">
             You are using mock data instead of live scraping. This avoids Edge Function errors and 
