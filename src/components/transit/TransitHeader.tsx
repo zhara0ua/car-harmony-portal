@@ -1,10 +1,15 @@
 
 import { Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const TransitHeader = () => {
+  const { t } = useTranslation();
+  
   return (
     <div className="mb-8">
-      <h1 className="text-3xl font-bold text-navy mb-2">Автомобілі з аукціону в дорозі</h1>
+      <h1 className="text-3xl font-bold text-navy mb-2">
+        {t('nav.transit')}
+      </h1>
       <p className="text-gray-600 mb-3">
         Ці автомобілі ми вже виграли на аукціоні, але вони ще в дорозі до України. 
         Ви можете придбати їх зараз зі знижкою до того, як вони прибудуть на наш майданчик.

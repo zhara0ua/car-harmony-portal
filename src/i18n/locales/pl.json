@@ -1,7 +1,9 @@
+
 {
   "nav": {
     "home": "Strona główna",
     "cars": "Samochody",
+    "transit": "Samochody w drodze",
     "import": "Import",
     "inspection": "Inspekcje",
     "contact": "Kontakt"
