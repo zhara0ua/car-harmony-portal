@@ -17,6 +17,7 @@ export const scraperService = {
       
       console.log("Attempting to invoke Edge Function: scrape-openlane");
       const { data, error } = await supabase.functions.invoke('scrape-openlane', {
+        method: 'POST',
         body: { 
           useRandomUserAgent: true
         }
@@ -27,6 +28,15 @@ export const scraperService = {
         return { 
           success: false, 
           error: error.message || "Failed to call scraper function",
+          timestamp: new Date().toISOString()
+        };
+      }
+      
+      if (!data) {
+        console.error("No data returned from Edge Function");
+        return {
+          success: false,
+          error: "No data returned from scraper function",
           timestamp: new Date().toISOString()
         };
       }
