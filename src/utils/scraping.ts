@@ -31,10 +31,10 @@ export const checkDatabaseConnection = async () => {
 
 // Function to invoke the edge function and handle its response
 export const invokeScrapingFunction = async () => {
-  console.log('Invoking scrape-cars edge function...');
+  console.log('Invoking scrape-cars edge function with forceRealData=true...');
   
   try {
-    // Use proper payload structure with forceRealData flag
+    // Always use real data by setting forceRealData to true
     const { data, error } = await supabase.functions.invoke('scrape-cars', {
       method: 'POST',
       headers: {
