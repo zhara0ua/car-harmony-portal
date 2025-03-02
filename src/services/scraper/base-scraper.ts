@@ -1,151 +1,59 @@
 
-import { supabase } from '@/integrations/supabase/client';
 import { ScraperResult } from '@/types/scraped-car';
+import mockData from './mock-data';
 
 export interface ScraperOptions {
-  timeout?: number;
-  useRandomUserAgent?: boolean;
+  url?: string;
   waitForSelector?: string;
-  debug?: boolean;
-  useFallback?: boolean; // New option to specifically request fallback mode
+  timeout?: number;
+  useMockData?: boolean;
 }
 
 export class BaseScraper {
   protected functionName: string;
-  protected mockDataImportPath: string;
+  protected mockDataPath: string;
 
-  constructor(functionName: string, mockDataImportPath: string) {
+  constructor(functionName: string, mockDataPath: string) {
     this.functionName = functionName;
-    this.mockDataImportPath = mockDataImportPath;
+    this.mockDataPath = mockDataPath;
   }
 
-  protected async invokeScraper(options: ScraperOptions = {}): Promise<ScraperResult> {
-    try {
-      // Check for fallback mode first
-      if (options.useFallback === true) {
-        console.log(`Using fallback mode for ${this.functionName}`);
-        return this.getFallbackData();
-      }
-
-      // Validate Supabase connection
-      if (!supabase) {
-        console.error("Supabase client is not initialized");
-        return this.handleError("Supabase client is not initialized", options);
-      }
-
-      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-        console.error("Supabase environment variables are missing");
-        return this.handleError("Supabase environment variables are missing. Please check your .env file.", options);
-      }
-      
-      console.log(`Attempting to invoke Edge Function: ${this.functionName} with timeout: ${options.timeout}ms`);
-      
-      try {
-        const startTime = Date.now();
-        const response = await supabase.functions.invoke(this.functionName, {
-          body: { 
-            useRandomUserAgent: options.useRandomUserAgent ?? true,
-            timeout: options.timeout ?? 60000, // Default 60 seconds if not specified
-            waitForSelector: options.waitForSelector,
-            debug: options.debug ?? true // Enable debug mode to get more logs from the Edge Function
-          }
-        });
-        
-        const { data, error } = response;
-        const endTime = Date.now();
-        
-        // Access the status code safely using type assertion and optional chaining
-        // Since TypeScript doesn't recognize 'status' on the type but it may exist at runtime
-        const responseStatus = (response as any)?.status ? Number((response as any).status) : undefined;
-        
-        console.log(`Edge Function response status: ${responseStatus !== undefined ? responseStatus : 'unknown'}`);
-        
-        if (error) {
-          console.error("Error from Supabase Edge Function:", error);
-          
-          // Check if we have a non-2xx status code
-          if (responseStatus !== undefined && (responseStatus < 200 || responseStatus >= 300)) {
-            return this.handleError(`Edge Function Error: Edge Function returned a non-2xx status code (${responseStatus})`, options, responseStatus);
-          }
-          
-          return this.handleError(`Edge Function Error: ${error.message || error}`, options);
-        }
-        
-        if (!data) {
-          console.error("Edge Function returned no data");
-          return this.handleError("Edge Function returned no data", options, responseStatus);
-        }
-        
-        console.log(`Received data from Edge Function in ${endTime - startTime}ms:`, 
-          data.cars ? `Found ${data.cars.length} cars` : "No cars found");
-        
-        return data as ScraperResult;
-      } catch (invocationError: any) {
-        console.error("Error during Edge Function invocation:", invocationError);
-        
-        // Determine if this is a network error
-        const isNetworkError = invocationError.message && (
-          invocationError.message.includes("Failed to fetch") ||
-          invocationError.message.includes("Network Error") ||
-          invocationError.message.includes("NetworkError")
-        );
-        
-        if (isNetworkError) {
-          return this.handleError("Network error while connecting to Edge Function. Please check if your Supabase project is running and Edge Functions are deployed.", options);
-        }
-
-        return this.handleError(`Edge Function invocation error: ${invocationError.message || "Unknown error"}`, options);
-      }
-    } catch (error: any) {
-      console.error(`Exception in ${this.functionName}:`, error);
-      return this.handleError(`General error: ${error.message || "Unknown error"}`, options);
-    }
-  }
-
-  private async handleError(errorMessage: string, options: ScraperOptions, statusCode?: number): Promise<ScraperResult> {
-    // If fallback is enabled or wasn't explicitly disabled, try to use fallback data
-    if (options.useFallback !== false) {
-      console.log(`Attempting to use fallback data for ${this.functionName} due to error: ${errorMessage}`);
-      const fallbackResult = await this.getFallbackData();
-      
-      // Add error information to the fallback result
+  protected async invokeScraper(options: ScraperOptions): Promise<ScraperResult> {
+    // If useMockData is true, return mock data immediately
+    if (options.useMockData) {
+      console.log(`Using mock data instead of invoking ${this.functionName}`);
       return {
-        ...fallbackResult,
-        note: `Using mock data because: ${errorMessage}`,
-        statusCode
+        cars: mockData,
+        message: "Success (using mock data)",
+        success: true
       };
     }
-    
-    // Return the error if fallback is disabled
-    return { 
-      success: false,
-      error: errorMessage,
-      timestamp: new Date().toISOString(),
-      note: "An error occurred while trying to scrape data. Enable fallback mode to use mock data.",
-      statusCode
-    };
-  }
 
-  private async getFallbackData(): Promise<ScraperResult> {
     try {
-      // Dynamically import the mock data
-      const module = await import(this.mockDataImportPath);
-      const mockData = module.default || module;
-      
-      console.log(`Using mock data for ${this.functionName}`);
-      
-      return {
-        success: true,
-        cars: mockData.cars || [],
-        timestamp: new Date().toISOString(),
-        note: "Using mock data because Edge Functions are not available. To use real data, please deploy the Edge Functions."
-      };
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${this.functionName}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify(options)
+      });
+
+      if (!response.ok) {
+        console.error(`Error ${response.status} from Edge Function ${this.functionName}`);
+        throw new Error(`Edge Function Error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
     } catch (error) {
-      console.error(`Error loading mock data for ${this.functionName}:`, error);
+      console.error(`Failed to invoke ${this.functionName}:`, error);
+      
+      // Return mock data as fallback with error message
       return {
-        success: false,
-        error: `Failed to load mock data: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: new Date().toISOString()
+        cars: mockData,
+        message: `Edge Function error: ${error instanceof Error ? error.message : 'Unknown error'}. Using mock data as fallback.`,
+        success: false
       };
     }
   }

@@ -1,163 +1,111 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
-import { ScraperResult } from '@/types/scraped-car';
-import { scraperService } from '@/services/scraperService';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
-type ScraperSource = 'openlane' | 'findcar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { ReloadIcon } from '@radix-ui/react-icons';
+import { LuDatabase } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ScraperControlsProps {
-  onScraperResult: (result: ScraperResult) => void;
-  isLoading: boolean;
-  setIsLoading: (loading: boolean) => void;
+  onScrape: (site: string, url: string, useMockData: boolean) => void;
+  loading: boolean;
+  useMockData: boolean;
+  onUseMockDataChange: (value: boolean) => void;
 }
 
-const ScraperControls = ({ onScraperResult, isLoading, setIsLoading }: ScraperControlsProps) => {
-  const { toast } = useToast();
-  const [lastScraped, setLastScraped] = useState<string | null>(null);
-  const [scraperSource, setScraperSource] = useState<ScraperSource>('openlane');
-  const [waitTime, setWaitTime] = useState<number>(5); // Default 5 seconds wait time
-  const [useFallback, setUseFallback] = useState<boolean>(false);
+export const ScraperControls: React.FC<ScraperControlsProps> = ({
+  onScrape,
+  loading,
+  useMockData,
+  onUseMockDataChange
+}) => {
+  const [selectedSite, setSelectedSite] = useState('findcar');
+  const [url, setUrl] = useState('');
 
-  const handleScrape = async () => {
-    setIsLoading(true);
-    
-    try {
-      // Calculate timeout in milliseconds (add 30 seconds base time)
-      const timeout = (waitTime + 30) * 1000;
-      
-      let result;
-      if (scraperSource === 'findcar') {
-        result = await scraperService.scrapeFindCar({ timeout, useFallback });
-      } else {
-        result = await scraperService.scrapeOpenLane({ timeout, useFallback });
-      }
-      
-      if (result.success) {
-        if (result.note && result.note.includes("mock data")) {
-          toast({
-            title: "Using Mock Data",
-            description: "Edge Function failed, displaying mock data instead",
-            duration: 5000,
-          });
-        } else if (result.cars && result.cars.length > 0) {
-          toast({
-            title: "Scraping Successful",
-            description: `Found ${result.cars.length} cars`,
-            duration: 3000,
-          });
-        } else {
-          toast({
-            title: "No Cars Found",
-            description: "The scraper didn't find any cars on the website",
-            duration: 4000,
-          });
-        }
-        setLastScraped(new Date().toLocaleString());
-      } else {
-        toast({
-          title: "Scraping Failed",
-          description: result.error || "Unknown error occurred",
-          variant: "destructive",
-          duration: 4000,
-        });
-      }
-      
-      onScraperResult(result);
-    } catch (error) {
-      console.error("Error during scraping:", error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to scrape website",
-        variant: "destructive",
-        duration: 4000,
-      });
-      
-      onScraperResult({
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString()
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onScrape(selectedSite, url, useMockData);
   };
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-      <div>
-        <h2 className="text-2xl font-bold">Auction Cars</h2>
-        {lastScraped && (
-          <p className="text-sm text-muted-foreground">Last scraped: {lastScraped}</p>
+    <form onSubmit={handleSubmit}>
+      <div className="space-y-4">
+        <div className="flex items-center space-x-2 bg-muted p-4 rounded-md border">
+          <Switch
+            id="use-mock-data"
+            checked={useMockData}
+            onCheckedChange={onUseMockDataChange}
+          />
+          <div className="flex-1">
+            <Label htmlFor="use-mock-data" className="text-base font-medium flex items-center">
+              <LuDatabase className="mr-2" />
+              Use mock data
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              Enable this to use sample data instead of real scraping (avoids Edge Function errors)
+            </p>
+          </div>
+        </div>
+
+        {useMockData && (
+          <Alert>
+            <AlertDescription>
+              Mock data mode is enabled. This will use predefined car data instead of scraping websites.
+            </AlertDescription>
+          </Alert>
         )}
-      </div>
-      <div className="flex flex-col w-full sm:w-auto gap-3">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Select 
-            value={scraperSource} 
-            onValueChange={(value) => setScraperSource(value as ScraperSource)}
-          >
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Select source" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="openlane">OpenLane</SelectItem>
-              <SelectItem value="findcar">FindCar</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button 
-            onClick={handleScrape} 
-            disabled={isLoading}
-            className="w-full sm:w-auto min-w-[140px]"
-          >
-            {isLoading ? (
+
+        <Tabs defaultValue="findcar" onValueChange={setSelectedSite}>
+          <TabsList className="w-full grid grid-cols-2">
+            <TabsTrigger value="findcar">FindCar</TabsTrigger>
+            <TabsTrigger value="openlane">OpenLane</TabsTrigger>
+          </TabsList>
+          <TabsContent value="findcar" className="p-4 border rounded-md mt-2">
+            <div className="space-y-2">
+              <Label htmlFor="findcar-url">FindCar URL:</Label>
+              <Input
+                id="findcar-url"
+                placeholder="Enter FindCar search URL or leave empty for default"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+              />
+              <p className="text-xs text-gray-500">
+                Example: https://car-from-usa.com/search/?page=1
+              </p>
+            </div>
+          </TabsContent>
+          <TabsContent value="openlane" className="p-4 border rounded-md mt-2">
+            <div className="space-y-2">
+              <Label htmlFor="openlane-url">OpenLane URL:</Label>
+              <Input
+                id="openlane-url"
+                placeholder="Enter OpenLane search URL or leave empty for default"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+              />
+              <p className="text-xs text-gray-500">
+                Example: https://www.openlane.com/search-results?make=Toyota
+              </p>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <div className="flex justify-end pt-4">
+          <Button type="submit" disabled={loading}>
+            {loading ? (
               <>
-                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                Scraping...
+                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                Пошук...
               </>
             ) : (
-              <>
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Scrape Now
-              </>
+              'Шукати'
             )}
           </Button>
         </div>
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-muted-foreground">
-              Wait time: {waitTime} seconds
-            </label>
-            <Slider
-              value={[waitTime]}
-              min={2}
-              max={20}
-              step={1}
-              disabled={isLoading}
-              onValueChange={(values) => setWaitTime(values[0])}
-              className="w-full sm:w-[250px]"
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="use-fallback"
-              checked={useFallback}
-              onCheckedChange={setUseFallback}
-            />
-            <Label htmlFor="use-fallback" className="text-sm font-medium">
-              Use mock data (no Edge Functions required)
-            </Label>
-          </div>
-        </div>
       </div>
-    </div>
+    </form>
   );
 };
-
-export default ScraperControls;
