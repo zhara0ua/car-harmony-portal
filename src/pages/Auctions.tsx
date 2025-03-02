@@ -6,7 +6,7 @@ import HTMLDisplay from '@/components/scraped-cars/HTMLDisplay';
 import ScraperControls from '@/components/scraped-cars/ScraperControls';
 import { ScraperResult, ScrapedCar } from '@/types/scraped-car';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Info } from 'lucide-react';
+import { AlertCircle, Info, Clock } from 'lucide-react';
 
 const Auctions = () => {
   const { t } = useTranslation();
@@ -55,6 +55,17 @@ const Auctions = () => {
           <AlertDescription>
             <p>The Edge Function could not be reached, so mock data is being displayed instead.</p>
             <p className="mt-2 text-sm">To use real data, please ensure your Supabase Edge Functions are properly deployed.</p>
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {!scrapedData?.error && !scrapedData?.cars && isLoading && (
+        <Alert className="mb-6">
+          <Clock className="h-4 w-4" />
+          <AlertTitle>Waiting for Page Content</AlertTitle>
+          <AlertDescription>
+            <p>The scraper is waiting for the page to fully load. This may take some time for dynamic content.</p>
+            <p className="mt-2 text-sm">Try increasing the wait time if no results are found.</p>
           </AlertDescription>
         </Alert>
       )}

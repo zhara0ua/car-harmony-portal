@@ -29,8 +29,13 @@ const MOCK_HTML = `
 </html>
 `;
 
+interface ScraperOptions {
+  timeout?: number;
+  useRandomUserAgent?: boolean;
+}
+
 export const scraperService = {
-  async scrapeOpenLane(): Promise<ScraperResult> {
+  async scrapeOpenLane(options: ScraperOptions = {}): Promise<ScraperResult> {
     try {
       // Check if supabase is properly initialized
       if (!supabase || !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
@@ -42,11 +47,13 @@ export const scraperService = {
         };
       }
       
-      console.log("Attempting to invoke Edge Function: scrape-openlane");
+      console.log("Attempting to invoke Edge Function: scrape-openlane with timeout:", options.timeout);
       try {
         const { data, error } = await supabase.functions.invoke('scrape-openlane', {
           body: { 
-            useRandomUserAgent: true
+            useRandomUserAgent: options.useRandomUserAgent ?? true,
+            timeout: options.timeout ?? 60000, // Default 60 seconds if not specified
+            waitForSelector: '#react-root .vehicle-card, #react-root .no-results' // Wait for either vehicle cards or no results message
           }
         });
         
@@ -85,7 +92,7 @@ export const scraperService = {
     }
   },
 
-  async scrapeFindCar(): Promise<ScraperResult> {
+  async scrapeFindCar(options: ScraperOptions = {}): Promise<ScraperResult> {
     try {
       // Check if supabase is properly initialized
       if (!supabase || !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
@@ -97,14 +104,15 @@ export const scraperService = {
         };
       }
       
-      console.log("Attempting to invoke Edge Function: scrape-findcar");
+      console.log("Attempting to invoke Edge Function: scrape-findcar with timeout:", options.timeout);
       console.log("Supabase URL and key available:", !!import.meta.env.VITE_SUPABASE_URL, !!import.meta.env.VITE_SUPABASE_ANON_KEY);
       
       try {
         const { data, error } = await supabase.functions.invoke('scrape-findcar', {
           body: { 
-            useRandomUserAgent: true,
-            timeout: 60000 // Add a longer timeout (60 seconds)
+            useRandomUserAgent: options.useRandomUserAgent ?? true,
+            timeout: options.timeout ?? 60000, // Default 60 seconds if not specified
+            waitForSelector: '.vehicle-card, .no-results' // Wait for either vehicle cards or no results message
           }
         });
         

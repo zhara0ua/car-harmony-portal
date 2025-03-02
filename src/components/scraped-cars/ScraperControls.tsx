@@ -6,6 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { ScraperResult } from '@/types/scraped-car';
 import { scraperService } from '@/services/scraperService';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
 
 type ScraperSource = 'openlane' | 'findcar';
 
@@ -19,16 +20,20 @@ const ScraperControls = ({ onScraperResult, isLoading, setIsLoading }: ScraperCo
   const { toast } = useToast();
   const [lastScraped, setLastScraped] = useState<string | null>(null);
   const [scraperSource, setScraperSource] = useState<ScraperSource>('openlane');
+  const [waitTime, setWaitTime] = useState<number>(5); // Default 5 seconds wait time
 
   const handleScrape = async () => {
     setIsLoading(true);
     
     try {
+      // Calculate timeout in milliseconds (add 30 seconds base time)
+      const timeout = (waitTime + 30) * 1000;
+      
       let result;
       if (scraperSource === 'findcar') {
-        result = await scraperService.scrapeFindCar();
+        result = await scraperService.scrapeFindCar({ timeout });
       } else {
-        result = await scraperService.scrapeOpenLane();
+        result = await scraperService.scrapeOpenLane({ timeout });
       }
       
       if (result.success) {
@@ -89,36 +94,52 @@ const ScraperControls = ({ onScraperResult, isLoading, setIsLoading }: ScraperCo
           <p className="text-sm text-muted-foreground">Last scraped: {lastScraped}</p>
         )}
       </div>
-      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-        <Select 
-          value={scraperSource} 
-          onValueChange={(value) => setScraperSource(value as ScraperSource)}
-        >
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Select source" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="openlane">OpenLane</SelectItem>
-            <SelectItem value="findcar">FindCar</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button 
-          onClick={handleScrape} 
-          disabled={isLoading}
-          className="w-full sm:w-auto min-w-[140px]"
-        >
-          {isLoading ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              Scraping...
-            </>
-          ) : (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Scrape Now
-            </>
-          )}
-        </Button>
+      <div className="flex flex-col w-full sm:w-auto gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Select 
+            value={scraperSource} 
+            onValueChange={(value) => setScraperSource(value as ScraperSource)}
+          >
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Select source" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="openlane">OpenLane</SelectItem>
+              <SelectItem value="findcar">FindCar</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button 
+            onClick={handleScrape} 
+            disabled={isLoading}
+            className="w-full sm:w-auto min-w-[140px]"
+          >
+            {isLoading ? (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                Scraping...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Scrape Now
+              </>
+            )}
+          </Button>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-muted-foreground">
+            Wait time: {waitTime} seconds
+          </label>
+          <Slider
+            value={[waitTime]}
+            min={2}
+            max={20}
+            step={1}
+            disabled={isLoading}
+            onValueChange={(values) => setWaitTime(values[0])}
+            className="w-full sm:w-[250px]"
+          />
+        </div>
       </div>
     </div>
   );
