@@ -60,7 +60,7 @@ export const scraperService = {
       
       try {
         const startTime = Date.now();
-        const { data, error, status } = await supabase.functions.invoke('scrape-openlane', {
+        const response = await supabase.functions.invoke('scrape-openlane', {
           body: { 
             useRandomUserAgent: options.useRandomUserAgent ?? true,
             timeout: options.timeout ?? 60000, // Default 60 seconds if not specified
@@ -68,6 +68,10 @@ export const scraperService = {
             debug: true // Enable debug mode to get more logs from the Edge Function
           }
         });
+        
+        const { data, error } = response;
+        // Safe access to status property 
+        const status = response?.status;
         const endTime = Date.now();
         
         console.log(`Edge Function response status: ${status}`);
@@ -76,7 +80,7 @@ export const scraperService = {
           console.error("Error from Supabase Edge Function:", error);
           
           // Check if we have a non-2xx status code
-          if (status && status < 200 || status >= 300) {
+          if (status && (status < 200 || status >= 300)) {
             return { 
               success: false, 
               error: `Edge Function Error: Edge Function returned a non-2xx status code (${status})`,
@@ -172,7 +176,7 @@ export const scraperService = {
       
       try {
         const startTime = Date.now();
-        const { data, error, status } = await supabase.functions.invoke('scrape-findcar', {
+        const response = await supabase.functions.invoke('scrape-findcar', {
           body: { 
             useRandomUserAgent: options.useRandomUserAgent ?? true,
             timeout: options.timeout ?? 60000, // Default 60 seconds if not specified
@@ -180,6 +184,10 @@ export const scraperService = {
             debug: true // Enable debug mode to get more logs from the Edge Function
           }
         });
+        
+        const { data, error } = response;
+        // Safe access to status property
+        const status = response?.status;
         const endTime = Date.now();
         
         console.log(`Edge Function response status: ${status}`);
@@ -188,7 +196,7 @@ export const scraperService = {
           console.error("Error from Supabase Edge Function:", error);
           
           // Check if we have a non-2xx status code
-          if (status && status < 200 || status >= 300) {
+          if (status && (status < 200 || status >= 300)) {
             return { 
               success: false, 
               error: `Edge Function Error: Edge Function returned a non-2xx status code (${status})`,

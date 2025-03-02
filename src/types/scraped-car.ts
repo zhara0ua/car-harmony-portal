@@ -34,5 +34,6 @@ export interface ScraperResult {
   html?: string;
   error?: string;
   timestamp?: string;
-  note?: string; // Added this property to fix the TypeScript errors
+  note?: string;
+  statusCode?: number; // Added statusCode property to fix type errors
 }

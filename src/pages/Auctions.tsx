@@ -20,7 +20,6 @@ const Auctions = () => {
   const handleScraperResult = (result: ScraperResult) => {
     setScrapedData(result);
     
-    // Check if there's a network or edge function error
     if (result.error && (
       result.error.includes("Edge Function") ||
       result.error.includes("Network error") ||
@@ -32,7 +31,6 @@ const Auctions = () => {
       setEdgeFunctionError(null);
     }
     
-    // Check if we're using mock data
     setUsingMockData(result.note?.includes('mock data') || false);
   };
 
@@ -46,9 +44,7 @@ const Auctions = () => {
     });
   };
 
-  // Helper function to render troubleshooting guidance based on error type
   const renderTroubleshootingGuidance = () => {
-    // Check if this is a non-2xx status code error
     const isNon2xxError = edgeFunctionError?.includes('non-2xx status code');
     const hasStatusCode = scrapedData?.statusCode !== undefined;
     
