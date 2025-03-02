@@ -16,14 +16,14 @@ export const scraperService = {
       }
       
       console.log("Attempting to invoke Edge Function: scrape-openlane");
+      
+      // Set longer timeout directly in the fetch options
       const { data, error } = await supabase.functions.invoke('scrape-openlane', {
         method: 'POST',
         body: { 
           useRandomUserAgent: true,
-          useProxy: false // Keeping proxy disabled
-        },
-        options: {
-          timeout: 20000 // 20 seconds timeout
+          useProxy: false, // Keeping proxy disabled
+          timeout: 20000 // Passing timeout as part of the body instead
         }
       });
       
