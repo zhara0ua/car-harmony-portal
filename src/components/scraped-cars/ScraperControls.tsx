@@ -6,8 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { ReloadIcon } from '@radix-ui/react-icons';
-import { Database } from 'lucide-react';
+import { Database, NetworkOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 
 interface ScraperControlsProps {
   onScrape: (site: string, url: string, useMockData: boolean) => void;
@@ -33,25 +34,37 @@ export const ScraperControls: React.FC<ScraperControlsProps> = ({
   return (
     <form onSubmit={handleSubmit}>
       <div className="space-y-4">
-        <div className="flex items-center space-x-2 bg-muted p-4 rounded-md border">
+        <div className={`flex items-center space-x-2 p-4 rounded-md border ${useMockData ? 'bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800' : 'bg-muted'}`}>
           <Switch
             id="use-mock-data"
             checked={useMockData}
             onCheckedChange={onUseMockDataChange}
+            className={useMockData ? 'data-[state=checked]:bg-blue-600' : ''}
           />
           <div className="flex-1">
             <Label htmlFor="use-mock-data" className="text-base font-medium flex items-center">
-              <Database className="mr-2" size={18} />
+              {useMockData ? (
+                <NetworkOff className="mr-2 text-blue-700" size={18} />
+              ) : (
+                <Database className="mr-2" size={18} />
+              )}
               Use mock data
+              {useMockData && (
+                <Badge variant="outline" className="ml-2 bg-blue-100 text-blue-800 border-blue-200">
+                  Recommended
+                </Badge>
+              )}
             </Label>
             <p className="text-sm text-muted-foreground">
-              Enable this to use sample data instead of real scraping (avoids Edge Function errors)
+              {useMockData 
+                ? "Using sample data instead of real scraping (avoids Edge Function errors)"
+                : "Using real scraping via Edge Functions (may cause network errors)"}
             </p>
           </div>
         </div>
 
         {useMockData && (
-          <Alert>
+          <Alert className="bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950/20 dark:border-blue-800 dark:text-blue-400">
             <AlertDescription>
               Mock data mode is enabled. This will use predefined car data instead of scraping websites.
             </AlertDescription>
@@ -71,6 +84,8 @@ export const ScraperControls: React.FC<ScraperControlsProps> = ({
                 placeholder="Enter FindCar search URL or leave empty for default"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
+                disabled={useMockData}
+                className={useMockData ? "bg-gray-100 text-gray-500" : ""}
               />
               <p className="text-xs text-gray-500">
                 Example: https://car-from-usa.com/search/?page=1
@@ -85,6 +100,8 @@ export const ScraperControls: React.FC<ScraperControlsProps> = ({
                 placeholder="Enter OpenLane search URL or leave empty for default"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
+                disabled={useMockData}
+                className={useMockData ? "bg-gray-100 text-gray-500" : ""}
               />
               <p className="text-xs text-gray-500">
                 Example: https://www.openlane.com/search-results?make=Toyota

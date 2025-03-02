@@ -8,13 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScraperService } from '@/services/scraperService';
 import { ScrapedCar } from '@/types/scraped-car';
 import { useToast } from '@/components/ui/use-toast';
-import { AlertCircle, Info } from 'lucide-react';
+import { AlertCircle, Info, Network, NetworkOff } from 'lucide-react';
 
 const Auctions = () => {
   const [cars, setCars] = useState<ScrapedCar[]>([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [useMockData, setUseMockData] = useState(false);
+  const [useMockData, setUseMockData] = useState(true); // Set default to true to avoid edge function errors
   const { toast } = useToast();
 
   const handleScrape = async (site: string, url: string, useMockOption: boolean) => {
@@ -27,10 +27,10 @@ const Auctions = () => {
       const result = await scraperService.scrape(site, url, useMockOption);
       
       if (result.success) {
-        setCars(result.cars);
+        setCars(result.cars || []);
         toast({
-          title: "Scraping completed",
-          description: `Found ${result.cars.length} cars from ${site}`,
+          title: useMockOption ? "Mock data loaded" : "Scraping completed",
+          description: `Found ${result.cars?.length || 0} cars from ${site}`,
         });
       } else {
         setErrorMessage(result.message || "Scraping failed, but returned some results");
@@ -60,7 +60,29 @@ const Auctions = () => {
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">Аукціони автомобілів</h1>
       
-      {!useMockData && errorMessage && (
+      {!useMockData && (
+        <Alert className="mb-6 border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
+          <Network className="h-4 w-4 text-yellow-700" />
+          <AlertTitle className="text-yellow-700">Live Scraping Mode</AlertTitle>
+          <AlertDescription className="text-yellow-700">
+            You are in live scraping mode which uses Edge Functions. If you experience network errors,
+            please switch to "Use mock data" mode.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {useMockData && (
+        <Alert className="mb-6 border-blue-500 bg-blue-50 dark:bg-blue-950/20">
+          <NetworkOff className="h-4 w-4 text-blue-700" />
+          <AlertTitle className="text-blue-700">Mock Data Mode</AlertTitle>
+          <AlertDescription className="text-blue-700">
+            You are using mock data instead of live scraping. This avoids Edge Function errors and 
+            provides sample car listings for testing.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {errorMessage && (
         <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
