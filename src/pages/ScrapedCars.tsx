@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -23,6 +23,11 @@ export default function ScrapedCars() {
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
   const [isHtmlDialogOpen, setIsHtmlDialogOpen] = useState(false);
   const { toast } = useToast();
+  
+  // Debugging effect to confirm when htmlContent changes
+  useEffect(() => {
+    console.log('HTML content state updated:', htmlContent ? 'Content available' : 'No content');
+  }, [htmlContent]);
   
   const { data: cars, isLoading, refetch } = useQuery({
     queryKey: ['scraped-cars', filters],
@@ -75,26 +80,68 @@ export default function ScrapedCars() {
       console.log('Starting scraping process...');
       const result = await triggerScraping();
       
-      console.log('Scraping result:', result);
+      console.log('Scraping result received:', result);
       
-      // Check if debug info with HTML content exists
-      if (result.debug && result.debug.htmlContent) {
-        console.log('HTML content found in result.debug');
-        setHtmlContent(result.debug.htmlContent);
+      // Extract HTML content regardless of where it might be in the response
+      let extractedHtml = null;
+      
+      // Try to extract HTML from all possible locations
+      if (result.debug?.htmlContent) {
+        console.log('Found HTML in result.debug.htmlContent');
+        extractedHtml = result.debug.htmlContent;
       } else if (result.htmlContent) {
-        console.log('HTML content found directly in result');
-        setHtmlContent(result.htmlContent);
-      } else if (result.success === false && result.error) {
-        console.log('Error found in result:', result.error);
-        // Handle error but still show HTML if available
-        const errorObj = result.error as any;
-        if (errorObj?.htmlContent) {
-          setHtmlContent(errorObj.htmlContent);
+        console.log('Found HTML in result.htmlContent');
+        extractedHtml = result.htmlContent;
+      } else if (result.error?.htmlContent) {
+        console.log('Found HTML in result.error.htmlContent');
+        extractedHtml = result.error.htmlContent;
+      } else if (typeof result === 'object') {
+        // Deep search for htmlContent property
+        const findHtmlContent = (obj: any): string | null => {
+          if (!obj || typeof obj !== 'object') return null;
+          
+          if (obj.htmlContent) return obj.htmlContent;
+          
+          for (const key in obj) {
+            if (typeof obj[key] === 'object') {
+              const found = findHtmlContent(obj[key]);
+              if (found) return found;
+            }
+          }
+          
+          return null;
+        };
+        
+        extractedHtml = findHtmlContent(result);
+        if (extractedHtml) {
+          console.log('Found HTML through deep search');
         }
+      }
+      
+      // Set the HTML content regardless of result success/error
+      if (extractedHtml) {
+        console.log('Setting HTML content');
+        setHtmlContent(extractedHtml);
       } else {
-        console.log('No HTML content found in result');
-        // Make sure we don't reset existing HTML content
-        // setHtmlContent(null);
+        console.log('No HTML content found in the response');
+        // Create mock HTML content so users always see something
+        const mockHtml = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Fallback HTML Content</title>
+          </head>
+          <body>
+            <div>
+              <h1>Fallback HTML Content</h1>
+              <p>The scraper did not return HTML content. This is a fallback message.</p>
+              <p>Timestamp: ${new Date().toISOString()}</p>
+            </div>
+          </body>
+          </html>
+        `;
+        console.log('Setting fallback HTML content');
+        setHtmlContent(mockHtml);
       }
       
       toast({
@@ -116,10 +163,31 @@ export default function ScrapedCars() {
         detailsMsg = parts.slice(1).join(" - ");
       }
       
+      // Try to extract HTML content from the error object
       const errorObj = error as any;
       if (errorObj?.htmlContent) {
         console.log('HTML content found in error object');
         setHtmlContent(errorObj.htmlContent);
+      } else {
+        // Create error HTML content so users always see something
+        const errorHtml = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Error HTML Content</title>
+          </head>
+          <body>
+            <div style="color: red;">
+              <h1>Error Occurred</h1>
+              <p>${errorMsg}</p>
+              ${detailsMsg ? `<p>Details: ${detailsMsg}</p>` : ''}
+              <p>Timestamp: ${new Date().toISOString()}</p>
+            </div>
+          </body>
+          </html>
+        `;
+        console.log('Setting error HTML content');
+        setHtmlContent(errorHtml);
       }
       
       setErrorMessage(errorMsg);
@@ -153,7 +221,7 @@ export default function ScrapedCars() {
 
           <ScrapedCarsFilters onFilterChange={handleFilterChange} />
           
-          {/* Always display the HtmlContentCard */}
+          {/* Show the HtmlContentCard with improved visibility */}
           <HtmlContentCard htmlContent={htmlContent} />
 
           <CarsList cars={cars} isLoading={isLoading} />
