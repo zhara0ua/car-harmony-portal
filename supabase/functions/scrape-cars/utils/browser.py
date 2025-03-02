@@ -98,7 +98,12 @@ async def handle_cookies_consent(page):
             '.cookie-accept',
             '.cookie-consent-accept',
             'button[contains(text(), "Accept")]',
-            'button.accept-cookies'
+            'button.accept-cookies',
+            'button.consent-accept',
+            '#accept-all-cookies',
+            'button[data-testid="cookie-accept"]',
+            '.CookieBanner button:first-child',
+            '#cookieAcceptButton'
         ]
         
         for selector in cookie_button_selectors:
@@ -137,15 +142,21 @@ async def capture_page_html(page):
     try:
         html = await page.content()
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        html_path = f'/tmp/page-html-{timestamp}.html'
+        html_path = f'/tmp/openlane-html-{timestamp}.html'
         
-        with open(html_path, 'w') as f:
+        with open(html_path, 'w', encoding='utf-8') as f:
             f.write(html)
         
-        logger.info(f"Page HTML saved to {html_path}")
+        logger.info(f"OpenLane HTML saved to {html_path}")
         logger.info(f"HTML content length: {len(html)} bytes")
-        print(f"Received {len(html)} bytes of HTML")
+        print(f"Received {len(html)} bytes of HTML from OpenLane")
+        
+        # Log a preview of the HTML
+        html_preview = html[:500] + "..." if len(html) > 500 else html
+        logger.info(f"HTML preview: {html_preview}")
+        
         return html
     except Exception as e:
         logger.error(f"Failed to capture page HTML: {e}")
+        logger.error(traceback.format_exc())
         return None

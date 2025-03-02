@@ -23,19 +23,19 @@ export const HtmlDialog = ({ isOpen, onOpenChange, htmlContent }: HtmlDialogProp
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <Code className="h-5 w-5" />
-            HTML код
+            OpenLane HTML код
           </AlertDialogTitle>
         </AlertDialogHeader>
         
         <div className="flex-1 min-h-0 my-4">
-          <ScrollArea className="h-[60vh] border rounded-md p-4 bg-muted/50">
+          <ScrollArea className="h-[70vh] border rounded-md p-4 bg-muted/50">
             {htmlContent ? (
               <pre className="text-xs whitespace-pre-wrap break-all">
                 {htmlContent}
               </pre>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
-                HTML вміст недоступний
+                HTML вміст з OpenLane недоступний
               </div>
             )}
           </ScrollArea>

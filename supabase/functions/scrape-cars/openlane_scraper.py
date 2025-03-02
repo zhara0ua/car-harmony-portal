@@ -56,10 +56,13 @@ async def scrape_openlane():
             
             error_response = create_error_response(f"Navigation Error: {str(e)}", "Navigation Error")
             if html_content:
-                error_response["htmlContent"] = html_content  # Add directly to root for easier access
+                # Add the HTML content in multiple places for redundancy
+                error_response["htmlContent"] = html_content
+                error_response["raw_html"] = html_content
                 if "debug" not in error_response:
                     error_response["debug"] = {}
-                error_response["debug"]["htmlContent"] = html_content  # Also add to debug for compatibility
+                error_response["debug"]["htmlContent"] = html_content
+                error_response["debug"]["raw_html"] = html_content
             
             if browser:
                 await browser.close()
@@ -103,10 +106,13 @@ async def scrape_openlane():
             await take_debug_screenshot(page, "unexpected-content")
             error_response = create_error_response("Page does not contain expected content", "Content Error")
             if html_content:
-                error_response["htmlContent"] = html_content  # Add directly to root
+                # Add the HTML content in multiple places for redundancy
+                error_response["htmlContent"] = html_content
+                error_response["raw_html"] = html_content
                 if "debug" not in error_response:
                     error_response["debug"] = {}
-                error_response["debug"]["htmlContent"] = html_content  # Also add to debug
+                error_response["debug"]["htmlContent"] = html_content
+                error_response["debug"]["raw_html"] = html_content
             return error_response
         
         # Wait for car listings with multiple selectors and extended timeout
@@ -146,10 +152,13 @@ async def scrape_openlane():
             
             error_response = create_error_response("No car listings found on page", "Selector Error")
             if html_content:
-                error_response["htmlContent"] = html_content  # Add directly to root
+                # Add the HTML content in multiple places for redundancy
+                error_response["htmlContent"] = html_content
+                error_response["raw_html"] = html_content
                 if "debug" not in error_response:
                     error_response["debug"] = {}
-                error_response["debug"]["htmlContent"] = html_content  # Also add to debug
+                error_response["debug"]["htmlContent"] = html_content
+                error_response["debug"]["raw_html"] = html_content
             
             if browser:
                 await browser.close()
@@ -194,13 +203,15 @@ async def scrape_openlane():
         
         # IMPORTANT: Always add HTML content to the response, in multiple places for redundancy
         if html_content:
-            # Add HTML content directly to the root object for easier access
+            # Add HTML content directly to the root object for easier access (using different keys for redundancy)
             response_data["htmlContent"] = html_content
+            response_data["raw_html"] = html_content  # Add another key for redundancy
             
             # Also add to debug section for backward compatibility
             if "debug" not in response_data:
                 response_data["debug"] = {}
             response_data["debug"]["htmlContent"] = html_content
+            response_data["debug"]["raw_html"] = html_content  # Add another key for redundancy
         
         return response_data
     except Exception as general_e:
@@ -211,13 +222,15 @@ async def scrape_openlane():
         
         # If we captured HTML content earlier, add it to the error response
         if html_content:
-            # Add HTML content directly to the root object for easier access
+            # Add HTML content directly to the root object for easier access (using different keys for redundancy)
             error_response["htmlContent"] = html_content
+            error_response["raw_html"] = html_content  # Add another key for redundancy
             
             # Also add to debug section for backward compatibility
             if "debug" not in error_response:
                 error_response["debug"] = {}
             error_response["debug"]["htmlContent"] = html_content
+            error_response["debug"]["raw_html"] = html_content  # Add another key for redundancy
         
         try:
             if browser:
@@ -238,6 +251,8 @@ async def main():
         # Verify HTML content is in the response
         if "htmlContent" in result:
             print(f"HTML content is present in the main response ({len(result['htmlContent'])} bytes)")
+        elif "raw_html" in result:
+            print(f"Raw HTML content is present in the main response ({len(result['raw_html'])} bytes)")
         elif "debug" in result and "htmlContent" in result["debug"]:
             print(f"HTML content is present in debug ({len(result['debug']['htmlContent'])} bytes)")
         else:

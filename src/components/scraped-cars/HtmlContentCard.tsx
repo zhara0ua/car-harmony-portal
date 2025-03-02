@@ -8,24 +8,23 @@ interface HtmlContentCardProps {
 }
 
 export const HtmlContentCard = ({ htmlContent }: HtmlContentCardProps) => {
-  // Always display the card, even if htmlContent is null, but show a message
   return (
-    <Card className="mb-8">
-      <CardHeader>
+    <Card className="mb-8 border-2 border-blue-200">
+      <CardHeader className="bg-blue-50">
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5" />
-          HTML код
+          OpenLane HTML код
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[300px] border rounded-md p-4 bg-muted/50">
+        <ScrollArea className="h-[400px] border rounded-md p-4 bg-gray-50">
           {htmlContent ? (
             <pre className="text-xs whitespace-pre-wrap break-all">
               {htmlContent}
             </pre>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              HTML вміст недоступний. Запустіть скрапінг для отримання HTML коду.
+              HTML вміст з OpenLane недоступний. Запустіть скрапінг для отримання HTML коду.
             </div>
           )}
         </ScrollArea>

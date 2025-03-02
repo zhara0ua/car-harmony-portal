@@ -23,7 +23,6 @@ export default function ScrapedCars() {
   const [isHtmlDialogOpen, setIsHtmlDialogOpen] = useState(false);
   const { toast } = useToast();
   
-  // Debug useEffect to verify when htmlContent changes
   useEffect(() => {
     if (htmlContent) {
       console.log('HTML content updated, length:', htmlContent.length);
@@ -75,15 +74,14 @@ export default function ScrapedCars() {
   const extractHtmlFromResponse = (result: any): string | null => {
     console.log('Extracting HTML from response:', result);
     
-    // Direct locations to check for HTML content
+    if (result?.htmlContent) {
+      console.log('Found HTML directly in result.htmlContent');
+      return result.htmlContent;
+    }
+    
     if (result?.debug?.htmlContent) {
       console.log('Found HTML in result.debug.htmlContent');
       return result.debug.htmlContent;
-    }
-    
-    if (result?.htmlContent) {
-      console.log('Found HTML in result.htmlContent');
-      return result.htmlContent;
     }
     
     if (result?.error?.htmlContent) {
@@ -91,15 +89,27 @@ export default function ScrapedCars() {
       return result.error.htmlContent;
     }
     
-    // Deep search for HTML content in nested objects
-    const findHtmlContent = (obj: any): string | null => {
+    if (result?.raw_html) {
+      console.log('Found raw HTML in result.raw_html');
+      return result.raw_html;
+    }
+    
+    if (result?.debug?.raw_html) {
+      console.log('Found raw HTML in result.debug.raw_html');
+      return result.debug.raw_html;
+    }
+    
+    const findHtmlContent = (obj: any, keys: string[] = ['htmlContent', 'raw_html']): string | null => {
       if (!obj || typeof obj !== 'object') return null;
       
-      for (const key in obj) {
-        if (key === 'htmlContent' && typeof obj[key] === 'string') {
+      for (const key of keys) {
+        if (key in obj && typeof obj[key] === 'string' && obj[key].includes('<!DOCTYPE html>')) {
+          console.log(`Found HTML in object.${key}`);
           return obj[key];
         }
-        
+      }
+      
+      for (const key in obj) {
         if (typeof obj[key] === 'object') {
           const found = findHtmlContent(obj[key]);
           if (found) return found;
@@ -114,6 +124,27 @@ export default function ScrapedCars() {
       console.log('Found HTML through deep search');
       return foundHtml;
     }
+    
+    const findRawHtml = (obj: any): string | null => {
+      if (!obj) return null;
+      
+      if (typeof obj === 'string' && obj.includes('<!DOCTYPE html>')) {
+        console.log('Found raw HTML string');
+        return obj;
+      }
+      
+      if (typeof obj !== 'object') return null;
+      
+      for (const key in obj) {
+        const found = findRawHtml(obj[key]);
+        if (found) return found;
+      }
+      
+      return null;
+    };
+    
+    const rawHtml = findRawHtml(result);
+    if (rawHtml) return rawHtml;
     
     console.log('No HTML content found in the response');
     return null;
@@ -132,27 +163,25 @@ export default function ScrapedCars() {
       
       console.log('Scraping result received:', result);
       
-      // Extract HTML content using our helper function
       const extractedHtml = extractHtmlFromResponse(result);
       
-      // Always set HTML content, even if it's null
       if (extractedHtml) {
         console.log(`Setting HTML content (${extractedHtml.length} chars)`);
+        console.log('HTML preview:', extractedHtml.substring(0, 100) + '...');
         setHtmlContent(extractedHtml);
       } else {
         console.log('No HTML content found, creating fallback HTML');
-        // Create detailed fallback HTML
         const fallbackHtml = `
           <!DOCTYPE html>
           <html>
           <head>
-            <title>Fallback HTML Content</title>
+            <title>OpenLane HTML Content Not Found</title>
             <meta charset="utf-8">
           </head>
           <body>
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ccc; margin: 20px; border-radius: 5px;">
-              <h1>Fallback HTML Content</h1>
-              <p>The scraper did not return HTML content. This is a generated fallback message.</p>
+              <h1>No OpenLane HTML Content</h1>
+              <p>The scraper did not return HTML content from OpenLane. This is a generated fallback message.</p>
               <p>Timestamp: ${new Date().toISOString()}</p>
               <p>Response data:</p>
               <pre>${JSON.stringify(result, null, 2)}</pre>
@@ -188,29 +217,19 @@ export default function ScrapedCars() {
         }
       }
       
-      // Try to extract HTML content from the error object or create error HTML
-      let errorHtml = null;
-      
-      if (errorObj?.htmlContent) {
-        console.log('HTML content found in error object');
-        errorHtml = errorObj.htmlContent;
-      } else if (errorObj?.debug?.htmlContent) {
-        console.log('HTML content found in error.debug object');
-        errorHtml = errorObj.debug.htmlContent;
-      }
+      let errorHtml = extractHtmlFromResponse(errorObj);
       
       if (!errorHtml) {
-        // Create detailed error HTML
         errorHtml = `
           <!DOCTYPE html>
           <html>
           <head>
-            <title>Error HTML Content</title>
+            <title>OpenLane Scraper Error</title>
             <meta charset="utf-8">
           </head>
           <body>
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid red; margin: 20px; border-radius: 5px; color: red;">
-              <h1>Error Occurred</h1>
+              <h1>Error Occurred During OpenLane Scraping</h1>
               <p><strong>Error:</strong> ${errorMsg}</p>
               ${detailsMsg ? `<p><strong>Details:</strong> ${detailsMsg}</p>` : ''}
               <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
@@ -251,7 +270,7 @@ export default function ScrapedCars() {
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="space-y-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Автомобілі з CarOutlet</h1>
+            <h1 className="text-3xl font-bold">Автомобілі з OpenLane</h1>
             <ScrapingActions 
               onScrape={handleScraping}
               isScrapingInProgress={isScrapingInProgress}
@@ -262,7 +281,6 @@ export default function ScrapedCars() {
 
           <ScrapedCarsFilters onFilterChange={handleFilterChange} />
           
-          {/* Always display the HTML card, it will show a message when content is null */}
           <HtmlContentCard htmlContent={htmlContent} />
 
           <CarsList cars={cars} isLoading={isLoading} />
