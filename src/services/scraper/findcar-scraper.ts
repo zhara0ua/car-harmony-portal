@@ -4,7 +4,8 @@ import { BaseScraper, ScraperOptions } from './base-scraper';
 
 export class FindCarScraper extends BaseScraper {
   constructor() {
-    super('scrape-findcar');
+    // Pass the Edge Function name and the path to mock data
+    super('scrape-findcar', '@/services/scraper/mock-data');
   }
 
   async scrape(options: ScraperOptions = {}): Promise<ScraperResult> {

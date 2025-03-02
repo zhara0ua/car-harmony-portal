@@ -4,7 +4,8 @@ import { BaseScraper, ScraperOptions } from './base-scraper';
 
 export class OpenLaneScraper extends BaseScraper {
   constructor() {
-    super('scrape-openlane');
+    // Pass the Edge Function name and the path to mock data
+    super('scrape-openlane', '@/services/scraper/mock-data');
   }
 
   async scrape(options: ScraperOptions = {}): Promise<ScraperResult> {

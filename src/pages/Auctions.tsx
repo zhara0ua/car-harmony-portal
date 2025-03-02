@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ScrapedCarCard from '@/components/scraped-cars/ScrapedCarCard';
@@ -53,22 +54,30 @@ const Auctions = () => {
         <div className="bg-destructive/10 p-3 rounded-md">
           <h4 className="font-semibold flex items-center gap-1 mb-2">
             <Terminal className="h-4 w-4" /> 
-            Deploy Edge Functions
+            Edge Functions Not Deployed
           </h4>
-          <p className="text-sm mb-2">Run this command in your terminal to deploy the Edge Functions:</p>
-          <div className="relative">
-            <pre className="bg-background p-2 rounded border text-xs overflow-x-auto">
-              supabase functions deploy scrape-openlane scrape-findcar --project-ref btkfrowwhgcnzgncjjny
-            </pre>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="absolute right-1 top-1 h-6 text-xs"
-              onClick={copyDeployCommand}
-            >
-              Copy
-            </Button>
-          </div>
+          <p className="text-sm mb-2">There are two ways to fix this:</p>
+          <ol className="list-decimal pl-5 text-sm space-y-2">
+            <li>
+              <strong>Option 1:</strong> Enable "Use mock data" in the controls above to work with sample data without deploying Edge Functions
+            </li>
+            <li>
+              <strong>Option 2:</strong> Deploy the Edge Functions by running this command in your terminal:
+              <div className="relative mt-1">
+                <pre className="bg-background p-2 rounded border text-xs overflow-x-auto">
+                  supabase functions deploy scrape-openlane scrape-findcar --project-ref btkfrowwhgcnzgncjjny
+                </pre>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="absolute right-1 top-1 h-6 text-xs"
+                  onClick={copyDeployCommand}
+                >
+                  Copy
+                </Button>
+              </div>
+            </li>
+          </ol>
         </div>
         
         {isNon2xxError && hasStatusCode && (
@@ -84,22 +93,10 @@ const Auctions = () => {
               <li>Missing or incorrect environment variables in the Edge Function</li>
             </ul>
             <p className="text-sm mt-2">
-              Please check the Edge Function logs for more details.
+              Try enabling "Use mock data" in the controls above to bypass this issue.
             </p>
           </div>
         )}
-        
-        <div className="space-y-1">
-          <p className="font-medium">Additional troubleshooting steps:</p>
-          <ol className="list-decimal pl-5 mt-1 space-y-1 text-sm">
-            <li>Ensure your Supabase project is running</li>
-            <li>Check the Edge Function logs in the <a href="https://supabase.com/dashboard/project/btkfrowwhgcnzgncjjny/functions" target="_blank" rel="noopener noreferrer" className="text-primary underline">Supabase Dashboard</a></li>
-            <li>Confirm that your environment variables are set correctly (they appear to be correct in your .env file)</li>
-            {isNon2xxError && (
-              <li>Verify that your Edge Functions have the correct CORS headers and proper authentication handling</li>
-            )}
-          </ol>
-        </div>
       </div>
     );
   };
@@ -138,6 +135,7 @@ const Auctions = () => {
                 <li>The website structure may have changed</li>
                 <li>There might be network connectivity issues</li>
               </ul>
+              <p className="mt-2">Try enabling "Use mock data" in the controls above to use sample data instead.</p>
             </div>
           </AlertDescription>
         </Alert>
@@ -148,21 +146,8 @@ const Auctions = () => {
           <Info className="h-4 w-4" />
           <AlertTitle>Using Mock Data</AlertTitle>
           <AlertDescription>
-            <p>The Edge Function could not be reached, so mock data is being displayed instead.</p>
-            <p className="mt-2 text-sm">To use real data, please ensure your Supabase Edge Functions are properly deployed using:</p>
-            <div className="relative mt-1">
-              <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
-                supabase functions deploy scrape-openlane scrape-findcar --project-ref btkfrowwhgcnzgncjjny
-              </pre>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="absolute right-1 top-1 h-6 text-xs"
-                onClick={copyDeployCommand}
-              >
-                Copy
-              </Button>
-            </div>
+            <p>You're currently viewing mock data instead of live scraped results.</p>
+            <p className="mt-2 text-sm">This is perfect for development and testing without needing to deploy Edge Functions.</p>
           </AlertDescription>
         </Alert>
       )}
