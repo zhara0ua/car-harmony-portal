@@ -82,22 +82,47 @@ serve(async (req: Request) => {
       );
     }
 
-    // For real data, we need to run the scraper
-    // Import and run the scraper dynamically
+    // For real data, run Python scraper using Deno subprocess
     try {
-      const { scrape_openlane } = await import("./openlane_scraper.py");
-      console.log("Scraper module imported successfully");
+      console.log("Preparing to run Python scraper...");
       
-      // Run the scraper
-      const cars = await scrape_openlane();
-      console.log(`Parsed ${cars?.length || 0} cars from HTML`);
+      // Create Python command
+      const command = new Deno.Command("python3", {
+        args: ["supabase/functions/scrape-cars/openlane_scraper.py"],
+        stdout: "piped",
+        stderr: "piped",
+      });
+      
+      console.log("Executing Python scraper...");
+      const output = await command.output();
+      
+      // Check for errors from Python process
+      if (output.stderr.length > 0) {
+        const errorText = new TextDecoder().decode(output.stderr);
+        console.error("Python script error:", errorText);
+        throw new Error("Python scraper error: " + errorText);
+      }
+      
+      // Process successful output
+      const stdoutText = new TextDecoder().decode(output.stdout);
+      console.log("Python output received:", stdoutText.substring(0, 200) + "...");
+      
+      // Parse the JSON output from Python
+      let pythonData;
+      try {
+        pythonData = JSON.parse(stdoutText);
+        console.log(`Parsed ${pythonData?.length || 0} cars from Python output`);
+      } catch (parseError) {
+        console.error("Error parsing Python output:", parseError);
+        throw new Error("Failed to parse Python output");
+      }
       
       // Return the scraped cars
       return new Response(
         JSON.stringify({
           success: true,
           message: "Cars scraped successfully",
-          cars: cars
+          cars: pythonData
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -109,8 +134,8 @@ serve(async (req: Request) => {
       return new Response(
         JSON.stringify({
           success: false,
-          message: `Error running scraper: ${error.message}`,
-          error: error.stack
+          message: `Error running scraper: ${error.message || "Unknown error"}`,
+          error: error.stack || "No stack trace available"
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -123,8 +148,8 @@ serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         success: false,
-        message: `Error: ${error.message}`,
-        error: error.stack
+        message: `Error: ${error.message || "Unknown error"}`,
+        error: error.stack || "No stack trace available"
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
