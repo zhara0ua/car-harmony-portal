@@ -70,21 +70,21 @@ export const scraperService = {
         });
         
         const { data, error } = response;
-        // Safe access to status property 
-        const status = response?.status;
+        // Get status from response object safely
+        const responseStatus = 'status' in response ? response.status : undefined;
         const endTime = Date.now();
         
-        console.log(`Edge Function response status: ${status}`);
+        console.log(`Edge Function response status: ${responseStatus}`);
         
         if (error) {
           console.error("Error from Supabase Edge Function:", error);
           
           // Check if we have a non-2xx status code
-          if (status && (status < 200 || status >= 300)) {
+          if (responseStatus && (responseStatus < 200 || responseStatus >= 300)) {
             return { 
               success: false, 
-              error: `Edge Function Error: Edge Function returned a non-2xx status code (${status})`,
-              statusCode: status,
+              error: `Edge Function Error: Edge Function returned a non-2xx status code (${responseStatus})`,
+              statusCode: responseStatus,
               timestamp: new Date().toISOString(),
               note: "The Edge Function returned an error status code. Please check the Supabase Edge Function logs for more details."
             };
@@ -103,7 +103,7 @@ export const scraperService = {
           return {
             success: false,
             error: "Edge Function returned no data",
-            statusCode: status,
+            statusCode: responseStatus,
             timestamp: new Date().toISOString(),
             note: "The Edge Function executed but returned no data. Please check the Supabase Edge Function logs."
           };
@@ -186,21 +186,21 @@ export const scraperService = {
         });
         
         const { data, error } = response;
-        // Safe access to status property
-        const status = response?.status;
+        // Get status from response object safely
+        const responseStatus = 'status' in response ? response.status : undefined;
         const endTime = Date.now();
         
-        console.log(`Edge Function response status: ${status}`);
+        console.log(`Edge Function response status: ${responseStatus}`);
         
         if (error) {
           console.error("Error from Supabase Edge Function:", error);
           
           // Check if we have a non-2xx status code
-          if (status && (status < 200 || status >= 300)) {
+          if (responseStatus && (responseStatus < 200 || responseStatus >= 300)) {
             return { 
               success: false, 
-              error: `Edge Function Error: Edge Function returned a non-2xx status code (${status})`,
-              statusCode: status,
+              error: `Edge Function Error: Edge Function returned a non-2xx status code (${responseStatus})`,
+              statusCode: responseStatus,
               timestamp: new Date().toISOString(),
               note: "The Edge Function returned an error status code. Please check the Supabase Edge Function logs for more details."
             };
@@ -219,7 +219,7 @@ export const scraperService = {
           return {
             success: false,
             error: "Edge Function returned no data",
-            statusCode: status,
+            statusCode: responseStatus,
             timestamp: new Date().toISOString(),
             note: "The Edge Function executed but returned no data. Please check the Supabase Edge Function logs."
           };
