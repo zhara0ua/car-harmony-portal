@@ -32,34 +32,40 @@ export const checkDatabaseConnection = async () => {
 // Function to invoke the edge function and handle its response
 export const invokeScrapingFunction = async () => {
   console.log('Invoking scrape-cars edge function...');
-  const { data, error } = await supabase.functions.invoke('scrape-cars', {
-    method: 'POST',
-    body: { source: 'openlane' },
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
   
-  console.log('Edge function response received:', data);
-  
-  if (error) {
-    console.error('Function error details:', {
-      message: error.message,
-      name: error.name,
-      status: error.status,
+  try {
+    // Use empty object to avoid JSON parsing issues
+    const { data, error } = await supabase.functions.invoke('scrape-cars', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
     
-    // Handle specific error cases
-    if (error.message.includes("subprocess")) {
-      throw new Error("Помилка конфігурації сервера: виконання процесів не дозволено");
-    } else if (error.message.includes("non-2xx")) {
-      throw new Error("Сервер повернув неочікуваний статус відповіді. Перевірте логи функції");
-    } else {
-      throw new Error("Помилка при виконанні функції скрапінгу: " + error.message);
+    console.log('Edge function response received:', data);
+    
+    if (error) {
+      console.error('Function error details:', {
+        message: error.message,
+        name: error.name,
+        status: error.status,
+      });
+      
+      // Handle specific error cases
+      if (error.message.includes("subprocess")) {
+        throw new Error("Помилка конфігурації сервера: виконання процесів не дозволено");
+      } else if (error.message.includes("non-2xx")) {
+        throw new Error("Сервер повернув неочікуваний статус відповіді. Перевірте логи функції");
+      } else {
+        throw new Error("Помилка при виконанні функції скрапінгу: " + error.message);
+      }
     }
+    
+    return data;
+  } catch (error) {
+    console.error('Error invoking edge function:', error);
+    throw error;
   }
-  
-  return data;
 };
 
 // Function to validate the function response data
