@@ -21,6 +21,9 @@ export const scraperService = {
         body: { 
           useRandomUserAgent: true,
           useProxy: false // Keeping proxy disabled
+        },
+        options: {
+          timeout: 20000 // 20 seconds timeout
         }
       });
       
