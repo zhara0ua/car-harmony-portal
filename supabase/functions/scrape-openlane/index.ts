@@ -19,8 +19,7 @@ serve(async (req) => {
     const { useRandomUserAgent } = await req.json();
     console.log(`Request received with useRandomUserAgent: ${useRandomUserAgent}`);
     
-    // Instead of scraping with proxy, let's return mock data directly
-    // This helps us avoid CORS and proxy-related issues
+    // Mock data to return
     const mockResult = {
       success: true,
       cars: [
@@ -100,6 +99,7 @@ serve(async (req) => {
           }
         }
       ],
+      html: "<div>Sample HTML content from OpenLane</div>",
       timestamp: new Date().toISOString()
     };
     
