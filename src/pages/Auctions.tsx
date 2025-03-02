@@ -37,7 +37,7 @@ const Auctions = () => {
             <p className="text-lg">
               {scrapedData?.error 
                 ? t('auctions.error', 'Error: {{error}}', { error: scrapedData.error })
-                : t('auctions.noData', 'Click "Scrape Now" to load auction cars')}
+                : t('auctions.noData', 'Click "Scrape Now" to load real auction cars')}
             </p>
           )}
         </div>
