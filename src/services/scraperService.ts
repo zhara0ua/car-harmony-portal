@@ -19,7 +19,8 @@ export const scraperService = {
       const { data, error } = await supabase.functions.invoke('scrape-openlane', {
         method: 'POST',
         body: { 
-          useRandomUserAgent: true
+          useRandomUserAgent: true,
+          useProxy: false // Disable proxy as requested
         }
       });
       
