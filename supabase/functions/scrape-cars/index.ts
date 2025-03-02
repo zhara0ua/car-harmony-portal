@@ -1,228 +1,120 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// Import required modules from Deno standard library
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
-interface ScrapingRequest {
-  forceRealData?: boolean;
-}
+// Mock data for testing purposes
+const MOCK_CARS = [
+  {
+    external_id: "mock-1",
+    title: "Mock BMW X5 2022",
+    price: 35000,
+    year: 2022,
+    mileage: "15,000 km",
+    fuel_type: "Diesel",
+    transmission: "Automatic",
+    location: "Warsaw",
+    image_url: "https://placehold.co/600x400?text=Mock+BMW+X5",
+    external_url: "https://example.com/car/1",
+    source: "mock"
+  },
+  {
+    external_id: "mock-2",
+    title: "Mock Audi A6 2021",
+    price: 32000,
+    year: 2021,
+    mileage: "25,000 km",
+    fuel_type: "Petrol",
+    transmission: "Automatic",
+    location: "Krakow",
+    image_url: "https://placehold.co/600x400?text=Mock+Audi+A6",
+    external_url: "https://example.com/car/2",
+    source: "mock"
+  }
+];
 
-serve(async (req) => {
+serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json",
-      },
-      status: 204,
-    });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log("Starting scrape-cars function execution");
+    // Parse the request body
+    const requestData = await req.json();
     
-    // Parse request body with error handling
-    let requestData: ScrapingRequest = { forceRealData: false };
-    
-    if (req.method === "POST" && req.body) {
-      try {
-        const body = await req.text();
-        if (body && body.trim()) {
-          requestData = JSON.parse(body);
-        }
-      } catch (parseError) {
-        console.error("Error parsing request body:", parseError);
-        // Continue with default values
-      }
-    }
-    
+    // Log the request data for debugging
     console.log("Request options:", requestData);
-
-    // Check if we should force real data
-    const useRealData = requestData.forceRealData === true;
+    
+    // Check if real data is requested or if we should use mock data
+    // Default to true if the parameter is missing
+    const useRealData = requestData?.forceRealData !== false;
+    
+    console.log(`Using ${useRealData ? 'REAL' : 'MOCK'} data`);
     
     if (!useRealData) {
-      console.log("Using mock data as forceRealData is not set to true");
-      // Return mock data for testing
+      console.log("Returning mock data");
       return new Response(
         JSON.stringify({
           success: true,
-          message: "Mock data returned. Set forceRealData to true to use real scraping.",
-          cars: [
-            {
-              external_id: "ol-" + Date.now() + "-1",
-              title: "BMW 3 Series 2022",
-              price: 45000,
-              year: 2022,
-              mileage: "15000 km",
-              fuel_type: "Diesel",
-              transmission: "Automatic",
-              location: "Berlin, Germany",
-              image_url: "https://example.com/car1.jpg",
-              external_url: "https://www.openlane.eu/en/vehicles/123456",
-              source: "openlane"
-            },
-            {
-              external_id: "ol-" + Date.now() + "-2",
-              title: "Audi A4 2023",
-              price: 48000,
-              year: 2023,
-              mileage: "10000 km",
-              fuel_type: "Petrol",
-              transmission: "Automatic",
-              location: "Munich, Germany",
-              image_url: "https://example.com/car2.jpg",
-              external_url: "https://www.openlane.eu/en/vehicles/654321",
-              source: "openlane"
-            }
-          ]
+          message: "Mock cars retrieved successfully",
+          cars: MOCK_CARS
         }),
         {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
         }
       );
     }
 
-    console.log("Starting real data scraping process");
-    
-    // Execute the Python script for scraping
-    const command = new Deno.Command("python3", {
-      args: ["openlane_scraper.py"],
-      stdout: "piped",
-      stderr: "piped",
-    });
-
-    const { code, stdout, stderr } = await command.output();
-    
-    // Handle command execution errors
-    if (code !== 0) {
-      const errorOutput = new TextDecoder().decode(stderr);
-      console.error("Scraper process error:", errorOutput);
-      
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: "Error executing scraper script",
-          error: errorOutput,
-        }),
-        {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-          status: 500,
-        }
-      );
-    }
-
-    // Process successful output
-    const output = new TextDecoder().decode(stdout);
-    console.log("Scraper output received, length:", output.length);
-    
+    // For real data, we need to run the scraper
+    // Import and run the scraper dynamically
     try {
-      // Parse the JSON output from the Python script
-      const cars = JSON.parse(output);
+      const { scrape_openlane } = await import("./openlane_scraper.py");
+      console.log("Scraper module imported successfully");
       
-      // Insert scraped data into the database
-      const { error: upsertError } = await insertScrapedCars(cars);
+      // Run the scraper
+      const cars = await scrape_openlane();
+      console.log(`Parsed ${cars?.length || 0} cars from HTML`);
       
-      if (upsertError) {
-        console.error("Error inserting scraped cars:", upsertError);
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: "Error saving scraped data to database",
-            error: upsertError.message,
-          }),
-          {
-            headers: {
-              ...corsHeaders,
-              "Content-Type": "application/json",
-            },
-            status: 500,
-          }
-        );
-      }
-      
+      // Return the scraped cars
       return new Response(
         JSON.stringify({
           success: true,
-          message: "Scraping completed successfully",
-          cars: cars,
+          message: "Cars scraped successfully",
+          cars: cars
         }),
         {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
         }
       );
-    } catch (jsonError) {
-      console.error("Error parsing scraper output:", jsonError);
+    } catch (error) {
+      console.error("Scraper execution error:", error);
       return new Response(
         JSON.stringify({
           success: false,
-          message: "Error parsing scraper output",
-          error: jsonError.message,
+          message: `Error running scraper: ${error.message}`,
+          error: error.stack
         }),
         {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 500,
         }
       );
     }
   } catch (error) {
-    console.error("Unhandled error in edge function:", error);
-    
+    console.error("Function error:", error);
     return new Response(
       JSON.stringify({
         success: false,
-        message: "Unhandled server error",
-        error: error.message,
+        message: `Error: ${error.message}`,
+        error: error.stack
       }),
       {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,
       }
     );
   }
 });
-
-// Function to insert scraped cars into the database
-async function insertScrapedCars(cars: any[]) {
-  const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
-  
-  const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-  const supabase = createClient(supabaseUrl, supabaseKey);
-  
-  console.log(`Inserting ${cars.length} scraped cars into database`);
-  
-  return await supabase.from("scraped_cars").upsert(
-    cars.map(car => ({
-      external_id: car.external_id,
-      title: car.title,
-      price: car.price,
-      year: car.year,
-      mileage: car.mileage,
-      fuel_type: car.fuel_type,
-      transmission: car.transmission,
-      location: car.location,
-      image_url: car.image_url,
-      external_url: car.external_url,
-      source: car.source
-    })),
-    { onConflict: "external_id" }
-  );
-}

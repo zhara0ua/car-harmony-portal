@@ -31,20 +31,22 @@ export const checkDatabaseConnection = async () => {
 
 // Function to invoke the edge function and handle its response
 export const invokeScrapingFunction = async () => {
-  console.log('Invoking scrape-cars edge function with forceRealData=true...');
+  // Always use real data by forcing it to true
+  const requestOptions = { forceRealData: true };
+  
+  console.log('Invoking scrape-cars edge function with options:', requestOptions);
   
   try {
-    // Always use real data by setting forceRealData to true
     const { data, error } = await supabase.functions.invoke('scrape-cars', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ forceRealData: true }),
+      body: JSON.stringify(requestOptions),
     });
     
     console.log('Edge function response received:', data);
-    console.log('Request payload sent:', { forceRealData: true });
+    console.log('Request payload sent:', requestOptions);
     
     if (error) {
       console.error('Function error details:', {
