@@ -22,5 +22,4 @@ export interface Filters {
   maxPrice?: number;
   fuelType?: string;
   transmission?: string;
-  source?: string;
 }

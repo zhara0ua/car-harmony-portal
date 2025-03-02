@@ -34,14 +34,10 @@ interface UseCarFilters {
 
 export const useCars = (filters: UseCarFilters) => {
   const [cars, setCars] = useState<Car[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const fetchCars = async () => {
     try {
-      setIsLoading(true);
-      console.log('Fetching cars with filters:', filters);
-      
       let query = supabase
         .from('cars')
         .select('*');
@@ -86,13 +82,8 @@ export const useCars = (filters: UseCarFilters) => {
       }
 
       const { data, error } = await query;
-      
-      if (error) {
-        console.error('Error fetching cars:', error);
-        throw error;
-      }
-      
-      console.log('Fetched cars:', data?.length || 0);
+
+      if (error) throw error;
       setCars(data || []);
     } catch (error) {
       console.error('Error fetching cars:', error);
@@ -101,8 +92,6 @@ export const useCars = (filters: UseCarFilters) => {
         description: "Не вдалося завантажити список автомобілів",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -119,5 +108,5 @@ export const useCars = (filters: UseCarFilters) => {
     filters.sortBy
   ]);
 
-  return { cars, isLoading, refetch: fetchCars };
+  return { cars };
 };
