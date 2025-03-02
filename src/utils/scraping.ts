@@ -44,6 +44,7 @@ export const invokeScrapingFunction = async () => {
     });
     
     console.log('Edge function response received:', data);
+    console.log('Request payload sent:', { forceRealData: true });
     
     if (error) {
       console.error('Function error details:', {
