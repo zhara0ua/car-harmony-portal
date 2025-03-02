@@ -1,18 +1,18 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { ScrapedCarCard } from "@/components/scraped-cars/ScrapedCarCard";
-import { ScrapedCarsFilters } from "@/components/scraped-cars/ScrapedCarsFilters";
 import { useToast } from "@/components/ui/use-toast";
 import { type Filters, type ScrapedCar } from "@/types/scraped-car";
 import { triggerScraping } from "@/utils/scraping";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
-import { Loader2, AlertTriangle, Code, FileText } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrapedCarsFilters } from "@/components/scraped-cars/ScrapedCarsFilters";
+import { ScrapingActions } from "@/components/scraped-cars/ScrapingActions";
+import { HtmlContentCard } from "@/components/scraped-cars/HtmlContentCard";
+import { HtmlDialog } from "@/components/scraped-cars/HtmlDialog";
+import { ErrorDialog } from "@/components/scraped-cars/ErrorDialog";
+import { CarsList } from "@/components/scraped-cars/CarsList";
 
 export default function ScrapedCars() {
   const [filters, setFilters] = useState<Filters>({});
@@ -129,135 +129,36 @@ export default function ScrapedCars() {
         <div className="space-y-8">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Автомобілі з CarOutlet</h1>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={handleScraping}
-                disabled={isScrapingInProgress}
-                className="flex items-center gap-2"
-              >
-                {isScrapingInProgress ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Завантаження...</span>
-                  </>
-                ) : (
-                  "Оновити дані"
-                )}
-              </Button>
-              
-              {htmlContent && (
-                <Button 
-                  variant="secondary" 
-                  onClick={() => setIsHtmlDialogOpen(true)}
-                  className="flex items-center gap-2"
-                >
-                  <Code className="h-4 w-4" />
-                  <span>Показати HTML</span>
-                </Button>
-              )}
-            </div>
+            <ScrapingActions 
+              onScrape={handleScraping}
+              isScrapingInProgress={isScrapingInProgress}
+              htmlContent={htmlContent}
+              onShowHtml={() => setIsHtmlDialogOpen(true)}
+            />
           </div>
 
           <ScrapedCarsFilters onFilterChange={handleFilterChange} />
 
-          {htmlContent && (
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  HTML код
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[300px] border rounded-md p-4 bg-muted/50">
-                  <pre className="text-xs whitespace-pre-wrap break-all">
-                    {htmlContent}
-                  </pre>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          )}
+          <HtmlContentCard htmlContent={htmlContent} />
 
-          {isLoading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-              <p className="mt-2 text-muted-foreground">Завантаження...</p>
-            </div>
-          ) : !cars?.length ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Немає доступних автомобілів
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {cars.map((car) => (
-                <ScrapedCarCard key={car.id} car={car} />
-              ))}
-            </div>
-          )}
+          <CarsList cars={cars} isLoading={isLoading} />
         </div>
       </main>
 
       <Footer />
 
-      <AlertDialog open={isErrorDialogOpen} onOpenChange={setIsErrorDialogOpen}>
-        <AlertDialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              Помилка скрапінгу
-            </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-4">
-              <p>{errorMessage}</p>
-              {errorDetails && (
-                <div className="mt-2 p-3 bg-muted text-sm rounded-md overflow-auto max-h-40">
-                  {errorDetails}
-                </div>
-              )}
-              <p className="text-sm font-medium mt-2">
-                Будь ласка, перевірте логи сервера або спробуйте пізніше.
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          
-          <AlertDialogFooter className="mt-4">
-            <AlertDialogAction onClick={() => setIsErrorDialogOpen(false)}>
-              Зрозуміло
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ErrorDialog 
+        isOpen={isErrorDialogOpen}
+        onOpenChange={setIsErrorDialogOpen}
+        errorMessage={errorMessage}
+        errorDetails={errorDetails}
+      />
 
-      <AlertDialog open={isHtmlDialogOpen} onOpenChange={setIsHtmlDialogOpen}>
-        <AlertDialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <Code className="h-5 w-5" />
-              HTML код
-            </AlertDialogTitle>
-          </AlertDialogHeader>
-          
-          <div className="flex-1 min-h-0 my-4">
-            <ScrollArea className="h-[60vh] border rounded-md p-4 bg-muted/50">
-              {htmlContent ? (
-                <pre className="text-xs whitespace-pre-wrap break-all">
-                  {htmlContent}
-                </pre>
-              ) : (
-                <div className="text-center py-12 text-muted-foreground">
-                  HTML вміст недоступний
-                </div>
-              )}
-            </ScrollArea>
-          </div>
-          
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setIsHtmlDialogOpen(false)}>
-              Закрити
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <HtmlDialog 
+        isOpen={isHtmlDialogOpen}
+        onOpenChange={setIsHtmlDialogOpen}
+        htmlContent={htmlContent}
+      />
     </div>
   );
 }
