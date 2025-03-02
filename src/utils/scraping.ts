@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 // Function to check database connection before scraping
@@ -34,6 +35,7 @@ export const invokeScrapingFunction = async () => {
   const requestOptions = { 
     forceRealData: true,
     debugMode: true, // Enable debug mode to get more detailed logs
+    captureHtml: true, // Request HTML capture
     selectors: [
       // Additional selectors to try for car listings
       '.vehicle-card-wrapper', 
@@ -112,10 +114,19 @@ export const validateScrapingResults = (scrapingData: any) => {
     throw new Error("Функція не повернула дані");
   }
   
+  // Capture HTML content from the response if available
+  let htmlContent = null;
+  if (scrapingData.debug && scrapingData.debug.htmlContent) {
+    console.log('HTML content retrieved from the page');
+    htmlContent = scrapingData.debug.htmlContent;
+  }
+  
   // Check if there's an error field in the response even if success is true
   if (scrapingData.error) {
     console.error('Error in response data:', scrapingData.error);
-    throw new Error(scrapingData.error || "Помилка при скрапінгу: " + scrapingData.error);
+    const error = new Error(scrapingData.error || "Помилка при скрапінгу: " + scrapingData.error);
+    (error as any).htmlContent = htmlContent;
+    throw error;
   }
   
   // Check if debug information is available
@@ -140,27 +151,33 @@ export const validateScrapingResults = (scrapingData: any) => {
   if (scrapingData.success === false) {
     console.error('Scraping failed:', scrapingData.message);
     
+    const error = new Error(scrapingData.message || "Помилка при скрапінгу");
+    (error as any).htmlContent = htmlContent;
+    
     // If we have more detailed error information, include it in the error message
     if (scrapingData.errorDetails) {
       console.error('Error details:', scrapingData.errorDetails);
-      throw new Error(`${scrapingData.message || "Помилка при скрапінгу"} - ${scrapingData.errorDetails}`);
+      error.message = `${scrapingData.message || "Помилка при скрапінгу"} - ${scrapingData.errorDetails}`;
     }
     
-    throw new Error(scrapingData.message || "Помилка при скрапінгу");
+    throw error;
   }
   
   // If we got here without any cars, that's still a problem
   if (Array.isArray(scrapingData.cars) && scrapingData.cars.length === 0) {
     console.error('No cars returned from scraper');
     
+    const error = new Error("Скрапер не знайшов жодного автомобіля. Перевірте логи функції.");
+    (error as any).htmlContent = htmlContent;
+    
     // If we have debug info about attempted selectors, include it
     if (scrapingData.debug && scrapingData.debug.attemptedSelectors) {
       console.error('Attempted selectors:', scrapingData.debug.attemptedSelectors);
-      throw new Error("Скрапер не знайшов жодного автомобіля. Спробовані селектори: " + 
-        scrapingData.debug.attemptedSelectors.join(', '));
+      error.message = "Скрапер не знайшов жодного автомобіля. Спробовані селектори: " + 
+        scrapingData.debug.attemptedSelectors.join(', ');
     }
     
-    throw new Error("Скрапер не знайшов жодного автомобіля. Перевірте логи функції.");
+    throw error;
   }
   
   console.log('Scraping data validation successful');

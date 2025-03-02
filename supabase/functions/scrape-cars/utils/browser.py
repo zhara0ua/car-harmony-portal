@@ -143,7 +143,8 @@ async def capture_page_html(page):
             f.write(html)
         
         logger.info(f"Page HTML saved to {html_path}")
-        logger.info(f"Page HTML (first 500 chars): {html[:500]}...")
+        logger.info(f"HTML content length: {len(html)} bytes")
+        print(f"Received {len(html)} bytes of HTML")
         return html
     except Exception as e:
         logger.error(f"Failed to capture page HTML: {e}")

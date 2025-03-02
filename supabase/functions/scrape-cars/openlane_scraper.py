@@ -48,12 +48,22 @@ async def scrape_openlane():
             logger.error(f"Failed to navigate to {url}: {e}")
             logger.error(traceback.format_exc())
             await take_debug_screenshot(page, "navigation-error")
+            
+            # Capture HTML even if navigation had an error
+            html_content = await capture_page_html(page)
+            error_response = create_error_response(f"Navigation Error: {str(e)}", "Navigation Error")
+            if html_content:
+                error_response["debug"] = {"htmlContent": html_content}
+            
             if browser:
                 await browser.close()
-            return create_error_response(f"Navigation Error: {str(e)}", "Navigation Error")
+            return error_response
         
         # Take a screenshot to confirm page loaded
         await take_debug_screenshot(page, "page-loaded")
+        
+        # Capture HTML content for debugging
+        html_content = await capture_page_html(page)
         
         # Handle cookie consent with multiple attempts
         logger.info("Handling cookie consent")
@@ -75,7 +85,10 @@ async def scrape_openlane():
         if "vehicle" not in pageContent.lower() and "auction" not in pageContent.lower() and "car" not in pageContent.lower():
             logger.error("Page does not contain expected content")
             await take_debug_screenshot(page, "unexpected-content")
-            return create_error_response("Page does not contain expected content", "Content Error")
+            error_response = create_error_response("Page does not contain expected content", "Content Error")
+            if html_content:
+                error_response["debug"] = {"htmlContent": html_content}
+            return error_response
         
         # Wait for car listings with multiple selectors and extended timeout
         logger.info("Waiting for car listings to load")
@@ -107,11 +120,18 @@ async def scrape_openlane():
         if not car_listing_found:
             logger.error("Failed to find any car listings with any selector")
             await take_debug_screenshot(page, "no-listings-found")
-            html = await capture_page_html(page)
-            logger.info(f"Page HTML head: {html[:1000]}")
+            
+            # Refresh HTML content
+            html_content = await capture_page_html(page)
+            logger.info(f"Page HTML head: {html_content[:1000] if html_content else 'No HTML content'}")
+            
+            error_response = create_error_response("No car listings found on page", "Selector Error")
+            if html_content:
+                error_response["debug"] = {"htmlContent": html_content}
+            
             if browser:
                 await browser.close()
-            return create_error_response("No car listings found on page", "Selector Error")
+            return error_response
         
         # Add additional delay to ensure all dynamic content is loaded
         logger.info("Waiting for dynamic content to fully load")
@@ -130,10 +150,32 @@ async def scrape_openlane():
             await browser.close()
             logger.info("Browser closed")
         
+        # Add HTML content to the response debug information
+        if cars and html_content:
+            if isinstance(cars, dict):
+                if "debug" not in cars:
+                    cars["debug"] = {}
+                cars["debug"]["htmlContent"] = html_content
+            else:
+                cars = {
+                    "cars": cars,
+                    "success": True,
+                    "debug": {"htmlContent": html_content}
+                }
+        
         return cars
     except Exception as general_e:
         logger.error(f"General error during scraping: {general_e}")
         logger.error(traceback.format_exc())
+        
+        error_response = create_error_response(str(general_e))
+        
+        # If we captured HTML content earlier, add it to the error response
+        if 'html_content' in locals() and html_content:
+            if "debug" not in error_response:
+                error_response["debug"] = {}
+            error_response["debug"]["htmlContent"] = html_content
+        
         try:
             if browser:
                 await browser.close()
@@ -141,7 +183,7 @@ async def scrape_openlane():
         except:
             logger.error("Failed to close browser after error")
         
-        return create_error_response(str(general_e))
+        return error_response
 
 async def main():
     """

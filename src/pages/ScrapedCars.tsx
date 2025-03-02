@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +10,8 @@ import { triggerScraping } from "@/utils/scraping";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, Code } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function ScrapedCars() {
   const [filters, setFilters] = useState<Filters>({});
@@ -19,6 +19,7 @@ export default function ScrapedCars() {
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState("");
+  const [htmlContent, setHtmlContent] = useState<string | null>(null);
   const { toast } = useToast();
   
   const { data: cars, isLoading, refetch } = useQuery({
@@ -72,6 +73,12 @@ export default function ScrapedCars() {
       console.log('Starting scraping process...');
       const result = await triggerScraping();
       
+      if (result.debug && result.debug.htmlContent) {
+        setHtmlContent(result.debug.htmlContent);
+      } else {
+        setHtmlContent(null);
+      }
+      
       toast({
         title: "Успіх",
         description: result.message || "Дані успішно оновлено",
@@ -82,15 +89,20 @@ export default function ScrapedCars() {
     } catch (error) {
       console.error('Error during scraping:', error);
       
-      // Extract more detailed error information if available
       let errorMsg = error instanceof Error ? error.message : "Не вдалося отримати дані з сайту";
       let detailsMsg = "";
       
-      // Check if error message contains specific details we can separate
       if (errorMsg.includes(" - ")) {
         const parts = errorMsg.split(" - ");
         errorMsg = parts[0];
         detailsMsg = parts.slice(1).join(" - ");
+      }
+      
+      const errorObj = error as any;
+      if (errorObj?.htmlContent) {
+        setHtmlContent(errorObj.htmlContent);
+      } else {
+        setHtmlContent(null);
       }
       
       setErrorMessage(errorMsg);
@@ -155,7 +167,7 @@ export default function ScrapedCars() {
       <Footer />
 
       <AlertDialog open={isErrorDialogOpen} onOpenChange={setIsErrorDialogOpen}>
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />
@@ -173,7 +185,24 @@ export default function ScrapedCars() {
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          
+          {htmlContent && (
+            <div className="flex-1 min-h-0">
+              <div className="flex items-center justify-between my-2">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Code className="h-4 w-4" />
+                  HTML вміст сторінки
+                </h3>
+              </div>
+              <ScrollArea className="h-[40vh] border rounded-md p-4 bg-muted/50">
+                <pre className="text-xs whitespace-pre-wrap break-all">
+                  {htmlContent}
+                </pre>
+              </ScrollArea>
+            </div>
+          )}
+          
+          <AlertDialogFooter className="mt-4">
             <AlertDialogAction onClick={() => setIsErrorDialogOpen(false)}>
               Зрозуміло
             </AlertDialogAction>
