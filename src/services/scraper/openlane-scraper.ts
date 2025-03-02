@@ -10,7 +10,9 @@ export class OpenLaneScraper extends BaseScraper {
   async scrape(options: ScraperOptions = {}): Promise<ScraperResult> {
     return this.invokeScraper({
       ...options,
-      waitForSelector: options.waitForSelector || '#react-root .vehicle-card, #react-root .no-results'
+      waitForSelector: options.waitForSelector || '#react-root .vehicle-card, #react-root .no-results',
+      // Add slightly longer default timeout for OpenLane
+      timeout: options.timeout || 60000 // 60 seconds default
     });
   }
 }

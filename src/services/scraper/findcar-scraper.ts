@@ -10,7 +10,9 @@ export class FindCarScraper extends BaseScraper {
   async scrape(options: ScraperOptions = {}): Promise<ScraperResult> {
     return this.invokeScraper({
       ...options,
-      waitForSelector: options.waitForSelector || '.vehicle-card, .no-results'
+      waitForSelector: options.waitForSelector || '.vehicle-card, .no-results',
+      // Add slightly longer default timeout for FindCar
+      timeout: options.timeout || 60000 // 60 seconds default
     });
   }
 }

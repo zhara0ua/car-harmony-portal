@@ -38,11 +38,10 @@ export class BaseScraper {
       }
       
       console.log(`Attempting to invoke Edge Function: ${this.functionName} with timeout: ${options.timeout}ms`);
-      console.log(`Supabase URL: ${import.meta.env.VITE_SUPABASE_URL.substring(0, 10)}... (truncated for security)`);
       
       try {
         const startTime = Date.now();
-        const response = await supabase.functions.invoke(this.functionName, {
+        const { data, error, status } = await supabase.functions.invoke(this.functionName, {
           body: { 
             useRandomUserAgent: options.useRandomUserAgent ?? true,
             timeout: options.timeout ?? 60000, // Default 60 seconds if not specified
@@ -51,17 +50,15 @@ export class BaseScraper {
           }
         });
         
-        const { data, error } = response;
-        // Get status from response object safely with proper type checking
-        const responseStatus = 'status' in response ? Number(response.status) : undefined;
         const endTime = Date.now();
+        const responseStatus = typeof status === 'number' ? status : undefined;
         
         console.log(`Edge Function response status: ${responseStatus}`);
         
         if (error) {
           console.error("Error from Supabase Edge Function:", error);
           
-          // Check if we have a non-2xx status code with proper type checking
+          // Check if we have a non-2xx status code
           if (responseStatus !== undefined && (responseStatus < 200 || responseStatus >= 300)) {
             return { 
               success: false, 
