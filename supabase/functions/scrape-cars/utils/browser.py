@@ -43,7 +43,14 @@ async def setup_browser():
     if proxy:
         logger.info(f"Using proxy: {proxy}")
     
-    browser_args = ['--no-sandbox', '--disable-setuid-sandbox']
+    browser_args = [
+        '--no-sandbox', 
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu',
+        '--window-size=1920,1080'
+    ]
     if proxy:
         browser_args.append(f'--proxy-server={proxy}')
     
@@ -52,14 +59,24 @@ async def setup_browser():
         browser = await launch({
             'headless': True,
             'args': browser_args,
-            'ignoreHTTPSErrors': True
+            'ignoreHTTPSErrors': True,
+            'timeout': 60000  # 60 seconds timeout for browser launch
         })
         logger.info("Browser launched successfully")
         
         page = await browser.newPage()
         await page.setUserAgent(user_agent)
         await page.setViewport({'width': 1920, 'height': 1080})
-        logger.info("Page created successfully")
+        
+        # Set additional page configurations
+        await page.setJavaScriptEnabled(True)
+        await page.setRequestInterception(False)  # Don't interrupt requests
+        
+        # Add error handling for console messages
+        page.on('console', lambda msg: logger.info(f'CONSOLE: {msg.text}'))
+        page.on('pageerror', lambda err: logger.error(f'PAGE ERROR: {err}'))
+        
+        logger.info("Page created and configured successfully")
         
         return browser, page
     except Exception as e:
@@ -73,22 +90,43 @@ async def handle_cookies_consent(page):
     """
     try:
         logger.info("Looking for cookie consent button")
-        cookieButton = await page.waitForSelector('button#onetrust-accept-btn-handler', {'visible': True, 'timeout': 5000})
-        if cookieButton:
-            logger.info("Clicking cookie consent button")
-            await cookieButton.click()
-            await asyncio.sleep(random.uniform(0.5, 1.5))
-            logger.info("Cookie consent handled")
+        
+        # Try multiple possible selectors for cookie consent buttons
+        cookie_button_selectors = [
+            'button#onetrust-accept-btn-handler',
+            '#accept-cookies',
+            '.cookie-accept',
+            '.cookie-consent-accept',
+            'button[contains(text(), "Accept")]',
+            'button.accept-cookies'
+        ]
+        
+        for selector in cookie_button_selectors:
+            try:
+                logger.info(f"Trying cookie selector: {selector}")
+                cookieButton = await page.waitForSelector(selector, {'visible': True, 'timeout': 5000})
+                if cookieButton:
+                    logger.info(f"Found cookie consent button with selector: {selector}")
+                    await cookieButton.click()
+                    await asyncio.sleep(random.uniform(1, 2))
+                    logger.info("Cookie consent handled")
+                    return
+            except Exception as e:
+                logger.info(f"Selector {selector} not found: {e}")
+        
+        logger.info("No cookie consent button found with any selector")
     except Exception as e:
-        logger.info(f"No cookie consent button found or error: {e}")
+        logger.info(f"Error handling cookie consent: {e}")
 
 async def take_debug_screenshot(page, filename):
     """
     Take a debug screenshot
     """
     try:
-        await page.screenshot({'path': f'/tmp/{filename}.png'})
-        logger.info(f"Debug screenshot saved to /tmp/{filename}.png")
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        screenshot_path = f'/tmp/{filename}-{timestamp}.png'
+        await page.screenshot({'path': screenshot_path, 'fullPage': True})
+        logger.info(f"Debug screenshot saved to {screenshot_path}")
     except Exception as e:
         logger.error(f"Failed to take debug screenshot: {e}")
 
@@ -98,6 +136,13 @@ async def capture_page_html(page):
     """
     try:
         html = await page.content()
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        html_path = f'/tmp/page-html-{timestamp}.html'
+        
+        with open(html_path, 'w') as f:
+            f.write(html)
+        
+        logger.info(f"Page HTML saved to {html_path}")
         logger.info(f"Page HTML (first 500 chars): {html[:500]}...")
         return html
     except Exception as e:
