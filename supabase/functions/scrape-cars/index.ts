@@ -1,187 +1,183 @@
 
-// Follow this setup guide to integrate the Deno runtime into your application:
-// https://deno.land/manual/examples/deploy_node_server
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
-interface ScrapingRequest {
-  source?: string;
-}
-
-interface ScrapedCar {
-  external_id: string;
-  title: string;
-  price: number;
-  year: number | null;
-  mileage: string | null;
-  fuel_type: string | null;
-  transmission: string | null;
-  location: string | null;
-  image_url: string;
-  external_url: string;
-  source: string;
-}
-
-// CORS headers for cross-domain requests
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Function to scrape OpenLane cars using fetch
-async function scrapeOpenLane(): Promise<ScrapedCar[]> {
-  console.log("Starting OpenLane scraping with HTTP fetch");
-  
-  try {
-    const proxyList = Deno.env.get("PROXY_LIST") || "";
-    const proxies = proxyList ? proxyList.split(",").map(p => p.trim()) : [];
-    console.log(`Found ${proxies.length} proxies to use`);
-    
-    // Sample user agents for rotation
-    const userAgents = [
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15",
-      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36",
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:95.0) Gecko/20100101 Firefox/95.0",
-    ];
-    
-    // Select a random user agent
-    const userAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
-    console.log(`Using user agent: ${userAgent}`);
-    
-    // For testing purposes without Pyppeteer, return mock data
-    console.log("Returning mock data for testing");
-    return [
-      {
-        external_id: `ol-${Date.now()}-1`,
-        title: "BMW 3 Series 2022",
-        price: 45000,
-        year: 2022,
-        mileage: "15000 km",
-        fuel_type: "Diesel",
-        transmission: "Automatic",
-        location: "Berlin, Germany",
-        image_url: "https://example.com/car1.jpg",
-        external_url: "https://www.openlane.eu/en/vehicles/123456",
-        source: "openlane"
-      },
-      {
-        external_id: `ol-${Date.now()}-2`,
-        title: "Audi A4 2023",
-        price: 48000,
-        year: 2023,
-        mileage: "10000 km",
-        fuel_type: "Petrol",
-        transmission: "Automatic",
-        location: "Munich, Germany",
-        image_url: "https://example.com/car2.jpg",
-        external_url: "https://www.openlane.eu/en/vehicles/654321",
-        source: "openlane"
-      }
-    ];
-  } catch (error) {
-    console.error("Error scraping OpenLane:", error);
-    // Return empty array instead of throwing, so we don't break the entire process
-    return [];
-  }
-}
+const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
 
 serve(async (req) => {
+  console.log("Edge function received request");
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    console.log("Handling CORS preflight request");
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 200
+    });
   }
-  
+
   try {
-    console.log("Starting scrape-cars edge function");
+    // Parse request body
+    let reqBody;
+    try {
+      reqBody = await req.json();
+    } catch (e) {
+      console.error("Error parsing request body:", e);
+      reqBody = { source: "openlane" }; // Default fallback
+    }
     
-    // Create a Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string;
+    console.log("Request body:", reqBody);
+    const source = reqBody.source || "openlane";
     
-    if (!supabaseUrl || !supabaseKey) {
-      console.error("Missing Supabase environment variables");
+    // Create Supabase client
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    console.log("Supabase client created successfully");
+    
+    // Scrape cars data from OpenLane
+    console.log(`Starting to scrape cars from ${source}`);
+    const scrapedCars = await scrapeOpenLaneCars();
+    console.log(`Scraped ${scrapedCars.length} cars from ${source}`);
+    
+    // Save to database
+    if (scrapedCars.length > 0) {
+      console.log("Saving scraped cars to database...");
+      const timestamp = new Date().toISOString();
+      
+      // Add timestamp and make sure all required fields are present
+      const preparedCars = scrapedCars.map((car, index) => ({
+        external_id: car.external_id || `${source}-${Date.now()}-${index + 1}`,
+        title: car.title || "Unknown Car",
+        price: car.price || 0,
+        year: car.year || null,
+        mileage: car.mileage || null,
+        fuel_type: car.fuel_type || null,
+        transmission: car.transmission || null,
+        location: car.location || null,
+        image_url: car.image_url || null,
+        external_url: car.external_url || null,
+        source: source,
+        created_at: timestamp
+      }));
+      
+      const { data, error } = await supabase
+        .from('scraped_cars')
+        .upsert(preparedCars, { 
+          onConflict: 'external_id',
+          ignoreDuplicates: false 
+        });
+      
+      if (error) {
+        console.error("Database error:", error);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "Failed to save cars to database: " + error.message 
+          }),
+          { 
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200 // Return 200 even for errors to prevent client issues
+          }
+        );
+      }
+      
+      console.log("Successfully saved cars to database");
       return new Response(
-        JSON.stringify({ success: false, error: "Server configuration error: Missing Supabase credentials" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+        JSON.stringify({ 
+          success: true, 
+          message: `Scraped ${scrapedCars.length} cars, saved ${scrapedCars.length} to database`,
+          count: scrapedCars.length
+        }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200
+        }
+      );
+    } else {
+      console.log("No cars found to save");
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: "No cars found to scrape",
+          count: 0
+        }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200
+        }
       );
     }
-    
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    console.log("Supabase client created");
-    
-    // Parse request body
-    let requestData: ScrapingRequest = { source: "all" };
-    try {
-      requestData = await req.json();
-    } catch (e) {
-      console.log("Could not parse request body, using defaults");
-    }
-    
-    const { source = "all" } = requestData;
-    console.log(`Requested scraping source: ${source}`);
-    
-    let scrapedData: ScrapedCar[] = [];
-    
-    if (source === "openlane" || source === "all") {
-      // Execute the HTTP-based scraper for OpenLane
-      try {
-        console.log("Starting OpenLane scraping");
-        const openLaneResults = await scrapeOpenLane();
-        scrapedData = [...scrapedData, ...openLaneResults];
-        console.log(`OpenLane scraping completed, found ${openLaneResults.length} cars`);
-      } catch (error) {
-        console.error("OpenLane scraping failed:", error);
-        // Continue with processing, don't return an error response here
-      }
-    }
-    
-    // Process and save the data
-    let insertedCount = 0;
-    
-    if (scrapedData.length > 0) {
-      console.log(`Upserting ${scrapedData.length} cars to database`);
-      
-      try {
-        const { data, error: upsertError } = await supabase
-          .from('scraped_cars')
-          .upsert(scrapedData, { 
-            onConflict: 'external_id',
-            ignoreDuplicates: false 
-          });
-        
-        if (upsertError) {
-          console.error("Error upserting data:", upsertError);
-          // Continue and return a partial success
-        } else {
-          insertedCount = data?.length || scrapedData.length;
-          console.log(`Successfully saved ${insertedCount} cars to database`);
-        }
-      } catch (dbError) {
-        console.error("Database operation error:", dbError);
-        // Continue and return a partial success
-      }
-    }
-    
-    // Always return a 200 response, even if there were some errors
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: `Scraped ${scrapedData.length} cars, saved ${insertedCount} to database`,
-        count: scrapedData.length
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-    );
   } catch (error) {
-    console.error("Function execution error:", error);
-    // Return a 200 response with error details, not a 500
+    console.error("Error in edge function:", error);
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error instanceof Error ? error.message : "Unknown error", 
-        errorDetails: error instanceof Error ? error.stack : null 
+        error: `Error processing request: ${error.message}` 
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      { 
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200 // Return 200 even for errors to prevent client issues
+      }
     );
   }
 });
+
+// Function to scrape cars from OpenLane
+async function scrapeOpenLaneCars() {
+  try {
+    console.log("Starting to scrape OpenLane cars...");
+    
+    // In a real implementation, this would make an HTTP request to OpenLane
+    // For now, we'll generate more mock data to simulate more cars
+    const cars = [];
+    
+    // Generate 15 mock cars with various makes and models
+    const carMakes = ["BMW", "Audi", "Mercedes", "Volkswagen", "Toyota"];
+    const carModels = {
+      "BMW": ["3 Series", "5 Series", "X5", "X3"],
+      "Audi": ["A4", "A6", "Q5", "Q7"],
+      "Mercedes": ["C-Class", "E-Class", "GLC", "GLE"],
+      "Volkswagen": ["Golf", "Passat", "Tiguan", "Atlas"],
+      "Toyota": ["Camry", "Corolla", "RAV4", "Highlander"]
+    };
+    const fuelTypes = ["Petrol", "Diesel", "Hybrid", "Electric"];
+    const transmissions = ["Automatic", "Manual"];
+    const locations = ["Berlin, Germany", "Munich, Germany", "Frankfurt, Germany", "Hamburg, Germany", "Cologne, Germany"];
+    
+    for (let i = 1; i <= 15; i++) {
+      const make = carMakes[Math.floor(Math.random() * carMakes.length)];
+      const model = carModels[make][Math.floor(Math.random() * carModels[make].length)];
+      const year = 2018 + Math.floor(Math.random() * 6); // 2018 to 2023
+      const mileage = `${Math.floor(Math.random() * 100000)} km`;
+      const price = 20000 + Math.floor(Math.random() * 60000);
+      const fuelType = fuelTypes[Math.floor(Math.random() * fuelTypes.length)];
+      const transmission = transmissions[Math.floor(Math.random() * transmissions.length)];
+      const location = locations[Math.floor(Math.random() * locations.length)];
+      
+      cars.push({
+        external_id: `ol-${Date.now()}-${i}`,
+        title: `${make} ${model} ${year}`,
+        price: price,
+        year: year,
+        mileage: mileage,
+        fuel_type: fuelType,
+        transmission: transmission,
+        location: location,
+        image_url: `https://example.com/car${i}.jpg`,
+        external_url: `https://www.openlane.eu/en/vehicles/${100000 + i}`,
+        source: "openlane"
+      });
+    }
+    
+    console.log(`Generated ${cars.length} mock cars`);
+    return cars;
+  } catch (error) {
+    console.error("Error scraping OpenLane cars:", error);
+    throw new Error(`Failed to scrape OpenLane: ${error.message}`);
+  }
+}
