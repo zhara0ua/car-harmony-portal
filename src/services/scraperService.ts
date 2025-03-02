@@ -2,6 +2,27 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ScraperResult } from '@/types/scraped-car';
 
+const MAX_RETRIES = 2;
+const RETRY_DELAY = 1000; // 1 second
+
+// Helper function to add delay
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Helper function to retry failed requests
+async function retryOperation<T>(
+  operation: () => Promise<T>,
+  retries = MAX_RETRIES
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (retries <= 0) throw error;
+    console.log(`Retrying operation, ${retries} attempts left...`);
+    await delay(RETRY_DELAY);
+    return retryOperation(operation, retries - 1);
+  }
+}
+
 export const scraperService = {
   async scrapeOpenLane(): Promise<ScraperResult> {
     try {
@@ -17,14 +38,16 @@ export const scraperService = {
       
       console.log("Attempting to invoke Edge Function: scrape-openlane");
       
-      // Set longer timeout directly in the fetch options
-      const { data, error } = await supabase.functions.invoke('scrape-openlane', {
-        method: 'POST',
-        body: { 
-          useRandomUserAgent: true,
-          useProxy: false, // Keeping proxy disabled
-          timeout: 20000 // Passing timeout as part of the body instead
-        }
+      // Retry the function invocation
+      const { data, error } = await retryOperation(async () => {
+        return await supabase.functions.invoke('scrape-openlane', {
+          method: 'POST',
+          body: { 
+            useRandomUserAgent: true,
+            useProxy: false,
+            timeout: 20000
+          }
+        });
       });
       
       if (error) {
@@ -71,13 +94,16 @@ export const scraperService = {
       
       console.log("Attempting to invoke Edge Function: scrape-caroutlet");
       
-      const { data, error } = await supabase.functions.invoke('scrape-caroutlet', {
-        method: 'POST',
-        body: { 
-          useRandomUserAgent: true,
-          useProxy: false,
-          timeout: 30000 // 30 seconds timeout for more complex site
-        }
+      // Retry the function invocation
+      const { data, error } = await retryOperation(async () => {
+        return await supabase.functions.invoke('scrape-caroutlet', {
+          method: 'POST',
+          body: { 
+            useRandomUserAgent: true,
+            useProxy: false,
+            timeout: 30000
+          }
+        });
       });
       
       if (error) {

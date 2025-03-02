@@ -25,17 +25,39 @@ const ScraperControls = ({ onScraperResult, isLoading, setIsLoading }: ScraperCo
   const { toast } = useToast();
   const [lastScraped, setLastScraped] = useState<string | null>(null);
   const [scrapeSource, setScrapeSource] = useState<string>("caroutlet"); // Default to CarOutlet
+  const [connectionError, setConnectionError] = useState<boolean>(false);
 
   const handleScrape = async () => {
     setIsLoading(true);
+    setConnectionError(false);
     
     try {
       let result: ScraperResult;
       
-      if (scrapeSource === "openlane") {
-        result = await scraperService.scrapeOpenLane();
-      } else {
-        result = await scraperService.scrapeCarOutlet();
+      try {
+        if (scrapeSource === "openlane") {
+          result = await scraperService.scrapeOpenLane();
+        } else {
+          result = await scraperService.scrapeCarOutlet();
+        }
+      } catch (connectionErr) {
+        console.error("Connection error:", connectionErr);
+        setConnectionError(true);
+        toast({
+          title: "Connection Error",
+          description: "Failed to connect to the scraper service. Please check your network connection and edge function configuration.",
+          variant: "destructive",
+          duration: 5000,
+        });
+        
+        onScraperResult({
+          success: false,
+          error: "Failed to connect to the scraper service",
+          timestamp: new Date().toISOString()
+        });
+        
+        setIsLoading(false);
+        return;
       }
       
       if (result.success) {
@@ -80,6 +102,11 @@ const ScraperControls = ({ onScraperResult, isLoading, setIsLoading }: ScraperCo
         <h2 className="text-2xl font-bold">Auction Cars</h2>
         {lastScraped && (
           <p className="text-sm text-muted-foreground">Last scraped: {lastScraped}</p>
+        )}
+        {connectionError && (
+          <p className="text-sm text-destructive mt-1">
+            Connection error: Edge Function may not be properly configured or accessible
+          </p>
         )}
       </div>
       <div className="flex flex-col sm:flex-row gap-3">

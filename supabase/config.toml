@@ -32,7 +32,7 @@ site_url = "http://localhost:5173"
 # File storage configuration
 file_size_limit = "50MiB"
 
-# Edge Functions configuration - Correct format
+# Edge Functions configuration
 [functions]
 enabled = true
 port = 9999
