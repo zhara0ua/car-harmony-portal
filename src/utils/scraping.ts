@@ -114,7 +114,7 @@ export const validateScrapingResults = (scrapingData: any) => {
     throw new Error("Функція не повернула дані");
   }
   
-  // Capture HTML content from the response if available
+  // Always capture HTML content from the response if available, regardless of success
   let htmlContent = null;
   if (scrapingData.debug && scrapingData.debug.htmlContent) {
     console.log('HTML content retrieved from the page');
@@ -179,6 +179,10 @@ export const validateScrapingResults = (scrapingData: any) => {
     
     throw error;
   }
+  
+  // Add HTML content to the result object in all cases
+  scrapingData.debug = scrapingData.debug || {};
+  scrapingData.debug.htmlContent = htmlContent || scrapingData.debug.htmlContent;
   
   console.log('Scraping data validation successful');
   return scrapingData;

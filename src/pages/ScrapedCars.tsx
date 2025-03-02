@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +21,7 @@ export default function ScrapedCars() {
   const [errorMessage, setErrorMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState("");
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
+  const [isHtmlDialogOpen, setIsHtmlDialogOpen] = useState(false);
   const { toast } = useToast();
   
   const { data: cars, isLoading, refetch } = useQuery({
@@ -73,8 +75,11 @@ export default function ScrapedCars() {
       console.log('Starting scraping process...');
       const result = await triggerScraping();
       
+      // Always check for and set HTML content
       if (result.debug && result.debug.htmlContent) {
         setHtmlContent(result.debug.htmlContent);
+        // Automatically open the HTML dialog even on success
+        setIsHtmlDialogOpen(true);
       } else {
         setHtmlContent(null);
       }
@@ -126,21 +131,34 @@ export default function ScrapedCars() {
         <div className="space-y-8">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Автомобілі з CarOutlet</h1>
-            <Button
-              variant="outline"
-              onClick={handleScraping}
-              disabled={isScrapingInProgress}
-              className="flex items-center gap-2"
-            >
-              {isScrapingInProgress ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Завантаження...</span>
-                </>
-              ) : (
-                "Оновити дані"
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleScraping}
+                disabled={isScrapingInProgress}
+                className="flex items-center gap-2"
+              >
+                {isScrapingInProgress ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Завантаження...</span>
+                  </>
+                ) : (
+                  "Оновити дані"
+                )}
+              </Button>
+              
+              {htmlContent && (
+                <Button 
+                  variant="secondary" 
+                  onClick={() => setIsHtmlDialogOpen(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Code className="h-4 w-4" />
+                  <span>Показати HTML</span>
+                </Button>
               )}
-            </Button>
+            </div>
           </div>
 
           <ScrapedCarsFilters onFilterChange={handleFilterChange} />
@@ -166,6 +184,7 @@ export default function ScrapedCars() {
 
       <Footer />
 
+      {/* Error Dialog */}
       <AlertDialog open={isErrorDialogOpen} onOpenChange={setIsErrorDialogOpen}>
         <AlertDialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
           <AlertDialogHeader>
@@ -186,25 +205,41 @@ export default function ScrapedCars() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           
-          {htmlContent && (
-            <div className="flex-1 min-h-0">
-              <div className="flex items-center justify-between my-2">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Code className="h-4 w-4" />
-                  HTML вміст сторінки
-                </h3>
-              </div>
-              <ScrollArea className="h-[40vh] border rounded-md p-4 bg-muted/50">
-                <pre className="text-xs whitespace-pre-wrap break-all">
-                  {htmlContent}
-                </pre>
-              </ScrollArea>
-            </div>
-          )}
-          
           <AlertDialogFooter className="mt-4">
             <AlertDialogAction onClick={() => setIsErrorDialogOpen(false)}>
               Зрозуміло
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* HTML Content Dialog - always available with a dedicated button */}
+      <AlertDialog open={isHtmlDialogOpen} onOpenChange={setIsHtmlDialogOpen}>
+        <AlertDialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Code className="h-5 w-5" />
+              HTML вміст сторінки
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          
+          <div className="flex-1 min-h-0 my-4">
+            <ScrollArea className="h-[60vh] border rounded-md p-4 bg-muted/50">
+              {htmlContent ? (
+                <pre className="text-xs whitespace-pre-wrap break-all">
+                  {htmlContent}
+                </pre>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  HTML вміст недоступний
+                </div>
+              )}
+            </ScrollArea>
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setIsHtmlDialogOpen(false)}>
+              Закрити
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

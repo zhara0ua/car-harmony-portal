@@ -21,6 +21,7 @@ async def scrape_openlane():
     """
     logger.info("Starting OpenLane scraper")
     browser = None
+    html_content = None
     try:
         # Setup browser and page with extended timeout
         logger.info("Setting up browser")
@@ -62,7 +63,7 @@ async def scrape_openlane():
         # Take a screenshot to confirm page loaded
         await take_debug_screenshot(page, "page-loaded")
         
-        # Capture HTML content for debugging
+        # Capture HTML content for debugging - ALWAYS CAPTURE
         html_content = await capture_page_html(page)
         
         # Handle cookie consent with multiple attempts
@@ -150,8 +151,8 @@ async def scrape_openlane():
             await browser.close()
             logger.info("Browser closed")
         
-        # Add HTML content to the response debug information
-        if cars and html_content:
+        # IMPORTANT: Always add HTML content to the response debug information, regardless of success
+        if html_content:
             if isinstance(cars, dict):
                 if "debug" not in cars:
                     cars["debug"] = {}
@@ -171,7 +172,7 @@ async def scrape_openlane():
         error_response = create_error_response(str(general_e))
         
         # If we captured HTML content earlier, add it to the error response
-        if 'html_content' in locals() and html_content:
+        if html_content:
             if "debug" not in error_response:
                 error_response["debug"] = {}
             error_response["debug"]["htmlContent"] = html_content
