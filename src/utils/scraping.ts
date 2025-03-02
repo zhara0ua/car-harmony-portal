@@ -26,30 +26,31 @@ export const triggerScraping = async () => {
     console.log('Database connection successful, starting scraping...');
     
     try {
-      const [oldScraper, openlaneResponse] = await Promise.all([
-        supabase.functions.invoke('scrape-cars', {
-          method: 'POST',
-          body: {},
-        }),
-        supabase.functions.invoke('scrape-openlane', {
-          method: 'POST',
-          body: {},
-        })
-      ]);
+      const { data: scrapingData, error } = await supabase.functions.invoke('scrape-cars', {
+        method: 'POST',
+        body: {},
+      });
       
-      if (!oldScraper.data?.success && !openlaneResponse.data?.success) {
-        throw new Error("Обидва скрапери завершились з помилкою");
+      if (error) {
+        console.error('Function error details:', {
+          message: error.message,
+          name: error.name,
+          status: error.status,
+        });
+        throw new Error("Помилка при виконанні функції скрапінгу: " + error.message);
       }
       
-      return {
-        success: true,
-        message: "Скрапінг успішно завершено",
-        data: {
-          oldScraper: oldScraper.data,
-          openlane: openlaneResponse.data
-        }
-      };
+      if (!scrapingData) {
+        throw new Error("Функція не повернула дані");
+      }
       
+      if (!scrapingData.success) {
+        console.error('Invalid response from function:', scrapingData);
+        throw new Error(scrapingData?.error || "Неочікувана відповідь від сервера");
+      }
+      
+      console.log('Function response:', scrapingData);
+      return scrapingData;
     } catch (functionError) {
       console.error('Edge function execution error:', functionError);
       throw functionError;
