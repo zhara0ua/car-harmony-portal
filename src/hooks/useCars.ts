@@ -44,8 +44,7 @@ export const useCars = (filters: UseCarFilters) => {
     
     try {
       console.log("Fetching cars with filters:", filters);
-      console.log("Supabase URL length:", supabase.supabaseUrl?.length || 0);
-      console.log("Supabase Key available:", !!supabase.supabaseKey);
+      console.log("Checking Supabase connection status...");
       
       // Check Supabase connection
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
