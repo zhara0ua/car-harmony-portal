@@ -16,6 +16,7 @@ import AdminSettings from "@/pages/admin/Settings";
 import AdminStatistics from "@/pages/admin/Statistics";
 import Imports from "@/pages/Imports";
 import TransitCars from "@/pages/TransitCars";
+import Auctions from "@/pages/Auctions";
 import "./App.css";
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
         <Route path="/inspection/:id" element={<InspectionCase />} />
         <Route path="/imports" element={<Imports />} />
         <Route path="/transit" element={<TransitCars />} />
+        <Route path="/auctions" element={<Auctions />} />
         <Route path="/admin" element={<AdminDashboard />}>
           <Route path="cars" element={<AdminCars />} />
           <Route path="users" element={<AdminUsers />} />
