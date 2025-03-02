@@ -1,2 +1,2 @@
 
-# No Python dependencies required for HTTP-based scraping
+pyppeteer==1.0.2

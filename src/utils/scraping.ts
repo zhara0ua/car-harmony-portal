@@ -43,6 +43,9 @@ export const triggerScraping = async () => {
       const { data: scrapingData, error } = await supabase.functions.invoke('scrape-cars', {
         method: 'POST',
         body: { source: 'openlane' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
       
       console.log('Edge function response received:', scrapingData);
@@ -79,6 +82,12 @@ export const triggerScraping = async () => {
       if (scrapingData.success === false) {
         console.error('Scraping failed:', scrapingData.message);
         throw new Error(scrapingData.message || "Помилка при скрапінгу");
+      }
+      
+      // If we got here without any cars, that's still a problem
+      if (Array.isArray(scrapingData.cars) && scrapingData.cars.length === 0) {
+        console.error('No cars returned from scraper');
+        throw new Error("Скрапер не знайшов жодного автомобіля. Перевірте логи функції.");
       }
       
       console.log('Scraping completed successfully:', scrapingData);
