@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RefreshCw, AlertCircle } from 'lucide-react';
+import { RefreshCw, AlertCircle, Info } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { scraperService } from '@/services/scraperService';
 import { ScraperResult } from '@/types/scraped-car';
@@ -20,11 +20,13 @@ const Parser = () => {
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
   const [lastScraped, setLastScraped] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [usingMockData, setUsingMockData] = useState(false);
   const [scraperType, setScraperType] = useState<ScraperType>('findcar');
 
   const handleScrape = async () => {
     setIsLoading(true);
     setError(null);
+    setUsingMockData(false);
     
     try {
       console.log(`Attempting to scrape ${scraperType === 'findcar' ? 'FindCar' : 'OpenLane'} page...`);
@@ -34,11 +36,22 @@ const Parser = () => {
         : await scraperService.scrapeOpenLane();
       
       if (result.success) {
-        toast({
-          title: "Scraping Successful",
-          description: "Successfully retrieved HTML content",
-          duration: 3000,
-        });
+        // Check if we're using mock data
+        if (result.note && result.note.includes("mock data")) {
+          setUsingMockData(true);
+          toast({
+            title: "Using Mock Data",
+            description: "Edge Function failed, displaying mock data instead",
+            duration: 5000,
+          });
+        } else {
+          toast({
+            title: "Scraping Successful",
+            description: "Successfully retrieved HTML content",
+            duration: 3000,
+          });
+        }
+        
         setHtmlContent(result.html || null);
         setLastScraped(new Date().toLocaleString());
       } else {
@@ -126,6 +139,17 @@ const Parser = () => {
                 <li>The scraping operation might have timed out</li>
               </ul>
             </div>
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {usingMockData && !error && (
+        <Alert className="mb-6">
+          <Info className="h-4 w-4" />
+          <AlertTitle>Using Mock Data</AlertTitle>
+          <AlertDescription>
+            <p>The Edge Function could not be reached, so mock data is being displayed instead.</p>
+            <p className="mt-2 text-sm">To use real data, please ensure your Supabase Edge Functions are properly deployed.</p>
           </AlertDescription>
         </Alert>
       )}
