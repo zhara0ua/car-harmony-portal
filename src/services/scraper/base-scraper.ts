@@ -7,6 +7,7 @@ export interface ScraperOptions {
   waitForSelector?: string;
   timeout?: number;
   useMockData?: boolean;
+  useProxy?: boolean;
 }
 
 export class BaseScraper {
@@ -40,7 +41,7 @@ export class BaseScraper {
         },
         body: JSON.stringify({
           ...options,
-          useProxy: true // Add proxy flag to use proxies in edge functions
+          useProxy: options.useProxy !== undefined ? options.useProxy : true // Ensure useProxy is passed and defaults to true
         }),
         // Add timeout to prevent hanging requests
         signal: AbortSignal.timeout(options.timeout || 30000)
