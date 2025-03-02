@@ -12,25 +12,39 @@ export const scraperService = {
         return mockScraperResult;
       }
       
-      const { data, error } = await supabase.functions.invoke('scrape-openlane', {
-        body: { 
-          useRandomUserAgent: true,
-          useProxy: true
+      try {
+        console.log("Attempting to invoke Edge Function: scrape-openlane");
+        const { data, error } = await supabase.functions.invoke('scrape-openlane', {
+          body: { 
+            useRandomUserAgent: true,
+            useProxy: true
+          }
+        });
+        
+        if (error) {
+          console.error("Error from Supabase Edge Function:", error);
+          throw error;
         }
-      });
-      
-      if (error) {
-        console.error("Error scraping OpenLane:", error);
+        
+        return data as ScraperResult;
+      } catch (functionError) {
+        console.error("Failed to call Supabase Edge Function:", functionError);
+        
+        // In development mode, fallback to mock data
+        if (import.meta.env.DEV) {
+          console.warn("Using mock data instead of live scraped data");
+          return mockScraperResult;
+        }
+        
         return { 
           success: false, 
-          error: error.message,
+          error: functionError instanceof Error ? functionError.message : "Failed to call scraper function",
           timestamp: new Date().toISOString()
         };
       }
-      
-      return data as ScraperResult;
     } catch (error) {
       console.error("Exception in scrapeOpenLane:", error);
+      
       // Fallback to mock data in development
       if (import.meta.env.DEV) {
         console.warn("Falling back to mock data");
