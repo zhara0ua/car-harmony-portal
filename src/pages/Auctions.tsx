@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ScrapedCarCard from '@/components/scraped-cars/ScrapedCarCard';
@@ -47,6 +46,68 @@ const Auctions = () => {
     });
   };
 
+  // Helper function to render troubleshooting guidance based on error type
+  const renderTroubleshootingGuidance = () => {
+    // Check if this is a non-2xx status code error
+    const isNon2xxError = edgeFunctionError?.includes('non-2xx status code');
+    const hasStatusCode = scrapedData?.statusCode !== undefined;
+    
+    return (
+      <div className="mt-4 space-y-3">
+        <div className="bg-destructive/10 p-3 rounded-md">
+          <h4 className="font-semibold flex items-center gap-1 mb-2">
+            <Terminal className="h-4 w-4" /> 
+            Deploy Edge Functions
+          </h4>
+          <p className="text-sm mb-2">Run this command in your terminal to deploy the Edge Functions:</p>
+          <div className="relative">
+            <pre className="bg-background p-2 rounded border text-xs overflow-x-auto">
+              supabase functions deploy scrape-openlane scrape-findcar --project-ref btkfrowwhgcnzgncjjny
+            </pre>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="absolute right-1 top-1 h-6 text-xs"
+              onClick={copyDeployCommand}
+            >
+              Copy
+            </Button>
+          </div>
+        </div>
+        
+        {isNon2xxError && hasStatusCode && (
+          <div className="bg-amber-500/10 p-3 rounded-md border border-amber-500/30">
+            <h4 className="font-semibold">Authentication Issue Detected</h4>
+            <p className="text-sm mt-1">
+              Status code {scrapedData?.statusCode} indicates the Edge Function is accessible but returned an error. 
+              This is often caused by:
+            </p>
+            <ul className="list-disc pl-5 mt-1 text-sm space-y-1">
+              <li>Missing JWT authentication</li>
+              <li>Invalid API key</li>
+              <li>Missing or incorrect environment variables in the Edge Function</li>
+            </ul>
+            <p className="text-sm mt-2">
+              Please check the Edge Function logs for more details.
+            </p>
+          </div>
+        )}
+        
+        <div className="space-y-1">
+          <p className="font-medium">Additional troubleshooting steps:</p>
+          <ol className="list-decimal pl-5 mt-1 space-y-1 text-sm">
+            <li>Ensure your Supabase project is running</li>
+            <li>Check the Edge Function logs in the <a href="https://supabase.com/dashboard/project/btkfrowwhgcnzgncjjny/functions" target="_blank" rel="noopener noreferrer" className="text-primary underline">Supabase Dashboard</a></li>
+            <li>Confirm that your environment variables are set correctly (they appear to be correct in your .env file)</li>
+            {isNon2xxError && (
+              <li>Verify that your Edge Functions have the correct CORS headers and proper authentication handling</li>
+            )}
+          </ol>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
       <ScraperControls 
@@ -62,37 +123,7 @@ const Auctions = () => {
           <AlertDescription>
             <p className="font-medium">{edgeFunctionError}</p>
             
-            <div className="mt-4 space-y-3">
-              <div className="bg-destructive/10 p-3 rounded-md">
-                <h4 className="font-semibold flex items-center gap-1 mb-2">
-                  <Terminal className="h-4 w-4" /> 
-                  Deploy Edge Functions
-                </h4>
-                <p className="text-sm mb-2">Run this command in your terminal to deploy the Edge Functions:</p>
-                <div className="relative">
-                  <pre className="bg-background p-2 rounded border text-xs overflow-x-auto">
-                    supabase functions deploy scrape-openlane scrape-findcar --project-ref btkfrowwhgcnzgncjjny
-                  </pre>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="absolute right-1 top-1 h-6 text-xs"
-                    onClick={copyDeployCommand}
-                  >
-                    Copy
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="space-y-1">
-                <p className="font-medium">Additional troubleshooting steps:</p>
-                <ol className="list-decimal pl-5 mt-1 space-y-1 text-sm">
-                  <li>Ensure your Supabase project is running</li>
-                  <li>Check the Edge Function logs in the <a href="https://supabase.com/dashboard/project/btkfrowwhgcnzgncjjny/functions" target="_blank" rel="noopener noreferrer" className="text-primary underline">Supabase Dashboard</a></li>
-                  <li>Confirm that your environment variables are set correctly (they appear to be correct in your .env file)</li>
-                </ol>
-              </div>
-            </div>
+            {renderTroubleshootingGuidance()}
           </AlertDescription>
         </Alert>
       )}

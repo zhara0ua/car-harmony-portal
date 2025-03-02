@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ScraperResult } from '@/types/scraped-car';
 
@@ -61,7 +60,7 @@ export const scraperService = {
       
       try {
         const startTime = Date.now();
-        const { data, error } = await supabase.functions.invoke('scrape-openlane', {
+        const { data, error, status } = await supabase.functions.invoke('scrape-openlane', {
           body: { 
             useRandomUserAgent: options.useRandomUserAgent ?? true,
             timeout: options.timeout ?? 60000, // Default 60 seconds if not specified
@@ -71,8 +70,22 @@ export const scraperService = {
         });
         const endTime = Date.now();
         
+        console.log(`Edge Function response status: ${status}`);
+        
         if (error) {
           console.error("Error from Supabase Edge Function:", error);
+          
+          // Check if we have a non-2xx status code
+          if (status && status < 200 || status >= 300) {
+            return { 
+              success: false, 
+              error: `Edge Function Error: Edge Function returned a non-2xx status code (${status})`,
+              statusCode: status,
+              timestamp: new Date().toISOString(),
+              note: "The Edge Function returned an error status code. Please check the Supabase Edge Function logs for more details."
+            };
+          }
+          
           return { 
             success: false, 
             error: `Edge Function Error: ${error.message || error}`,
@@ -86,6 +99,7 @@ export const scraperService = {
           return {
             success: false,
             error: "Edge Function returned no data",
+            statusCode: status,
             timestamp: new Date().toISOString(),
             note: "The Edge Function executed but returned no data. Please check the Supabase Edge Function logs."
           };
@@ -158,7 +172,7 @@ export const scraperService = {
       
       try {
         const startTime = Date.now();
-        const { data, error } = await supabase.functions.invoke('scrape-findcar', {
+        const { data, error, status } = await supabase.functions.invoke('scrape-findcar', {
           body: { 
             useRandomUserAgent: options.useRandomUserAgent ?? true,
             timeout: options.timeout ?? 60000, // Default 60 seconds if not specified
@@ -168,8 +182,22 @@ export const scraperService = {
         });
         const endTime = Date.now();
         
+        console.log(`Edge Function response status: ${status}`);
+        
         if (error) {
           console.error("Error from Supabase Edge Function:", error);
+          
+          // Check if we have a non-2xx status code
+          if (status && status < 200 || status >= 300) {
+            return { 
+              success: false, 
+              error: `Edge Function Error: Edge Function returned a non-2xx status code (${status})`,
+              statusCode: status,
+              timestamp: new Date().toISOString(),
+              note: "The Edge Function returned an error status code. Please check the Supabase Edge Function logs for more details."
+            };
+          }
+          
           return { 
             success: false, 
             error: `Edge Function Error: ${error.message || error}`,
@@ -183,6 +211,7 @@ export const scraperService = {
           return {
             success: false,
             error: "Edge Function returned no data",
+            statusCode: status,
             timestamp: new Date().toISOString(),
             note: "The Edge Function executed but returned no data. Please check the Supabase Edge Function logs."
           };
