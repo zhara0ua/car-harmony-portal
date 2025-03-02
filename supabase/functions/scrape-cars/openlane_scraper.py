@@ -52,9 +52,14 @@ async def scrape_openlane():
             
             # Capture HTML even if navigation had an error
             html_content = await capture_page_html(page)
+            logger.info(f"Captured HTML content during navigation error: {len(html_content) if html_content else 'None'} bytes")
+            
             error_response = create_error_response(f"Navigation Error: {str(e)}", "Navigation Error")
             if html_content:
-                error_response["debug"] = {"htmlContent": html_content}
+                error_response["htmlContent"] = html_content  # Add directly to root for easier access
+                if "debug" not in error_response:
+                    error_response["debug"] = {}
+                error_response["debug"]["htmlContent"] = html_content  # Also add to debug for compatibility
             
             if browser:
                 await browser.close()
@@ -63,8 +68,14 @@ async def scrape_openlane():
         # Take a screenshot to confirm page loaded
         await take_debug_screenshot(page, "page-loaded")
         
-        # Capture HTML content for debugging - ALWAYS CAPTURE
+        # ALWAYS capture HTML content for debugging - this is critical
         html_content = await capture_page_html(page)
+        logger.info(f"Captured initial HTML content: {len(html_content) if html_content else 'None'} bytes")
+        
+        # Print part of the HTML for debugging
+        if html_content:
+            logger.info(f"HTML content head: {html_content[:500]}...")
+            logger.info(f"HTML content contains car-related terms: {'car' in html_content.lower() or 'vehicle' in html_content.lower()}")
         
         # Handle cookie consent with multiple attempts
         logger.info("Handling cookie consent")
@@ -80,6 +91,10 @@ async def scrape_openlane():
         logger.info("Waiting for page to stabilize after cookie handling")
         await asyncio.sleep(5)
         
+        # Refresh HTML content after cookie handling
+        html_content = await capture_page_html(page)
+        logger.info(f"Captured HTML content after cookie handling: {len(html_content) if html_content else 'None'} bytes")
+        
         # Check if page contains expected content
         logger.info("Checking if page contains expected content")
         pageContent = await page.content()
@@ -88,7 +103,10 @@ async def scrape_openlane():
             await take_debug_screenshot(page, "unexpected-content")
             error_response = create_error_response("Page does not contain expected content", "Content Error")
             if html_content:
-                error_response["debug"] = {"htmlContent": html_content}
+                error_response["htmlContent"] = html_content  # Add directly to root
+                if "debug" not in error_response:
+                    error_response["debug"] = {}
+                error_response["debug"]["htmlContent"] = html_content  # Also add to debug
             return error_response
         
         # Wait for car listings with multiple selectors and extended timeout
@@ -122,13 +140,16 @@ async def scrape_openlane():
             logger.error("Failed to find any car listings with any selector")
             await take_debug_screenshot(page, "no-listings-found")
             
-            # Refresh HTML content
+            # Update HTML content - it might have changed
             html_content = await capture_page_html(page)
-            logger.info(f"Page HTML head: {html_content[:1000] if html_content else 'No HTML content'}")
+            logger.info(f"Updated HTML content after selector search: {len(html_content) if html_content else 'None'} bytes")
             
             error_response = create_error_response("No car listings found on page", "Selector Error")
             if html_content:
-                error_response["debug"] = {"htmlContent": html_content}
+                error_response["htmlContent"] = html_content  # Add directly to root
+                if "debug" not in error_response:
+                    error_response["debug"] = {}
+                error_response["debug"]["htmlContent"] = html_content  # Also add to debug
             
             if browser:
                 await browser.close()
@@ -141,30 +162,47 @@ async def scrape_openlane():
         # Take a screenshot before extraction
         await take_debug_screenshot(page, "before-extraction")
         
+        # Capture final HTML content just before extraction
+        final_html_content = await capture_page_html(page)
+        if final_html_content:
+            html_content = final_html_content  # Update with the latest version
+            logger.info(f"Captured final HTML content before extraction: {len(html_content)} bytes")
+        
         # Extract car data
         logger.info("Starting car data extraction")
         cars = await extract_car_data(page)
-        logger.info(f"Extraction complete, found {len(cars)} cars")
+        logger.info(f"Extraction complete, found {len(cars) if isinstance(cars, list) else '0'} cars")
         
         # Close the browser
         if browser:
             await browser.close()
             logger.info("Browser closed")
         
-        # IMPORTANT: Always add HTML content to the response debug information, regardless of success
-        if html_content:
-            if isinstance(cars, dict):
-                if "debug" not in cars:
-                    cars["debug"] = {}
-                cars["debug"]["htmlContent"] = html_content
-            else:
-                cars = {
-                    "cars": cars,
-                    "success": True,
-                    "debug": {"htmlContent": html_content}
-                }
+        # Ensure we're returning a properly structured response with HTML content
+        response_data = {}
         
-        return cars
+        if isinstance(cars, dict):
+            # If cars is already a dictionary (like an error response)
+            response_data = cars
+        else:
+            # Otherwise, create a proper response structure
+            response_data = {
+                "cars": cars,
+                "success": True,
+                "message": f"Successfully extracted {len(cars)} cars"
+            }
+        
+        # IMPORTANT: Always add HTML content to the response, in multiple places for redundancy
+        if html_content:
+            # Add HTML content directly to the root object for easier access
+            response_data["htmlContent"] = html_content
+            
+            # Also add to debug section for backward compatibility
+            if "debug" not in response_data:
+                response_data["debug"] = {}
+            response_data["debug"]["htmlContent"] = html_content
+        
+        return response_data
     except Exception as general_e:
         logger.error(f"General error during scraping: {general_e}")
         logger.error(traceback.format_exc())
@@ -173,6 +211,10 @@ async def scrape_openlane():
         
         # If we captured HTML content earlier, add it to the error response
         if html_content:
+            # Add HTML content directly to the root object for easier access
+            error_response["htmlContent"] = html_content
+            
+            # Also add to debug section for backward compatibility
             if "debug" not in error_response:
                 error_response["debug"] = {}
             error_response["debug"]["htmlContent"] = html_content
@@ -191,12 +233,22 @@ async def main():
     Main entry point for the scraper
     """
     try:
-        cars = await scrape_openlane()
-        print(json.dumps(cars))
+        result = await scrape_openlane()
+        
+        # Verify HTML content is in the response
+        if "htmlContent" in result:
+            print(f"HTML content is present in the main response ({len(result['htmlContent'])} bytes)")
+        elif "debug" in result and "htmlContent" in result["debug"]:
+            print(f"HTML content is present in debug ({len(result['debug']['htmlContent'])} bytes)")
+        else:
+            print("No HTML content in the response")
+        
+        print(json.dumps(result))
     except Exception as e:
         logger.error(f"Main function error: {e}")
         logger.error(traceback.format_exc())
-        print(json.dumps(create_error_response(str(e), "Main Function Error")))
+        error_response = create_error_response(str(e), "Main Function Error")
+        print(json.dumps(error_response))
 
 if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(main())

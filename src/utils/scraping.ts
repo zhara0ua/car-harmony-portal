@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 // Function to check database connection before scraping
@@ -100,16 +99,43 @@ export const invokeScrapingFunction = async () => {
       throw new Error("Функція повернула порожню відповідь");
     }
     
-    // Make sure we have the HTML content somewhere
-    if (data.debug && data.debug.htmlContent) {
-      console.log('HTML content found in data.debug');
+    // Make sure we have the HTML content somewhere in the response
+    if (data.debug?.htmlContent) {
+      console.log('HTML content found in data.debug:', data.debug.htmlContent.substring(0, 50) + '...');
     } else if (data.htmlContent) {
-      console.log('HTML content found directly in data');
+      console.log('HTML content found directly in data:', data.htmlContent.substring(0, 50) + '...');
       // Move it to the debug property for consistency
       if (!data.debug) data.debug = {};
       data.debug.htmlContent = data.htmlContent;
     } else {
-      console.log('No HTML content found in the response');
+      console.log('No HTML content found in the initial response structure, doing deep search');
+      
+      // Deep search for HTML content in any part of the response
+      const findHtmlContent = (obj: any): string | null => {
+        if (!obj || typeof obj !== 'object') return null;
+        
+        for (const key in obj) {
+          if (key === 'htmlContent' && typeof obj[key] === 'string') {
+            return obj[key];
+          }
+          
+          if (typeof obj[key] === 'object') {
+            const found = findHtmlContent(obj[key]);
+            if (found) return found;
+          }
+        }
+        
+        return null;
+      };
+      
+      const foundHtml = findHtmlContent(data);
+      if (foundHtml) {
+        console.log('Found HTML through deep search:', foundHtml.substring(0, 50) + '...');
+        if (!data.debug) data.debug = {};
+        data.debug.htmlContent = foundHtml;
+      } else {
+        console.log('No HTML content found in the entire response after deep search');
+      }
     }
     
     return data;
@@ -126,11 +152,14 @@ export const validateScrapingResults = (scrapingData: any) => {
     throw new Error("Функція не повернула дані");
   }
   
-  // Always capture HTML content from the response if available, regardless of success
+  // Always capture HTML content from the response if available
   let htmlContent = null;
   if (scrapingData.debug && scrapingData.debug.htmlContent) {
-    console.log('HTML content retrieved from the page');
+    console.log('HTML content retrieved from debug.htmlContent');
     htmlContent = scrapingData.debug.htmlContent;
+  } else if (scrapingData.htmlContent) {
+    console.log('HTML content retrieved directly from response');
+    htmlContent = scrapingData.htmlContent;
   }
   
   // Check if there's an error field in the response even if success is true
@@ -196,6 +225,34 @@ export const validateScrapingResults = (scrapingData: any) => {
   scrapingData.debug = scrapingData.debug || {};
   scrapingData.debug.htmlContent = htmlContent || scrapingData.debug.htmlContent;
   
+  // If we still don't have HTML content, create a placeholder
+  if (!scrapingData.debug.htmlContent) {
+    console.log('No HTML content found in response, creating placeholder');
+    scrapingData.debug.htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Placeholder HTML Content</title>
+        <meta charset="utf-8">
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ccc; margin: 20px; border-radius: 5px;">
+          <h1>No HTML Content Available</h1>
+          <p>The scraper did not return any HTML content. This is a placeholder.</p>
+          <p>Timestamp: ${new Date().toISOString()}</p>
+          <p>Response data summary:</p>
+          <pre>${JSON.stringify({
+            success: scrapingData.success,
+            message: scrapingData.message,
+            cars: Array.isArray(scrapingData.cars) ? `${scrapingData.cars.length} cars` : 'No cars',
+            error: scrapingData.error || 'None'
+          }, null, 2)}</pre>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+  
   console.log('Scraping data validation successful');
   return scrapingData;
 };
@@ -216,47 +273,65 @@ export const triggerScraping = async () => {
     // Validate results
     const validatedData = validateScrapingResults(scrapingData);
     
-    console.log('Scraping completed successfully:', validatedData);
+    console.log('Scraping completed successfully');
     
-    // For mock data responses, make sure we include some HTML
-    if (validatedData.message && 
-       (validatedData.message.includes("mock data") || 
-        validatedData.message.includes("fallback data")) &&
-       (!validatedData.debug || !validatedData.debug.htmlContent)) {
-      // Create mock HTML content
-      const mockHtml = `
+    // Ensure we always have HTML content in the response
+    if (!validatedData.debug || !validatedData.debug.htmlContent) {
+      console.log('No HTML content in validated data, adding mock HTML');
+      if (!validatedData.debug) validatedData.debug = {};
+      validatedData.debug.htmlContent = `
         <!DOCTYPE html>
         <html>
         <head>
           <title>Mock HTML Content</title>
+          <meta charset="utf-8">
         </head>
         <body>
-          <div class="car-listing-container">
+          <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ccc; margin: 20px; border-radius: 5px;">
             <h1>Mock Car Listings</h1>
-            <p>This is mock HTML content for demonstration purposes</p>
+            <p>This is mock HTML content since no actual HTML was returned</p>
+            <p>Timestamp: ${new Date().toISOString()}</p>
             <div class="car-listings">
-              ${validatedData.cars && validatedData.cars.map(car => `
-                <div class="car-listing">
-                  <h2>${car.title}</h2>
-                  <p>Price: ${car.price}</p>
-                  <p>Year: ${car.year}</p>
+              ${validatedData.cars && Array.isArray(validatedData.cars) ? validatedData.cars.map((car: any) => `
+                <div class="car-listing" style="margin: 10px 0; padding: 10px; border: 1px solid #eee; border-radius: 5px;">
+                  <h2>${car.title || 'Unknown Car'}</h2>
+                  <p>Price: ${car.price || 'N/A'}</p>
+                  <p>Year: ${car.year || 'N/A'}</p>
                   <p>Mileage: ${car.mileage || 'N/A'}</p>
                 </div>
-              `).join('')}
+              `).join('') : '<p>No cars found</p>'}
             </div>
           </div>
         </body>
         </html>
       `;
-      
-      if (!validatedData.debug) validatedData.debug = {};
-      validatedData.debug.htmlContent = mockHtml;
-      console.log('Added mock HTML content to the response');
     }
     
     return validatedData;
   } catch (error) {
     console.error('Error triggering scraping:', error);
+    
+    // Add HTML content to the error object
+    const errorObj = error as any;
+    if (!errorObj.htmlContent) {
+      errorObj.htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Error HTML Content</title>
+          <meta charset="utf-8">
+        </head>
+        <body>
+          <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid red; margin: 20px; border-radius: 5px; color: red;">
+            <h1>Error Occurred During Scraping</h1>
+            <p><strong>Error:</strong> ${errorObj.message || 'Unknown error'}</p>
+            <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+          </div>
+        </body>
+        </html>
+      `;
+    }
+    
     throw error;
   }
 };
