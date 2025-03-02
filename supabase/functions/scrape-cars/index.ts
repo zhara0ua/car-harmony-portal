@@ -34,20 +34,35 @@ const MOCK_CARS = [
 ];
 
 serve(async (req: Request) => {
+  console.log("Initializing scrape-cars function");
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Parse the request body
-    const requestData = await req.json();
+    // Parse the request body with error handling
+    let requestData = {};
+    try {
+      const bodyText = await req.text();
+      console.log("Request body text:", bodyText);
+      
+      if (bodyText && bodyText.trim() !== "") {
+        requestData = JSON.parse(bodyText);
+      } else {
+        console.log("Empty request body, using default options");
+      }
+    } catch (parseError) {
+      console.error("Error parsing request body:", parseError);
+      // Continue with empty requestData object
+    }
     
     // Log the request data for debugging
     console.log("Request options:", requestData);
     
     // Check if real data is requested or if we should use mock data
-    // Default to true if the parameter is missing
+    // Default to true if the parameter is missing or invalid
     const useRealData = requestData?.forceRealData !== false;
     
     console.log(`Using ${useRealData ? 'REAL' : 'MOCK'} data`);

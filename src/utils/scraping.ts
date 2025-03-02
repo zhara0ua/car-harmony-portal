@@ -60,9 +60,16 @@ export const invokeScrapingFunction = async () => {
         throw new Error("Помилка конфігурації сервера: виконання процесів не дозволено");
       } else if (error.message.includes("non-2xx")) {
         throw new Error("Сервер повернув неочікуваний статус відповіді. Перевірте логи функції");
+      } else if (error.message.includes("JSON")) {
+        throw new Error("Помилка парсингу відповіді від сервера. Перевірте логи функції");
       } else {
         throw new Error("Помилка при виконанні функції скрапінгу: " + error.message);
       }
+    }
+    
+    // Additional check for empty or invalid data
+    if (!data) {
+      throw new Error("Функція повернула порожню відповідь");
     }
     
     return data;
