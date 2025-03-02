@@ -57,6 +57,8 @@ export const triggerScraping = async () => {
         // More specific error messages based on status or content
         if (error.message.includes("subprocess")) {
           throw new Error("Помилка конфігурації сервера: виконання процесів не дозволено");
+        } else if (error.message.includes("non-2xx")) {
+          throw new Error("Сервер повернув неочікуваний статус відповіді. Перевірте логи функції");
         } else {
           throw new Error("Помилка при виконанні функції скрапінгу: " + error.message);
         }
@@ -67,9 +69,10 @@ export const triggerScraping = async () => {
         throw new Error("Функція не повернула дані");
       }
       
-      if (!scrapingData.success) {
-        console.error('Invalid response from function:', scrapingData);
-        throw new Error(scrapingData?.error || "Неочікувана відповідь від сервера");
+      // Check if there's an error field in the response even if success is true
+      if (scrapingData.error) {
+        console.error('Error in response data:', scrapingData.error);
+        throw new Error(scrapingData.error || "Помилка при скрапінгу: " + scrapingData.error);
       }
       
       console.log('Scraping completed successfully:', scrapingData);
