@@ -1,5 +1,5 @@
 
-import { Code } from "lucide-react";
+import { Code, Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   AlertDialog,
@@ -9,14 +9,27 @@ import {
   AlertDialogFooter,
   AlertDialogAction
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 interface HtmlDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   htmlContent: string | null;
+  onAnalyzeStructure?: (html: string) => void;
 }
 
-export const HtmlDialog = ({ isOpen, onOpenChange, htmlContent }: HtmlDialogProps) => {
+export const HtmlDialog = ({ 
+  isOpen, 
+  onOpenChange, 
+  htmlContent, 
+  onAnalyzeStructure 
+}: HtmlDialogProps) => {
+  const handleAnalyze = () => {
+    if (htmlContent && onAnalyzeStructure) {
+      onAnalyzeStructure(htmlContent);
+    }
+  };
+  
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
@@ -43,7 +56,18 @@ export const HtmlDialog = ({ isOpen, onOpenChange, htmlContent }: HtmlDialogProp
           </ScrollArea>
         </div>
         
-        <AlertDialogFooter>
+        <AlertDialogFooter className="flex justify-between">
+          <div className="flex gap-2">
+            <Button 
+              variant="secondary" 
+              onClick={handleAnalyze}
+              disabled={!htmlContent}
+              className="gap-2"
+            >
+              <Search className="h-4 w-4" />
+              Аналізувати структуру
+            </Button>
+          </div>
           <AlertDialogAction onClick={() => onOpenChange(false)}>
             Закрити
           </AlertDialogAction>
