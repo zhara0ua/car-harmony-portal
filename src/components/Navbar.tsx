@@ -78,6 +78,14 @@ const Navbar = () => {
               {t('nav.auctions')}
             </Link>
             <Link
+              to="/parser"
+              className={`${
+                isActive("/parser") ? "text-navy font-semibold" : "text-gray-700"
+              } hover:text-navy transition-colors`}
+            >
+              {t('nav.parser', 'Parser')}
+            </Link>
+            <Link
               to="/contact"
               className={`${
                 isActive("/contact") ? "text-navy font-semibold" : "text-gray-700"
@@ -155,6 +163,15 @@ const Navbar = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {t('nav.auctions')}
+                </Link>
+                <Link
+                  to="/parser"
+                  className={`${
+                    isActive("/parser") ? "text-navy font-semibold" : "text-gray-700"
+                  } hover:text-navy transition-colors`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {t('nav.parser', 'Parser')}
                 </Link>
                 <Link
                   to="/contact"
