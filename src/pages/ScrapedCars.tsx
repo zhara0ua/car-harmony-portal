@@ -74,77 +74,52 @@ export default function ScrapedCars() {
   const extractHtmlFromResponse = (result: any): string | null => {
     console.log('Extracting HTML from response:', result);
     
-    if (result?.htmlContent) {
-      console.log('Found HTML directly in result.htmlContent');
-      return result.htmlContent;
+    if (!result) return null;
+    
+    const possibleHtmlLocations = [
+      result.htmlContent,
+      result.raw_html,
+      result.debug?.htmlContent,
+      result.debug?.raw_html,
+      result.error?.htmlContent,
+      result.error?.raw_html
+    ];
+    
+    for (const location of possibleHtmlLocations) {
+      if (typeof location === 'string' && location.includes('<!DOCTYPE html>')) {
+        console.log('Found HTML directly in result');
+        return location;
+      }
     }
     
-    if (result?.debug?.htmlContent) {
-      console.log('Found HTML in result.debug.htmlContent');
-      return result.debug.htmlContent;
-    }
-    
-    if (result?.error?.htmlContent) {
-      console.log('Found HTML in result.error.htmlContent');
-      return result.error.htmlContent;
-    }
-    
-    if (result?.raw_html) {
-      console.log('Found raw HTML in result.raw_html');
-      return result.raw_html;
-    }
-    
-    if (result?.debug?.raw_html) {
-      console.log('Found raw HTML in result.debug.raw_html');
-      return result.debug.raw_html;
-    }
-    
-    const findHtmlContent = (obj: any, keys: string[] = ['htmlContent', 'raw_html']): string | null => {
+    const findHtmlInObject = (obj: any, depth = 0): string | null => {
+      if (depth > 10) return null;
+      
       if (!obj || typeof obj !== 'object') return null;
       
-      for (const key of keys) {
-        if (key in obj && typeof obj[key] === 'string' && obj[key].includes('<!DOCTYPE html>')) {
-          console.log(`Found HTML in object.${key}`);
-          return obj[key];
+      for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'string' && 
+            (value.includes('<!DOCTYPE html>') || 
+             value.includes('<html') || 
+             value.includes('<body'))) {
+          console.log(`Found HTML in object at key ${key}`);
+          return value;
         }
-      }
-      
-      for (const key in obj) {
-        if (typeof obj[key] === 'object') {
-          const found = findHtmlContent(obj[key]);
-          if (found) return found;
+        
+        if (value && typeof value === 'object') {
+          const nestedHtml = findHtmlInObject(value, depth + 1);
+          if (nestedHtml) return nestedHtml;
         }
       }
       
       return null;
     };
     
-    const foundHtml = findHtmlContent(result);
-    if (foundHtml) {
-      console.log('Found HTML through deep search');
-      return foundHtml;
+    const deepSearchHtml = findHtmlInObject(result);
+    if (deepSearchHtml) {
+      console.log('Found HTML through deep object search');
+      return deepSearchHtml;
     }
-    
-    const findRawHtml = (obj: any): string | null => {
-      if (!obj) return null;
-      
-      if (typeof obj === 'string' && obj.includes('<!DOCTYPE html>')) {
-        console.log('Found raw HTML string');
-        return obj;
-      }
-      
-      if (typeof obj !== 'object') return null;
-      
-      for (const key in obj) {
-        const found = findRawHtml(obj[key]);
-        if (found) return found;
-      }
-      
-      return null;
-    };
-    
-    const rawHtml = findRawHtml(result);
-    if (rawHtml) return rawHtml;
     
     console.log('No HTML content found in the response');
     return null;

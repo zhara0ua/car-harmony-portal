@@ -19,9 +19,11 @@ export const HtmlContentCard = ({ htmlContent }: HtmlContentCardProps) => {
       <CardContent>
         <ScrollArea className="h-[400px] border rounded-md p-4 bg-gray-50">
           {htmlContent ? (
-            <pre className="text-xs whitespace-pre-wrap break-all">
-              {htmlContent}
-            </pre>
+            <div className="prose prose-sm max-w-none">
+              <pre className="text-xs whitespace-pre-wrap break-all">
+                {htmlContent}
+              </pre>
+            </div>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               HTML вміст з OpenLane недоступний. Запустіть скрапінг для отримання HTML коду.
