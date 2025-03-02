@@ -70,8 +70,8 @@ export const scraperService = {
         });
         
         const { data, error } = response;
-        // Get status from response object safely
-        const responseStatus = 'status' in response ? response.status : undefined;
+        // Get status from response object safely with proper type checking
+        const responseStatus = 'status' in response ? Number(response.status) : undefined;
         const endTime = Date.now();
         
         console.log(`Edge Function response status: ${responseStatus}`);
@@ -79,8 +79,8 @@ export const scraperService = {
         if (error) {
           console.error("Error from Supabase Edge Function:", error);
           
-          // Check if we have a non-2xx status code
-          if (responseStatus && (responseStatus < 200 || responseStatus >= 300)) {
+          // Check if we have a non-2xx status code with proper type checking
+          if (responseStatus !== undefined && (responseStatus < 200 || responseStatus >= 300)) {
             return { 
               success: false, 
               error: `Edge Function Error: Edge Function returned a non-2xx status code (${responseStatus})`,
@@ -186,8 +186,8 @@ export const scraperService = {
         });
         
         const { data, error } = response;
-        // Get status from response object safely
-        const responseStatus = 'status' in response ? response.status : undefined;
+        // Get status from response object safely with proper type checking
+        const responseStatus = 'status' in response ? Number(response.status) : undefined;
         const endTime = Date.now();
         
         console.log(`Edge Function response status: ${responseStatus}`);
@@ -195,8 +195,8 @@ export const scraperService = {
         if (error) {
           console.error("Error from Supabase Edge Function:", error);
           
-          // Check if we have a non-2xx status code
-          if (responseStatus && (responseStatus < 200 || responseStatus >= 300)) {
+          // Check if we have a non-2xx status code with proper type checking
+          if (responseStatus !== undefined && (responseStatus < 200 || responseStatus >= 300)) {
             return { 
               success: false, 
               error: `Edge Function Error: Edge Function returned a non-2xx status code (${responseStatus})`,
