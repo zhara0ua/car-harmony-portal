@@ -138,7 +138,8 @@ export default function ScrapedCars() {
           </div>
 
           <ScrapedCarsFilters onFilterChange={handleFilterChange} />
-
+          
+          {/* Always display the HtmlContentCard */}
           <HtmlContentCard htmlContent={htmlContent} />
 
           <CarsList cars={cars} isLoading={isLoading} />
