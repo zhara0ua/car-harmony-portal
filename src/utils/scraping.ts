@@ -1,30 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-// Function to prompt user to set up Firecrawl API key if not found
-export const checkFirecrawlApiKey = async () => {
+// Function to check database connection before scraping
+export const checkDatabaseConnection = async () => {
   try {
-    const { data, error } = await supabase.functions.invoke('get-secrets', {
-      method: 'POST',
-      body: { secretName: 'FIRECRAWL_API_KEY' },
-    });
-    
-    if (error || !data?.exists) {
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error checking for FIRECRAWL_API_KEY:', error);
-    return false;
-  }
-};
-
-export const triggerScraping = async () => {
-  try {
-    console.log('Starting database connection check...');
-    
-    // Simplified database connection check
     const { data, error: healthCheckError } = await supabase
       .from('scraped_cars')
       .select('id')
@@ -40,13 +19,21 @@ export const triggerScraping = async () => {
         throw new Error("Помилка з'єднання з базою даних: " + healthCheckError.message);
       }
     }
+    
+    return true;
+  } catch (error) {
+    console.error('Error checking database connection:', error);
+    throw error;
+  }
+};
 
-    // Check if Firecrawl API key is set
-    const hasFirecrawlApiKey = await checkFirecrawlApiKey();
-    if (!hasFirecrawlApiKey) {
-      throw new Error("Відсутній API ключ. Будь ласка, налаштуйте API ключ Firecrawl.");
-    }
-
+export const triggerScraping = async () => {
+  try {
+    console.log('Starting database connection check...');
+    
+    // Check database connection
+    await checkDatabaseConnection();
+    
     console.log('Database connection successful, starting scraping...');
     
     try {

@@ -8,6 +8,12 @@ interface ScrapingRequest {
   source?: string;
 }
 
+// CORS headers for cross-domain requests
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 // Create a Supabase client with the Auth context of the function
 const executeOpenlaneScrapingScript = async () => {
   const process = new Deno.Command("python", {
@@ -36,20 +42,16 @@ const executeOpenlaneScrapingScript = async () => {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+  
   try {
     // Create a Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string;
     const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    // Check if the required API key is set
-    const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
-    if (!firecrawlApiKey) {
-      return new Response(
-        JSON.stringify({ success: false, error: "FIRECRAWL_API_KEY is not set" }),
-        { headers: { "Content-Type": "application/json" }, status: 500 }
-      );
-    }
     
     // Parse request body
     const requestData: ScrapingRequest = await req.json();
@@ -66,7 +68,7 @@ serve(async (req) => {
         console.error("OpenLane scraping failed:", error);
         return new Response(
           JSON.stringify({ success: false, error: `OpenLane scraping failed: ${error.message}` }),
-          { headers: { "Content-Type": "application/json" }, status: 500 }
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
         );
       }
     }
@@ -87,7 +89,7 @@ serve(async (req) => {
         console.error("Error upserting data:", upsertError);
         return new Response(
           JSON.stringify({ success: false, error: `Failed to save data: ${upsertError.message}` }),
-          { headers: { "Content-Type": "application/json" }, status: 500 }
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
         );
       }
       
@@ -100,13 +102,13 @@ serve(async (req) => {
         message: `Scraped ${scrapedData.length} cars, saved ${insertedCount} to database`,
         count: scrapedData.length
       }),
-      { headers: { "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Function execution error:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
-      { headers: { "Content-Type": "application/json" }, status: 500 }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
     );
   }
 });

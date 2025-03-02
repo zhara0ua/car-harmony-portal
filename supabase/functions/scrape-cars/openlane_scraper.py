@@ -1,175 +1,167 @@
 
-import asyncio
 import json
 import random
-import time
-from typing import List, Dict, Any, Optional
-import os
-
-import aiohttp
+import asyncio
 from pyppeteer import launch
-from pyppeteer_stealth import stealth
+from datetime import datetime
+import os
+import re
+import logging
 
-# List of user agents to rotate through
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# Define user agents for rotation
 USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPad; CPU OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 OPR/77.0.4054.254",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:95.0) Gecko/20100101 Firefox/95.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36",
 ]
 
-# Load proxies from environment variable
-def get_proxies() -> List[str]:
-    # Try to get proxies from environment variable
+# Get proxy list from environment variable (comma-separated list)
+def get_proxies():
     proxy_list_str = os.environ.get('PROXY_LIST', '')
-    if proxy_list_str:
-        return [p.strip() for p in proxy_list_str.split(',') if p.strip()]
+    if not proxy_list_str:
+        logger.warning("No proxies found in environment variables. Running without proxies.")
+        return []
     
-    # Default to a list of free proxies (note: free proxies may not be reliable)
-    # In a production environment, use a paid proxy service and store credentials securely
-    return [
-        "http://localhost:8080",  # placeholder - replace with actual proxies
-    ]
+    return [proxy.strip() for proxy in proxy_list_str.split(',') if proxy.strip()]
 
-class OpenlaneScraper:
-    def __init__(self, base_url: str = "https://www.openlane.eu"):
-        self.base_url = base_url
-        self.proxies = get_proxies()
-        
-    def get_random_user_agent(self) -> str:
-        return random.choice(USER_AGENTS)
+async def scrape_openlane():
+    logger.info("Starting OpenLane scraper")
+    proxies = get_proxies()
+    proxy = random.choice(proxies) if proxies else None
+    user_agent = random.choice(USER_AGENTS)
     
-    def get_random_proxy(self) -> Optional[str]:
-        if not self.proxies:
-            return None
-        return random.choice(self.proxies)
+    logger.info(f"Using user agent: {user_agent}")
+    if proxy:
+        logger.info(f"Using proxy: {proxy}")
     
-    async def scrape_listings(self, max_pages: int = 5) -> List[Dict[str, Any]]:
-        """Scrape car listings from Openlane"""
-        all_cars = []
-        browser = None
+    browser_args = ['--no-sandbox', '--disable-setuid-sandbox']
+    if proxy:
+        browser_args.append(f'--proxy-server={proxy}')
+    
+    try:
+        browser = await launch({
+            'headless': True,
+            'args': browser_args,
+            'ignoreHTTPSErrors': True
+        })
         
+        page = await browser.newPage()
+        await page.setUserAgent(user_agent)
+        await page.setViewport({'width': 1920, 'height': 1080})
+        
+        # Add random delay to simulate human behavior
+        await asyncio.sleep(random.uniform(1, 3))
+        
+        # Go to the OpenLane auction website
+        url = "https://www.openlane.eu/en/vehicles"
+        logger.info(f"Navigating to {url}")
+        await page.goto(url, {'waitUntil': 'networkidle0', 'timeout': 60000})
+        
+        # Accept cookies if the popup appears
         try:
-            # Launch browser with headless mode
-            browser = await launch(
-                headless=True,
-                args=['--no-sandbox', '--disable-setuid-sandbox']
-            )
-            
-            for page_num in range(1, max_pages + 1):
-                # Create a new page for each request to use fresh context
-                page = await browser.newPage()
-                
-                # Apply stealth mode to make automation less detectable
-                await stealth(page)
-                
-                # Set a random user agent
-                user_agent = self.get_random_user_agent()
-                await page.setUserAgent(user_agent)
-                
-                # Get a random proxy
-                proxy = self.get_random_proxy()
-                if proxy:
-                    await page.setExtraHTTPHeaders({
-                        'Proxy-Authorization': f'Basic {proxy}'
-                    })
-                
-                # Visit the page
-                url = f"{self.base_url}/inventory?page={page_num}"
-                await page.goto(url, {'waitUntil': 'networkidle0', 'timeout': 60000})
-                
-                # Wait for car listings to load
-                await page.waitForSelector('.vehicle-card', {'timeout': 10000})
-                
-                # Extract car data
-                cars_on_page = await page.evaluate('''() => {
-                    const cards = Array.from(document.querySelectorAll('.vehicle-card'));
-                    return cards.map(card => {
-                        const idElement = card.querySelector('[data-vehicle-id]');
-                        const externalId = idElement ? idElement.getAttribute('data-vehicle-id') : '';
-                        
-                        const titleElement = card.querySelector('.vehicle-title');
-                        const title = titleElement ? titleElement.textContent.trim() : '';
-                        
-                        const priceElement = card.querySelector('.price');
-                        const priceText = priceElement ? priceElement.textContent.trim() : '0';
-                        const price = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
-                        
-                        const yearElement = card.querySelector('.vehicle-year');
-                        const year = yearElement ? parseInt(yearElement.textContent.trim()) : null;
-                        
-                        const mileageElement = card.querySelector('.vehicle-mileage');
-                        const mileage = mileageElement ? mileageElement.textContent.trim() : null;
-                        
-                        const detailElements = card.querySelectorAll('.vehicle-details .detail');
-                        let fuelType = null;
-                        let transmission = null;
-                        
-                        detailElements.forEach(detail => {
-                            const text = detail.textContent.trim().toLowerCase();
-                            if (text.includes('diesel') || text.includes('petrol') || text.includes('electric') || text.includes('hybrid')) {
-                                fuelType = detail.textContent.trim();
-                            } else if (text.includes('manual') || text.includes('automatic')) {
-                                transmission = detail.textContent.trim();
-                            }
-                        });
-                        
-                        const locationElement = card.querySelector('.vehicle-location');
-                        const location = locationElement ? locationElement.textContent.trim() : null;
-                        
-                        const imageElement = card.querySelector('.vehicle-image img');
-                        const imageUrl = imageElement ? imageElement.getAttribute('src') : null;
-                        
-                        const linkElement = card.querySelector('a.vehicle-link');
-                        const externalUrl = linkElement ? linkElement.getAttribute('href') : '';
-                        
-                        return {
-                            external_id: externalId,
-                            title,
-                            price,
-                            year,
-                            mileage,
-                            fuel_type: fuelType,
-                            transmission,
-                            location,
-                            image_url: imageUrl,
-                            external_url: externalUrl,
-                            source: 'openlane'
-                        };
-                    });
-                }''')
-                
-                # Add cars from this page to our results
-                all_cars.extend([car for car in cars_on_page if car['external_id']])
-                
-                # Close the page to free resources
-                await page.close()
-                
-                # Random delay between requests to avoid detection
-                await asyncio.sleep(random.uniform(2, 5))
-                
-                # If we didn't get any cars, we've probably reached the end
-                if not cars_on_page:
-                    break
-                    
+            logger.info("Looking for cookie consent button")
+            cookie_button = await page.waitForSelector('button#onetrust-accept-btn-handler', {'visible': True, 'timeout': 5000})
+            if cookie_button:
+                logger.info("Clicking cookie consent button")
+                await cookie_button.click()
+                await asyncio.sleep(random.uniform(0.5, 1.5))
         except Exception as e:
-            print(f"Error scraping Openlane: {str(e)}")
-        finally:
-            if browser:
-                await browser.close()
-                
-        return all_cars
+            logger.info(f"No cookie consent button found or error: {e}")
         
+        # Wait for car listings to appear
+        logger.info("Waiting for car listings to load")
+        await page.waitForSelector('.vehicle-list-item', {'visible': True, 'timeout': 30000})
+        
+        # Extract car data
+        logger.info("Extracting car data")
+        cars = await page.evaluate('''() => {
+            const cars = [];
+            const carElements = document.querySelectorAll('.vehicle-list-item');
+            
+            carElements.forEach(car => {
+                try {
+                    const titleElement = car.querySelector('.vehicle-list-item-title a');
+                    const title = titleElement ? titleElement.textContent.trim() : '';
+                    const url = titleElement ? titleElement.href : '';
+                    const id = url.split('/').pop() || '';
+                    
+                    const priceElement = car.querySelector('.vehicle-list-item-price');
+                    const priceText = priceElement ? priceElement.textContent.trim() : '';
+                    const price = priceText.replace(/[^0-9]/g, '');
+                    
+                    const imageElement = car.querySelector('.vehicle-list-item-image img');
+                    const image = imageElement ? imageElement.src : '';
+                    
+                    const detailsElements = car.querySelectorAll('.vehicle-list-item-details div');
+                    let year = null;
+                    let mileage = null;
+                    let fuelType = null;
+                    let transmission = null;
+                    
+                    detailsElements.forEach(detail => {
+                        const text = detail.textContent.trim();
+                        if (/^\\d{4}$/.test(text)) {
+                            year = parseInt(text);
+                        } else if (text.includes('km')) {
+                            mileage = text;
+                        } else if (['Petrol', 'Diesel', 'Electric', 'Hybrid'].some(fuel => text.includes(fuel))) {
+                            fuelType = text;
+                        } else if (['Manual', 'Automatic'].some(trans => text.includes(trans))) {
+                            transmission = text;
+                        }
+                    });
+                    
+                    const locationElement = car.querySelector('.vehicle-list-item-location');
+                    const location = locationElement ? locationElement.textContent.trim() : null;
+                    
+                    cars.push({
+                        external_id: id,
+                        title,
+                        price: parseInt(price),
+                        year,
+                        mileage,
+                        fuel_type: fuelType,
+                        transmission,
+                        location,
+                        image_url: image,
+                        external_url: url,
+                        source: 'openlane'
+                    });
+                } catch (e) {
+                    console.error('Error parsing car element:', e);
+                }
+            });
+            
+            return cars;
+        }''')
+        
+        logger.info(f"Found {len(cars)} cars")
+        
+        await browser.close()
+        return cars
+    except Exception as e:
+        logger.error(f"Error during scraping: {e}")
+        try:
+            await browser.close()
+        except:
+            pass
+        raise e
+
 async def main():
-    scraper = OpenlaneScraper()
-    cars = await scraper.scrape_listings()
-    
-    # Print JSON output to be captured by the TypeScript function
-    print(json.dumps(cars))
-    
+    try:
+        cars = await scrape_openlane()
+        print(json.dumps(cars))
+    except Exception as e:
+        logger.error(f"Main function error: {e}")
+        print(json.dumps([]))
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.get_event_loop().run_until_complete(main())
