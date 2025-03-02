@@ -1,7 +1,9 @@
+
 {
   "nav": {
     "home": "Home",
     "cars": "Cars",
+    "transit": "Cars in Transit",
     "import": "Import",
     "inspection": "Inspection",
     "contact": "Contact"
