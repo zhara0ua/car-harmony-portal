@@ -37,116 +37,194 @@ interface ScraperOptions {
 export const scraperService = {
   async scrapeOpenLane(options: ScraperOptions = {}): Promise<ScraperResult> {
     try {
-      // Check if supabase is properly initialized
-      if (!supabase || !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-        console.error("Supabase client is not fully initialized");
+      // Validate Supabase connection
+      if (!supabase) {
+        console.error("Supabase client is not initialized");
         return { 
           success: false, 
           error: "Supabase client is not initialized",
           timestamp: new Date().toISOString()
         };
       }
+
+      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        console.error("Supabase environment variables are missing");
+        return { 
+          success: false, 
+          error: "Supabase environment variables are missing. Please check your .env file.",
+          timestamp: new Date().toISOString()
+        };
+      }
       
-      console.log("Attempting to invoke Edge Function: scrape-openlane with timeout:", options.timeout);
+      console.log(`Attempting to invoke Edge Function: scrape-openlane with timeout: ${options.timeout}ms`);
+      console.log(`Supabase URL: ${import.meta.env.VITE_SUPABASE_URL.substring(0, 10)}... (truncated for security)`);
+      
       try {
+        const startTime = Date.now();
         const { data, error } = await supabase.functions.invoke('scrape-openlane', {
           body: { 
             useRandomUserAgent: options.useRandomUserAgent ?? true,
             timeout: options.timeout ?? 60000, // Default 60 seconds if not specified
-            waitForSelector: '#react-root .vehicle-card, #react-root .no-results' // Wait for either vehicle cards or no results message
+            waitForSelector: '#react-root .vehicle-card, #react-root .no-results',
+            debug: true // Enable debug mode to get more logs from the Edge Function
           }
         });
+        const endTime = Date.now();
         
         if (error) {
           console.error("Error from Supabase Edge Function:", error);
-          console.log("Falling back to mock data for OpenLane");
           return { 
-            success: true, 
-            html: MOCK_HTML,
+            success: false, 
+            error: `Edge Function Error: ${error.message || error}`,
             timestamp: new Date().toISOString(),
-            note: "This is mock data as the Edge Function failed."
+            note: "Edge Function encountered an error. Please check the Supabase Edge Function logs."
           };
         }
         
-        console.log("Received data from Edge Function:", data);
+        if (!data) {
+          console.error("Edge Function returned no data");
+          return {
+            success: false,
+            error: "Edge Function returned no data",
+            timestamp: new Date().toISOString(),
+            note: "The Edge Function executed but returned no data. Please check the Supabase Edge Function logs."
+          };
+        }
+        
+        console.log(`Received data from Edge Function in ${endTime - startTime}ms:`, 
+          data.cars ? `Found ${data.cars.length} cars` : "No cars found");
+        
         return data as ScraperResult;
-      } catch (invocationError) {
+      } catch (invocationError: any) {
         console.error("Error during Edge Function invocation:", invocationError);
-        console.log("Falling back to mock data for OpenLane due to invocation error");
+        
+        // Determine if this is a network error
+        const isNetworkError = invocationError.message && (
+          invocationError.message.includes("Failed to fetch") ||
+          invocationError.message.includes("Network Error") ||
+          invocationError.message.includes("NetworkError")
+        );
+        
+        if (isNetworkError) {
+          return {
+            success: false,
+            error: "Network error while connecting to Edge Function. Please check if your Supabase project is running and Edge Functions are deployed.",
+            timestamp: new Date().toISOString(),
+            note: "This might be due to Supabase Edge Functions not being deployed or network connectivity issues."
+          };
+        }
+
         return {
-          success: true,
-          html: MOCK_HTML,
+          success: false,
+          error: `Edge Function invocation error: ${invocationError.message || "Unknown error"}`,
           timestamp: new Date().toISOString(),
-          note: "This is mock data as the Edge Function failed."
+          note: "Failed to invoke the Edge Function. This might be due to Supabase Edge Functions not being deployed properly."
         };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Exception in scrapeOpenLane:", error);
-      console.log("Falling back to mock data for OpenLane due to general error");
       return { 
-        success: true,
-        html: MOCK_HTML,
+        success: false,
+        error: `General error: ${error.message || "Unknown error"}`,
         timestamp: new Date().toISOString(),
-        note: "This is mock data as the Edge Function failed."
+        note: "An unexpected error occurred while trying to scrape data."
       };
     }
   },
 
   async scrapeFindCar(options: ScraperOptions = {}): Promise<ScraperResult> {
     try {
-      // Check if supabase is properly initialized
-      if (!supabase || !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-        console.error("Supabase client is not fully initialized");
+      // Validate Supabase connection
+      if (!supabase) {
+        console.error("Supabase client is not initialized");
         return { 
           success: false, 
           error: "Supabase client is not initialized",
           timestamp: new Date().toISOString()
         };
       }
+
+      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        console.error("Supabase environment variables are missing");
+        return { 
+          success: false, 
+          error: "Supabase environment variables are missing. Please check your .env file.",
+          timestamp: new Date().toISOString()
+        };
+      }
       
-      console.log("Attempting to invoke Edge Function: scrape-findcar with timeout:", options.timeout);
-      console.log("Supabase URL and key available:", !!import.meta.env.VITE_SUPABASE_URL, !!import.meta.env.VITE_SUPABASE_ANON_KEY);
+      console.log(`Attempting to invoke Edge Function: scrape-findcar with timeout: ${options.timeout}ms`);
+      console.log(`Supabase URL: ${import.meta.env.VITE_SUPABASE_URL.substring(0, 10)}... (truncated for security)`);
       
       try {
+        const startTime = Date.now();
         const { data, error } = await supabase.functions.invoke('scrape-findcar', {
           body: { 
             useRandomUserAgent: options.useRandomUserAgent ?? true,
             timeout: options.timeout ?? 60000, // Default 60 seconds if not specified
-            waitForSelector: '.vehicle-card, .no-results' // Wait for either vehicle cards or no results message
+            waitForSelector: '.vehicle-card, .no-results',
+            debug: true // Enable debug mode to get more logs from the Edge Function
           }
         });
+        const endTime = Date.now();
         
         if (error) {
           console.error("Error from Supabase Edge Function:", error);
-          console.log("Falling back to mock data for FindCar");
           return { 
-            success: true,
-            html: MOCK_HTML,
+            success: false, 
+            error: `Edge Function Error: ${error.message || error}`,
             timestamp: new Date().toISOString(),
-            note: "This is mock data as the Edge Function failed."
+            note: "Edge Function encountered an error. Please check the Supabase Edge Function logs."
           };
         }
         
-        console.log("Received data from Edge Function:", data);
+        if (!data) {
+          console.error("Edge Function returned no data");
+          return {
+            success: false,
+            error: "Edge Function returned no data",
+            timestamp: new Date().toISOString(),
+            note: "The Edge Function executed but returned no data. Please check the Supabase Edge Function logs."
+          };
+        }
+        
+        console.log(`Received data from Edge Function in ${endTime - startTime}ms:`, 
+          data.cars ? `Found ${data.cars.length} cars` : "No cars found");
+        
         return data as ScraperResult;
-      } catch (invocationError) {
+      } catch (invocationError: any) {
         console.error("Error during Edge Function invocation:", invocationError);
-        console.log("Falling back to mock data for FindCar due to invocation error");
+        
+        // Determine if this is a network error
+        const isNetworkError = invocationError.message && (
+          invocationError.message.includes("Failed to fetch") ||
+          invocationError.message.includes("Network Error") ||
+          invocationError.message.includes("NetworkError")
+        );
+        
+        if (isNetworkError) {
+          return {
+            success: false,
+            error: "Network error while connecting to Edge Function. Please check if your Supabase project is running and Edge Functions are deployed.",
+            timestamp: new Date().toISOString(),
+            note: "This might be due to Supabase Edge Functions not being deployed or network connectivity issues."
+          };
+        }
+
         return {
-          success: true,
-          html: MOCK_HTML,
+          success: false,
+          error: `Edge Function invocation error: ${invocationError.message || "Unknown error"}`,
           timestamp: new Date().toISOString(),
-          note: "This is mock data as the Edge Function failed."
+          note: "Failed to invoke the Edge Function. This might be due to Supabase Edge Functions not being deployed properly."
         };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Exception in scrapeFindCar:", error);
-      console.log("Falling back to mock data for FindCar due to general error");
       return { 
-        success: true,
-        html: MOCK_HTML,
+        success: false,
+        error: `General error: ${error.message || "Unknown error"}`,
         timestamp: new Date().toISOString(),
-        note: "This is mock data as the Edge Function failed."
+        note: "An unexpected error occurred while trying to scrape data."
       };
     }
   }
