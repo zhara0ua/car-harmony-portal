@@ -34,5 +34,6 @@ file_size_limit = "50MiB"
 
 # Edge Functions configuration
 [functions]
-# Port for Edge Functions
+# Instead of just setting a port value, we need to provide a proper map
+enabled = true
 port = 9999
