@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,13 +11,14 @@ import { triggerScraping } from "@/utils/scraping";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 
 export default function ScrapedCars() {
   const [filters, setFilters] = useState<Filters>({});
   const [isScrapingInProgress, setIsScrapingInProgress] = useState(false);
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [errorDetails, setErrorDetails] = useState("");
   const { toast } = useToast();
   
   const { data: cars, isLoading, refetch } = useQuery({
@@ -79,7 +81,20 @@ export default function ScrapedCars() {
       refetch();
     } catch (error) {
       console.error('Error during scraping:', error);
-      setErrorMessage(error instanceof Error ? error.message : "Не вдалося отримати дані з сайту");
+      
+      // Extract more detailed error information if available
+      let errorMsg = error instanceof Error ? error.message : "Не вдалося отримати дані з сайту";
+      let detailsMsg = "";
+      
+      // Check if error message contains specific details we can separate
+      if (errorMsg.includes(" - ")) {
+        const parts = errorMsg.split(" - ");
+        errorMsg = parts[0];
+        detailsMsg = parts.slice(1).join(" - ");
+      }
+      
+      setErrorMessage(errorMsg);
+      setErrorDetails(detailsMsg);
       setIsErrorDialogOpen(true);
     } finally {
       setIsScrapingInProgress(false);
@@ -140,11 +155,22 @@ export default function ScrapedCars() {
       <Footer />
 
       <AlertDialog open={isErrorDialogOpen} onOpenChange={setIsErrorDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>Помилка</AlertDialogTitle>
-            <AlertDialogDescription>
-              {errorMessage}
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Помилка скрапінгу
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              <p>{errorMessage}</p>
+              {errorDetails && (
+                <div className="mt-2 p-3 bg-muted text-sm rounded-md overflow-auto max-h-40">
+                  {errorDetails}
+                </div>
+              )}
+              <p className="text-sm font-medium mt-2">
+                Будь ласка, перевірте логи сервера або спробуйте пізніше.
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
