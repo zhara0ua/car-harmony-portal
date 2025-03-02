@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -188,11 +187,6 @@ export default function ScrapedCars() {
         });
       });
       
-      results.push("Elements with car-related class/id names:");
-      matchingElements.forEach((selector, index) => {
-        results.push(`${index + 1}. ${selector}`);
-      });
-      
       setStructureAnalysis(results.join('\n'));
       setIsStructureDialogOpen(true);
       
@@ -215,18 +209,20 @@ export default function ScrapedCars() {
     
     if (!result) return null;
     
-    // First, try the direct HTML content properties at different locations
-    const possibleHtmlLocations = [
-      result.htmlContent,
-      result.raw_html,
+    // Directly check for HTML content in the raw data from the scraper
+    // Places where scraper might store raw HTML
+    const scrapedHtmlLocations = [
       result.debug?.htmlContent,
       result.debug?.raw_html,
-      result.error?.htmlContent,
-      result.error?.raw_html
+      result.htmlContent,
+      result.raw_html,
+      result.rawHtml
     ];
     
     // Helper function to check if string is likely HTML
     const isLikelyHtml = (text: string): boolean => {
+      if (typeof text !== 'string') return false;
+      
       const htmlIndicators = [
         '<!DOCTYPE html>',
         '<html',
@@ -239,28 +235,31 @@ export default function ScrapedCars() {
       return htmlIndicators.some(indicator => text.includes(indicator));
     };
     
-    // Check the direct locations first
-    for (const location of possibleHtmlLocations) {
+    // First try the direct locations where scraper stores HTML
+    for (const location of scrapedHtmlLocations) {
       if (typeof location === 'string' && location.length > 100 && isLikelyHtml(location)) {
-        console.log('Found HTML directly in result');
+        console.log('Found HTML directly from scraper');
         return location;
       }
     }
     
-    // Deep search for HTML in the object
-    const findHtmlInObject = (obj: any, depth = 0): string | null => {
-      if (depth > 10) return null;
-      
-      if (!obj || typeof obj !== 'object') return null;
+    // If not found, do a deep search in the response object
+    const findHtmlDeep = (obj: any, depth = 0): string | null => {
+      if (depth > 10 || !obj || typeof obj !== 'object') return null;
       
       for (const [key, value] of Object.entries(obj)) {
-        if (typeof value === 'string' && value.length > 100 && isLikelyHtml(value)) {
+        // Look specifically for keys that might contain HTML
+        const isHtmlKey = key.toLowerCase().includes('html') || 
+                          key.toLowerCase().includes('content') ||
+                          key.toLowerCase().includes('raw');
+                          
+        if (isHtmlKey && typeof value === 'string' && value.length > 100 && isLikelyHtml(value)) {
           console.log(`Found HTML in object at key ${key}`);
           return value;
         }
         
         if (value && typeof value === 'object') {
-          const nestedHtml = findHtmlInObject(value, depth + 1);
+          const nestedHtml = findHtmlDeep(value, depth + 1);
           if (nestedHtml) return nestedHtml;
         }
       }
@@ -268,26 +267,24 @@ export default function ScrapedCars() {
       return null;
     };
     
-    const deepSearchHtml = findHtmlInObject(result);
-    if (deepSearchHtml) {
-      console.log('Found HTML through deep object search');
-      return deepSearchHtml;
+    const deepHtml = findHtmlDeep(result);
+    if (deepHtml) {
+      console.log('Found HTML through deep search');
+      return deepHtml;
     }
     
-    // If we still didn't find HTML, look for any large string property
-    const findLargeStringInObject = (obj: any, depth = 0): string | null => {
-      if (depth > 10) return null;
-      
-      if (!obj || typeof obj !== 'object') return null;
+    // Final fallback: look for any large string in the object
+    const findLargeStringDeep = (obj: any, depth = 0): string | null => {
+      if (depth > 10 || !obj || typeof obj !== 'object') return null;
       
       for (const [key, value] of Object.entries(obj)) {
-        if (typeof value === 'string' && value.length > 1000) {
+        if (typeof value === 'string' && value.length > 500) {
           console.log(`Found large string in object at key ${key}`);
           return value;
         }
         
         if (value && typeof value === 'object') {
-          const nestedString = findLargeStringInObject(value, depth + 1);
+          const nestedString = findLargeStringDeep(value, depth + 1);
           if (nestedString) return nestedString;
         }
       }
@@ -295,9 +292,9 @@ export default function ScrapedCars() {
       return null;
     };
     
-    const largeString = findLargeStringInObject(result);
+    const largeString = findLargeStringDeep(result);
     if (largeString) {
-      console.log('Found large string that might contain HTML');
+      console.log('Found large string that might be HTML');
       return largeString;
     }
     
@@ -318,6 +315,7 @@ export default function ScrapedCars() {
       
       console.log('Scraping result received:', result);
       
+      // Make sure to extract the original HTML that was scraped
       const extractedHtml = extractHtmlFromResponse(result);
       
       if (extractedHtml) {

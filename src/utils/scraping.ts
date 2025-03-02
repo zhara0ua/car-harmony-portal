@@ -59,7 +59,9 @@ export const invokeScrapingFunction = async () => {
       '.car-tile',
       '.product',
       '.car-item'
-    ]
+    ],
+    preserveRawHtml: true, // Add this flag to ensure raw HTML is preserved
+    returnOriginalHtml: true // Add this flag to make sure the original HTML is returned
   };
   
   console.log('Invoking scrape-cars edge function with options:', requestOptions);
@@ -94,47 +96,21 @@ export const invokeScrapingFunction = async () => {
       }
     }
     
-    // Additional check for empty or invalid data
-    if (!data) {
-      throw new Error("Функція повернула порожню відповідь");
-    }
-    
-    // Make sure we have the HTML content somewhere in the response
-    if (data.debug?.htmlContent) {
-      console.log('HTML content found in data.debug:', data.debug.htmlContent.substring(0, 50) + '...');
-    } else if (data.htmlContent) {
-      console.log('HTML content found directly in data:', data.htmlContent.substring(0, 50) + '...');
-      // Move it to the debug property for consistency
-      if (!data.debug) data.debug = {};
-      data.debug.htmlContent = data.htmlContent;
-    } else {
-      console.log('No HTML content found in the initial response structure, doing deep search');
-      
-      // Deep search for HTML content in any part of the response
-      const findHtmlContent = (obj: any): string | null => {
-        if (!obj || typeof obj !== 'object') return null;
-        
-        for (const key in obj) {
-          if (key === 'htmlContent' && typeof obj[key] === 'string') {
-            return obj[key];
-          }
-          
-          if (typeof obj[key] === 'object') {
-            const found = findHtmlContent(obj[key]);
-            if (found) return found;
-          }
-        }
-        
-        return null;
-      };
-      
-      const foundHtml = findHtmlContent(data);
-      if (foundHtml) {
-        console.log('Found HTML through deep search:', foundHtml.substring(0, 50) + '...');
+    // Additional check for HTML content
+    if (data) {
+      console.log('Checking for HTML content in response...');
+      if (data.debug?.htmlContent) {
+        console.log('HTML content found in data.debug.htmlContent');
+      } else if (data.htmlContent) {
+        console.log('HTML content found in data.htmlContent');
+      } else if (data.raw_html) {
+        console.log('HTML content found in data.raw_html');
+        // Move it to the standard locations for consistency
+        data.htmlContent = data.raw_html;
         if (!data.debug) data.debug = {};
-        data.debug.htmlContent = foundHtml;
+        data.debug.htmlContent = data.raw_html;
       } else {
-        console.log('No HTML content found in the entire response after deep search');
+        console.log('No HTML content found in standard locations');
       }
     }
     

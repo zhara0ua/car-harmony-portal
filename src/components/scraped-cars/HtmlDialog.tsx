@@ -6,6 +6,7 @@ import {
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogAction
 } from "@/components/ui/alert-dialog";
@@ -36,8 +37,11 @@ export const HtmlDialog = ({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <Code className="h-5 w-5" />
-            OpenLane HTML код
+            OpenLane HTML код (скрапер)
           </AlertDialogTitle>
+          <AlertDialogDescription>
+            HTML код, який аналізує скрапер для пошуку елементів автомобілів
+          </AlertDialogDescription>
         </AlertDialogHeader>
         
         <div className="flex-1 min-h-0 my-4">

@@ -34,7 +34,7 @@ export const HtmlContentCard = ({ htmlContent, onAnalyzeStructure }: HtmlContent
       <CardHeader className="bg-blue-50">
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5" />
-          OpenLane HTML код
+          Оригінальний HTML код з OpenLane (скрапер)
         </CardTitle>
       </CardHeader>
       <CardContent>
