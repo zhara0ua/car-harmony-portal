@@ -55,8 +55,8 @@ export const invokeScrapingFunction = async () => {
       });
       
       // Handle specific error cases
-      if (error.message.includes("subprocess")) {
-        throw new Error("Обмеження середовища Supabase: запуск зовнішніх процесів не дозволено. Використовуються демо-дані.");
+      if (error.message.includes("fetch")) {
+        throw new Error("Помилка доступу до сайту CarOutlet. Перевірте з'єднання з інтернетом або доступність сайту.");
       } else if (error.message.includes("non-2xx")) {
         throw new Error("Сервер повернув неочікуваний статус відповіді. Перевірте логи функції");
       } else if (error.message.includes("JSON")) {
@@ -91,9 +91,9 @@ export const validateScrapingResults = (scrapingData: any) => {
     throw new Error(scrapingData.error || "Помилка при скрапінгу: " + scrapingData.error);
   }
   
-  // If the function returns mock data with a special message about using mock data due to limitations
-  if (scrapingData.message && scrapingData.message.includes("Unable to run web scraping directly")) {
-    console.log('Using mock data due to Edge Function limitations');
+  // If the function returns a message about using fallback data due to scraping issues
+  if (scrapingData.message && scrapingData.message.includes("Scraping encountered issues")) {
+    console.log('Using fallback data due to scraping issues');
     // We still return the data, but log the situation
   }
   
