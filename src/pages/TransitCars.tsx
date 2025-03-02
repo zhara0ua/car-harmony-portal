@@ -4,7 +4,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Truck, Navigation, MapPin, Map, Car, Calendar, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Truck, Navigation, MapPin, Map, Car, Calendar, Clock, Gavel, Trophy, PackageOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface TransitCar {
@@ -19,6 +20,9 @@ interface TransitCar {
   estimatedArrival: string;
   status: "loading" | "in_transit" | "customs" | "delivery";
   progress: number;
+  auctionPrice: number;
+  marketPrice: number;
+  discount: number;
 }
 
 const mockTransitCars: TransitCar[] = [
@@ -33,7 +37,10 @@ const mockTransitCars: TransitCar[] = [
     departureDate: "2023-10-15",
     estimatedArrival: "2023-10-25",
     status: "in_transit",
-    progress: 65
+    progress: 65,
+    auctionPrice: 28500,
+    marketPrice: 32000,
+    discount: 11
   },
   {
     id: 2,
@@ -46,7 +53,10 @@ const mockTransitCars: TransitCar[] = [
     departureDate: "2023-10-18",
     estimatedArrival: "2023-10-28",
     status: "loading",
-    progress: 10
+    progress: 10,
+    auctionPrice: 33200,
+    marketPrice: 38500,
+    discount: 14
   },
   {
     id: 3,
@@ -59,7 +69,10 @@ const mockTransitCars: TransitCar[] = [
     departureDate: "2023-10-12",
     estimatedArrival: "2023-10-22",
     status: "customs",
-    progress: 85
+    progress: 85,
+    auctionPrice: 45000,
+    marketPrice: 51000,
+    discount: 12
   },
   {
     id: 4,
@@ -72,7 +85,10 @@ const mockTransitCars: TransitCar[] = [
     departureDate: "2023-10-10",
     estimatedArrival: "2023-10-20",
     status: "delivery",
-    progress: 95
+    progress: 95,
+    auctionPrice: 30800,
+    marketPrice: 35500,
+    discount: 13
   }
 ];
 
@@ -111,6 +127,10 @@ const formatDate = (dateString: string): string => {
   return date.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
+const formatPrice = (price: number): string => {
+  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(price);
+};
+
 const TransitCars = () => {
   const [transitCars, setTransitCars] = useState<TransitCar[]>([]);
   const { t } = useTranslation();
@@ -126,11 +146,18 @@ const TransitCars = () => {
       
       <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-navy mb-2">Автомобілі в дорозі</h1>
-          <p className="text-gray-600">
-            Відстежуйте свої автомобілі в режимі реального часу під час їхньої подорожі з Європи до України. 
-            Наша система дозволяє бачити поточний стан і місцезнаходження вашого авто.
+          <h1 className="text-3xl font-bold text-navy mb-2">Автомобілі з аукціону в дорозі</h1>
+          <p className="text-gray-600 mb-3">
+            Ці автомобілі ми вже виграли на аукціоні, але вони ще в дорозі до України. 
+            Ви можете придбати їх зараз зі знижкою до того, як вони прибудуть на наш майданчик.
           </p>
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 text-blue-700">
+            <div className="flex items-center gap-2 mb-2">
+              <Trophy className="h-5 w-5" />
+              <p className="font-medium">Вигідна пропозиція!</p>
+            </div>
+            <p>Купуючи автомобіль, який ще в дорозі, ви отримуєте значну знижку від ринкової вартості.</p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
@@ -147,6 +174,9 @@ const TransitCars = () => {
                 >
                   {getStatusLabel(car.status)}
                 </Badge>
+                <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full font-semibold text-sm flex items-center">
+                  <span>-{car.discount}%</span>
+                </div>
               </div>
               
               <CardHeader className="pb-2">
@@ -157,8 +187,19 @@ const TransitCars = () => {
               
               <CardContent>
                 <div className="space-y-4">
+                  <div className="flex items-start gap-2 mb-4">
+                    <Gavel className="w-5 h-5 text-navy flex-shrink-0 mt-1" />
+                    <div className="flex flex-col">
+                      <span className="text-sm text-gray-500">Ціна аукціону:</span>
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-medium text-lg">{formatPrice(car.auctionPrice)}</span>
+                        <span className="text-sm line-through text-gray-500">{formatPrice(car.marketPrice)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <div className="flex items-center gap-2">
-                    <Navigation className="w-5 h-5 text-navy" />
+                    <PackageOpen className="w-5 h-5 text-navy" />
                     <div className="flex flex-col">
                       <span className="text-sm text-gray-500">Маршрут:</span>
                       <span className="font-medium">{car.origin} → {car.destination}</span>
@@ -195,6 +236,10 @@ const TransitCars = () => {
                       ></div>
                     </div>
                   </div>
+                  
+                  <Button className="w-full mt-2">
+                    Забронювати зі знижкою
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -204,6 +249,28 @@ const TransitCars = () => {
         <Card className="mb-12">
           <CardContent className="p-6">
             <div className="flex items-start gap-4 mb-6">
+              <Gavel className="w-8 h-8 text-navy flex-shrink-0" />
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Аукціонні автомобілі</h3>
+                <p className="text-gray-600">
+                  Ми виграємо найкращі лоти на європейських аукціонах, обираючи автомобілі 
+                  з підтвердженою історією та в ідеальному технічному стані.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-4 mb-6">
+              <Trophy className="w-8 h-8 text-navy flex-shrink-0" />
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Економія до 15%</h3>
+                <p className="text-gray-600">
+                  Купуючи автомобіль, який ще в дорозі, ви отримуєте значну знижку в порівнянні з 
+                  аналогічними автомобілями, які вже знаходяться на нашому майданчику.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-4">
               <Truck className="w-8 h-8 text-navy flex-shrink-0" />
               <div>
                 <h3 className="text-xl font-semibold mb-2">Надійне транспортування</h3>
@@ -213,35 +280,13 @@ const TransitCars = () => {
                 </p>
               </div>
             </div>
-            
-            <div className="flex items-start gap-4 mb-6">
-              <MapPin className="w-8 h-8 text-navy flex-shrink-0" />
-              <div>
-                <h3 className="text-xl font-semibold mb-2">GPS-моніторинг</h3>
-                <p className="text-gray-600">
-                  Кожен автомобіль оснащений GPS-трекером, що дозволяє відстежувати його 
-                  місцезнаходження в режимі реального часу протягом усього шляху.
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-4">
-              <Map className="w-8 h-8 text-navy flex-shrink-0" />
-              <div>
-                <h3 className="text-xl font-semibold mb-2">Оптимальні маршрути</h3>
-                <p className="text-gray-600">
-                  Ми розробляємо найбільш оптимальні маршрути доставки, щоб мінімізувати час 
-                  в дорозі та забезпечити швидке прибуття автомобіля до місця призначення.
-                </p>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
         <div className="bg-navy text-white rounded-lg p-8 text-center">
           <Car className="w-12 h-12 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-4">Хочете відстежувати свій автомобіль?</h2>
-          <p className="mb-6">Зв'яжіться з нами для отримання доступу до відстеження</p>
+          <h2 className="text-2xl font-bold mb-4">Зацікавлені в придбанні автомобіля з аукціону?</h2>
+          <p className="mb-6">Зв'яжіться з нами, щоб отримати повну інформацію про доступні автомобілі</p>
           <Badge variant="secondary" className="text-lg py-2 px-4">
             +48 123 456 789
           </Badge>
