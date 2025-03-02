@@ -28,5 +28,13 @@
       "title": "Nasze Udane Dobory",
       "loadMore": "Pokaż więcej"
     }
+  },
+  "auctions": {
+    "title": "Samochody Aukcyjne",
+    "scrapeNow": "Pobierz Teraz",
+    "loading": "Ładowanie samochodów aukcyjnych...",
+    "noData": "Kliknij \"Pobierz Teraz\" aby załadować samochody aukcyjne",
+    "error": "Błąd: {{error}}",
+    "lastScraped": "Ostatnio pobrane: {{time}}"
   }
 }
