@@ -6,6 +6,17 @@ export interface ScrapedCar {
   image: string;
   url: string;
   details: ScrapedCarDetails;
+  
+  // Additional properties for the form component
+  external_id?: string;
+  year?: number;
+  mileage?: string;
+  fuel_type?: string;
+  transmission?: string;
+  location?: string;
+  image_url?: string;
+  external_url?: string;
+  source?: string;
 }
 
 export interface ScrapedCarDetails {

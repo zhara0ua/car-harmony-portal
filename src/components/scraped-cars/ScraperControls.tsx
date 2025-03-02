@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Refresh } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { ScraperResult } from '@/types/scraped-car';
 import { scraperService } from '@/services/scraperService';
@@ -73,12 +73,12 @@ const ScraperControls = ({ onScraperResult, isLoading, setIsLoading }: ScraperCo
       >
         {isLoading ? (
           <>
-            <Refresh className="mr-2 h-4 w-4 animate-spin" />
+            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
             Scraping...
           </>
         ) : (
           <>
-            <Refresh className="mr-2 h-4 w-4" />
+            <RefreshCw className="mr-2 h-4 w-4" />
             Scrape Now
           </>
         )}
