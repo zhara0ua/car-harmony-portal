@@ -166,7 +166,7 @@ export default function ScrapedCars() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5" />
-                  HTML вміст сторінки
+                  HTML код
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -233,7 +233,7 @@ export default function ScrapedCars() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <Code className="h-5 w-5" />
-              HTML вміст сторінки
+              HTML код
             </AlertDialogTitle>
           </AlertDialogHeader>
           
