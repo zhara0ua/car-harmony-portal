@@ -1,12 +1,30 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { PostgrestError } from "@supabase/supabase-js";
+
+// Function to prompt user to set up Firecrawl API key if not found
+export const checkFirecrawlApiKey = async () => {
+  try {
+    const { data, error } = await supabase.functions.invoke('get-secrets', {
+      method: 'POST',
+      body: { secretName: 'FIRECRAWL_API_KEY' },
+    });
+    
+    if (error || !data?.exists) {
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error checking for FIRECRAWL_API_KEY:', error);
+    return false;
+  }
+};
 
 export const triggerScraping = async () => {
   try {
     console.log('Starting database connection check...');
     
-    // Спрощена перевірка з'єднання з базою даних
+    // Simplified database connection check
     const { data, error: healthCheckError } = await supabase
       .from('scraped_cars')
       .select('id')
@@ -23,12 +41,18 @@ export const triggerScraping = async () => {
       }
     }
 
+    // Check if Firecrawl API key is set
+    const hasFirecrawlApiKey = await checkFirecrawlApiKey();
+    if (!hasFirecrawlApiKey) {
+      throw new Error("Відсутній API ключ. Будь ласка, налаштуйте API ключ Firecrawl.");
+    }
+
     console.log('Database connection successful, starting scraping...');
     
     try {
       const { data: scrapingData, error } = await supabase.functions.invoke('scrape-cars', {
         method: 'POST',
-        body: {},
+        body: { source: 'openlane' },
       });
       
       if (error) {

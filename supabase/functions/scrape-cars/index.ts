@@ -1,87 +1,112 @@
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
-import FirecrawlApp from 'https://esm.sh/@mendable/firecrawl-js@0.0.28'
+// Follow this setup guide to integrate the Deno runtime into your application:
+// https://deno.land/manual/examples/deploy_node_server
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface ScrapingRequest {
+  source?: string;
+}
 
-Deno.serve(async (req) => {
-  console.log('Received request:', req.method);
+// Create a Supabase client with the Auth context of the function
+const executeOpenlaneScrapingScript = async () => {
+  const process = new Deno.Command("python", {
+    args: ["openlane_scraper.py"],
+    stdout: "piped",
+    stderr: "piped",
+  });
   
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { 
-      status: 200,
-      headers: corsHeaders 
-    });
+  const { stdout, stderr, success } = await process.output();
+  
+  if (!success) {
+    const errorOutput = new TextDecoder().decode(stderr);
+    console.error("Python script execution failed:", errorOutput);
+    throw new Error(`Script execution failed: ${errorOutput}`);
   }
   
+  const output = new TextDecoder().decode(stdout);
+  console.log("Python script output:", output);
+  
   try {
-    console.log('Starting scraping process...');
+    return JSON.parse(output);
+  } catch (e) {
+    console.error("Failed to parse script output as JSON:", e);
+    throw new Error("Invalid script output format");
+  }
+};
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+serve(async (req) => {
+  try {
+    // Create a Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Check if the required API key is set
     const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
-
-    if (!supabaseUrl || !supabaseKey || !firecrawlApiKey) {
-      console.error('Missing required credentials');
-      console.log('SUPABASE_URL:', !!supabaseUrl);
-      console.log('SUPABASE_KEY:', !!supabaseKey);
-      console.log('FIRECRAWL_API_KEY:', !!firecrawlApiKey);
-      throw new Error('Missing required credentials');
+    if (!firecrawlApiKey) {
+      return new Response(
+        JSON.stringify({ success: false, error: "FIRECRAWL_API_KEY is not set" }),
+        { headers: { "Content-Type": "application/json" }, status: 500 }
+      );
     }
-
-    const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
-    console.log('Supabase client initialized');
-
-    // Базова конфігурація Firecrawl
-    const firecrawl = new FirecrawlApp({ apiKey: firecrawlApiKey });
-    console.log('Firecrawl initialized');
-
-    // Спрощений запит скрапінгу
-    const crawlResult = await firecrawl.crawlUrl('https://caroutlet.eu/cars', {
-      format: 'html'
-    });
-
-    console.log('Crawl response received');
-    console.log('Response type:', typeof crawlResult);
-    console.log('Response structure:', Object.keys(crawlResult));
-
-    if (!crawlResult || !crawlResult.success) {
-      const errorMessage = crawlResult?.error || 'Unknown error';
-      console.error('Crawl failed:', errorMessage);
-      console.error('Full response:', JSON.stringify(crawlResult, null, 2));
-      throw new Error(`Failed to crawl page: ${errorMessage}`);
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Запит до сайту виконано успішно',
-      }),
-      { 
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    
+    // Parse request body
+    const requestData: ScrapingRequest = await req.json();
+    const { source = "all" } = requestData;
+    
+    let scrapedData = [];
+    
+    if (source === "openlane" || source === "all") {
+      // Execute the Python scraper script for OpenLane
+      try {
+        const openLaneResults = await executeOpenlaneScrapingScript();
+        scrapedData = [...scrapedData, ...openLaneResults];
+      } catch (error) {
+        console.error("OpenLane scraping failed:", error);
+        return new Response(
+          JSON.stringify({ success: false, error: `OpenLane scraping failed: ${error.message}` }),
+          { headers: { "Content-Type": "application/json" }, status: 500 }
+        );
       }
-    );
-
-  } catch (error) {
-    console.error('Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-    });
+    }
+    
+    // Process and save the data
+    let insertedCount = 0;
+    
+    if (scrapedData.length > 0) {
+      const { error: upsertError, count } = await supabase
+        .from('scraped_cars')
+        .upsert(scrapedData, { 
+          onConflict: 'external_id',
+          ignoreDuplicates: false 
+        })
+        .select("count");
+      
+      if (upsertError) {
+        console.error("Error upserting data:", upsertError);
+        return new Response(
+          JSON.stringify({ success: false, error: `Failed to save data: ${upsertError.message}` }),
+          { headers: { "Content-Type": "application/json" }, status: 500 }
+        );
+      }
+      
+      insertedCount = count || scrapedData.length;
+    }
     
     return new Response(
       JSON.stringify({
-        success: false,
-        error: error instanceof Error ? error.message : 'Unexpected error occurred'
+        success: true,
+        message: `Scraped ${scrapedData.length} cars, saved ${insertedCount} to database`,
+        count: scrapedData.length
       }),
-      { 
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      { headers: { "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    console.error("Function execution error:", error);
+    return new Response(
+      JSON.stringify({ success: false, error: error.message }),
+      { headers: { "Content-Type": "application/json" }, status: 500 }
     );
   }
 });

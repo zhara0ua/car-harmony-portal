@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { ScrapedCarCard } from "@/components/scraped-cars/ScrapedCarCard";
 import { ScrapedCarsFilters } from "@/components/scraped-cars/ScrapedCarsFilters";
 import { useToast } from "@/components/ui/use-toast";
 import { type Filters, type ScrapedCar } from "@/types/scraped-car";
-import { triggerScraping } from "@/utils/scraping";
+import { triggerScraping, checkFirecrawlApiKey } from "@/utils/scraping";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
@@ -17,7 +17,17 @@ export default function ScrapedCars() {
   const [isScrapingInProgress, setIsScrapingInProgress] = useState(false);
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [needsApiKey, setNeedsApiKey] = useState(false);
   const { toast } = useToast();
+  
+  useEffect(() => {
+    const checkApiKey = async () => {
+      const hasKey = await checkFirecrawlApiKey();
+      setNeedsApiKey(!hasKey);
+    };
+    
+    checkApiKey();
+  }, []);
   
   const { data: cars, isLoading, refetch } = useQuery({
     queryKey: ['scraped-cars', filters],
@@ -46,6 +56,9 @@ export default function ScrapedCars() {
       if (filters.transmission) {
         query = query.eq('transmission', filters.transmission);
       }
+      if (filters.source) {
+        query = query.eq('source', filters.source);
+      }
 
       const { data, error } = await query;
       
@@ -57,6 +70,12 @@ export default function ScrapedCars() {
   });
 
   const handleScraping = async () => {
+    if (needsApiKey) {
+      setErrorMessage("Будь ласка, налаштуйте API ключ Firecrawl для продовження.");
+      setIsErrorDialogOpen(true);
+      return;
+    }
+    
     try {
       setIsScrapingInProgress(true);
       const result = await triggerScraping();
