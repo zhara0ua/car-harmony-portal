@@ -56,23 +56,34 @@ export const scraperService = {
       }
       
       console.log("Attempting to invoke Edge Function: scrape-findcar");
-      const { data, error } = await supabase.functions.invoke('scrape-findcar', {
-        body: { 
-          useRandomUserAgent: true
-        }
-      });
+      console.log("Supabase URL and key available:", !!import.meta.env.VITE_SUPABASE_URL, !!import.meta.env.VITE_SUPABASE_ANON_KEY);
       
-      if (error) {
-        console.error("Error from Supabase Edge Function:", error);
-        return { 
-          success: false, 
-          error: error.message || "Failed to call scraper function",
+      try {
+        const { data, error } = await supabase.functions.invoke('scrape-findcar', {
+          body: { 
+            useRandomUserAgent: true
+          }
+        });
+        
+        if (error) {
+          console.error("Error from Supabase Edge Function:", error);
+          return { 
+            success: false, 
+            error: `Failed to call scraper function: ${error.message}`,
+            timestamp: new Date().toISOString()
+          };
+        }
+        
+        console.log("Received data from Edge Function:", data);
+        return data as ScraperResult;
+      } catch (invocationError) {
+        console.error("Error during Edge Function invocation:", invocationError);
+        return {
+          success: false,
+          error: `Edge Function invocation error: ${invocationError instanceof Error ? invocationError.message : "Network or connection error"}`,
           timestamp: new Date().toISOString()
         };
       }
-      
-      console.log("Received data from Edge Function:", data);
-      return data as ScraperResult;
     } catch (error) {
       console.error("Exception in scrapeFindCar:", error);
       return { 
