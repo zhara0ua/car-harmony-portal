@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 // Function to check database connection before scraping
 export const checkDatabaseConnection = async () => {
   try {
+    console.log('Testing database connection...');
     const { data, error: healthCheckError } = await supabase
       .from('scraped_cars')
       .select('id')
@@ -20,6 +21,7 @@ export const checkDatabaseConnection = async () => {
       }
     }
     
+    console.log('Database connection successful', data);
     return true;
   } catch (error) {
     console.error('Error checking database connection:', error);
@@ -37,10 +39,13 @@ export const triggerScraping = async () => {
     console.log('Database connection successful, starting scraping...');
     
     try {
+      console.log('Invoking scrape-cars edge function...');
       const { data: scrapingData, error } = await supabase.functions.invoke('scrape-cars', {
         method: 'POST',
         body: { source: 'openlane' },
       });
+      
+      console.log('Edge function response received:', scrapingData);
       
       if (error) {
         console.error('Function error details:', {
@@ -52,6 +57,7 @@ export const triggerScraping = async () => {
       }
       
       if (!scrapingData) {
+        console.error('No data returned from edge function');
         throw new Error("Функція не повернула дані");
       }
       
@@ -60,7 +66,7 @@ export const triggerScraping = async () => {
         throw new Error(scrapingData?.error || "Неочікувана відповідь від сервера");
       }
       
-      console.log('Function response:', scrapingData);
+      console.log('Scraping completed successfully:', scrapingData);
       return scrapingData;
     } catch (functionError) {
       console.error('Edge function execution error:', functionError);

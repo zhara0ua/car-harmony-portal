@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +10,7 @@ import { triggerScraping } from "@/utils/scraping";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { Loader2 } from "lucide-react";
 
 export default function ScrapedCars() {
   const [filters, setFilters] = useState<Filters>({});
@@ -62,13 +62,20 @@ export default function ScrapedCars() {
   const handleScraping = async () => {
     try {
       setIsScrapingInProgress(true);
+      toast({
+        title: "Початок скрапінгу",
+        description: "Запускаємо процес отримання даних. Це може зайняти кілька хвилин...",
+      });
+      
+      console.log('Starting scraping process...');
       const result = await triggerScraping();
       
       toast({
         title: "Успіх",
-        description: result.message,
+        description: result.message || "Дані успішно оновлено",
       });
       
+      console.log('Scraping completed, refreshing data...');
       refetch();
     } catch (error) {
       console.error('Error during scraping:', error);
@@ -96,8 +103,16 @@ export default function ScrapedCars() {
               variant="outline"
               onClick={handleScraping}
               disabled={isScrapingInProgress}
+              className="flex items-center gap-2"
             >
-              {isScrapingInProgress ? "Завантаження..." : "Оновити дані"}
+              {isScrapingInProgress ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Завантаження...</span>
+                </>
+              ) : (
+                "Оновити дані"
+              )}
             </Button>
           </div>
 
