@@ -33,8 +33,5 @@ export interface ScraperResult {
   cars?: ScrapedCar[];
   html?: string;
   error?: string;
-  message?: string;
   timestamp?: string;
-  note?: string;
-  statusCode?: number;
 }

@@ -1,160 +1,176 @@
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.5.0";
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+import { load } from 'https://esm.sh/cheerio@1.0.0-rc.12';
 
-// Define CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Content-Type': 'application/json'
 };
 
-// Initialize Supabase client to access secrets
-const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-const supabase = createClient(supabaseUrl, supabaseKey);
+// List of common user agents
+const userAgents = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
+  'Mozilla/5.0 (iPad; CPU OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59'
+];
+
+const getRandomUserAgent = () => {
+  const randomIndex = Math.floor(Math.random() * userAgents.length);
+  return userAgents[randomIndex];
+};
+
+async function scrapeOpenLane() {
+  console.log('Starting OpenLane scraper');
+  
+  try {
+    // Scrape the main auction page
+    const targetUrl = 'https://www.openlane.eu/en/findcar';
+    
+    const userAgent = getRandomUserAgent();
+    console.log(`Using user agent: ${userAgent}`);
+    
+    const response = await fetch(targetUrl, {
+      headers: {
+        'User-Agent': userAgent,
+        'Accept': 'text/html,application/xhtml+xml,application/xml',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': 'https://www.google.com/'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch OpenLane: ${response.status} ${response.statusText}`);
+    }
+    
+    const html = await response.text();
+    console.log(`Received HTML content of length: ${html.length}`);
+    
+    // Parse HTML with cheerio
+    const $ = load(html);
+    const cars = [];
+    let carId = 1;
+    
+    // Depending on the actual HTML structure of OpenLane, adjust these selectors
+    $('.vehicle-item, .car-item, .listing-item').each((i, element) => {
+      try {
+        const $el = $(element);
+        
+        // Extract data using proper selectors (these should be adjusted based on actual site structure)
+        const title = $el.find('.vehicle-title, .title, h3').first().text().trim();
+        const price = $el.find('.price, .vehicle-price').first().text().trim();
+        const imageEl = $el.find('img').first();
+        const image = imageEl.attr('src') || imageEl.attr('data-src') || '';
+        const linkEl = $el.find('a').first();
+        const relativeUrl = linkEl.attr('href') || '';
+        const url = relativeUrl.startsWith('http') ? relativeUrl : `https://www.openlane.eu${relativeUrl}`;
+        
+        // Extract details
+        const yearEl = $el.find('.year, .vehicle-year');
+        const mileageEl = $el.find('.mileage, .vehicle-mileage');
+        const engineEl = $el.find('.engine, .vehicle-engine');
+        const transmissionEl = $el.find('.transmission, .vehicle-transmission');
+        const fuelEl = $el.find('.fuel, .vehicle-fuel');
+        const colorEl = $el.find('.color, .vehicle-color');
+        
+        const car = {
+          id: `${carId++}`,
+          title: title || 'Unknown Model',
+          price: price || 'Price on request',
+          image: image || 'https://via.placeholder.com/300x200?text=No+Image',
+          url,
+          details: {
+            year: yearEl.text().trim() || 'N/A',
+            mileage: mileageEl.text().trim() || 'N/A',
+            engine: engineEl.text().trim() || 'N/A',
+            transmission: transmissionEl.text().trim() || 'N/A',
+            fuel: fuelEl.text().trim() || 'N/A',
+            color: colorEl.text().trim() || 'N/A'
+          }
+        };
+        
+        cars.push(car);
+      } catch (err) {
+        console.error(`Error extracting car ${i}:`, err);
+      }
+    });
+    
+    console.log(`Successfully extracted ${cars.length} cars`);
+    
+    // If no cars were found, return error instead of mock data
+    if (cars.length === 0) {
+      console.log('No cars found in HTML, returning error');
+      return {
+        success: false,
+        error: 'No cars found on the website',
+        html,
+        timestamp: new Date().toISOString()
+      };
+    }
+    
+    return {
+      success: true,
+      cars,
+      html,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error scraping OpenLane:', error);
+    
+    // In case of any error, return error message, not mock data
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      timestamp: new Date().toISOString()
+    };
+  }
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: corsHeaders,
-    });
+    return new Response(null, { headers: corsHeaders });
   }
-
+  
   try {
-    // Get proxy list from supabase secrets
-    const proxyListSecret = Deno.env.get("PROXY_LIST") || "";
-    const proxyList = proxyListSecret ? proxyListSecret.split(',').map(proxy => proxy.trim()) : [];
-    
-    console.log(`Loaded ${proxyList.length} proxies from environment variables`);
-    
-    const { url, useProxy } = await req.json();
-    
-    // Default URL if none provided
-    const targetUrl = url || "https://www.openlane.com/search-results?make=Toyota";
-    
-    console.log(`Scraping URL: ${targetUrl}`);
-    console.log(`Use proxy: ${useProxy}`);
-
-    // Function to get a random proxy from the list
-    const getRandomProxy = () => {
-      if (!proxyList.length) return null;
-      const randomIndex = Math.floor(Math.random() * proxyList.length);
-      return proxyList[randomIndex];
-    };
-
-    // Use a random proxy if useProxy is true and proxy list is not empty
-    const randomProxy = useProxy && proxyList.length > 0 ? getRandomProxy() : null;
-    
-    if (useProxy && randomProxy) {
-      console.log(`Using proxy: ${randomProxy}`);
-    } else if (useProxy && !randomProxy) {
-      console.log("Proxy requested but no proxies available, proceeding without proxy");
+    // Only accept POST requests
+    if (req.method !== 'POST') {
+      return new Response(
+        JSON.stringify({ error: 'Method not allowed' }),
+        { status: 405, headers: corsHeaders }
+      );
     }
-
-    // Fetch HTML content
-    const fetchOptions: RequestInit = {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-      },
-    };
-
-    // Add proxy if available and requested
-    if (useProxy && randomProxy) {
-      fetchOptions.client = "proxy";
-      fetchOptions.proxyUrl = randomProxy;
-    }
-
-    console.log("Fetching HTML content...");
-    const response = await fetch(targetUrl, fetchOptions);
     
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const html = await response.text();
-    console.log(`Fetched HTML content (${html.length} bytes)`);
-
-    // Parse HTML
-    const parser = new DOMParser();
-    const document = parser.parseFromString(html, "text/html");
+    // Parse the request body
+    const body = await req.json();
+    console.log('Request body:', body);
     
-    if (!document) {
-      throw new Error("Failed to parse HTML document");
-    }
-
-    // Extract car data (simplified example - actual parsing would be more complex)
-    const carElements = document.querySelectorAll(".vehicle-card, .car-listing");
-    console.log(`Found ${carElements.length} car elements`);
-
-    // Mock data for testing, in a real implementation you would parse the HTML
-    const cars = Array.from(carElements).map((element, index) => {
-      // Extract fields from HTML elements - this is simplified
-      const name = element.querySelector(".vehicle-title, .car-name")?.textContent || `Car ${index + 1}`;
-      const makeModel = name.split(' ').slice(0, 2);
-      const make = makeModel[0] || "Unknown";
-      const model = makeModel[1] || "Model";
-      
-      const priceElement = element.querySelector(".price");
-      const priceText = priceElement?.textContent || "$0";
-      const price = priceText.replace(/[^\d]/g, "");
-      
-      const imageElement = element.querySelector("img");
-      const image = imageElement?.getAttribute("src") || "https://via.placeholder.com/150";
-
-      return {
-        id: index + 1,
-        name,
-        make,
-        model,
-        price: priceText,
-        price_number: parseInt(price) || 0,
-        year: 2020 + (index % 5),
-        mileage: `${(Math.floor(Math.random() * 100) + 10)}k mi`,
-        category: ["SUV", "Sedan", "Truck", "Coupe"][index % 4],
-        transmission: ["Automatic", "Manual"][index % 2],
-        fuel_type: ["Gasoline", "Diesel", "Hybrid", "Electric"][index % 4],
-        engine_size: `${(Math.floor(Math.random() * 5) + 1)}.${Math.floor(Math.random() * 9)}L`,
-        engine_power: `${(Math.floor(Math.random() * 300) + 100)} HP`,
-        url: targetUrl,
-        image
-      };
-    });
-
-    // Return response with CORS headers
+    // Get the scraping result
+    const result = await scrapeOpenLane();
+    
     return new Response(
-      JSON.stringify({
-        success: true,
-        message: "Successfully scraped car data",
-        cars: cars.length > 0 ? cars : [],
-        timestamp: new Date().toISOString(),
-        proxyUsed: useProxy && randomProxy ? true : false
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
+      JSON.stringify(result),
+      { 
+        status: 200, 
+        headers: corsHeaders 
       }
     );
   } catch (error) {
-    console.error("Error in scrape-openlane function:", error);
+    console.error('Error processing request:', error);
     
-    // Return error response with CORS headers
     return new Response(
-      JSON.stringify({
-        success: false,
-        message: `Error: ${error.message}`,
-        cars: [],
-        timestamp: new Date().toISOString(),
+      JSON.stringify({ 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        timestamp: new Date().toISOString()
       }),
-      {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-        status: 500,
+      { 
+        status: 500, 
+        headers: corsHeaders 
       }
     );
   }

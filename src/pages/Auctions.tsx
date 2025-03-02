@@ -1,163 +1,52 @@
 
-import React, { useState } from 'react';
-import { ScraperControls } from '@/components/scraped-cars/ScraperControls';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ScrapedCarCard from '@/components/scraped-cars/ScrapedCarCard';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScraperService } from '@/services/scraperService';
-import { ScrapedCar } from '@/types/scraped-car';
-import { useToast } from '@/components/ui/use-toast';
-import { AlertCircle, Info, Network } from 'lucide-react';
+import HTMLDisplay from '@/components/scraped-cars/HTMLDisplay';
+import ScraperControls from '@/components/scraped-cars/ScraperControls';
+import { ScraperResult, ScrapedCar } from '@/types/scraped-car';
 
 const Auctions = () => {
-  const [cars, setCars] = useState<ScrapedCar[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [useMockData, setUseMockData] = useState(true); // Set default to true to avoid edge function errors
-  const { toast } = useToast();
+  const { t } = useTranslation();
+  const [scrapedData, setScrapedData] = useState<ScraperResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleScrape = async (site: string, url: string, useMockOption: boolean) => {
-    setLoading(true);
-    setErrorMessage(null);
-    setCars([]);
-    
-    try {
-      const scraperService = new ScraperService();
-      const result = await scraperService.scrape(site, url, useMockOption);
-      
-      if (result.success) {
-        setCars(result.cars || []);
-        toast({
-          title: useMockOption ? "Mock data loaded" : "Scraping completed",
-          description: `Found ${result.cars?.length || 0} cars from ${site}`,
-        });
-      } else {
-        setErrorMessage(result.message || "Scraping failed, but returned some results");
-        if (result.cars && result.cars.length > 0) {
-          setCars(result.cars);
-          toast({
-            title: "Warning",
-            description: "Using mock data due to scraping issues",
-            variant: "destructive",
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Error in scraping:", error);
-      setErrorMessage(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      toast({
-        title: "Error",
-        description: "Failed to scrape car data",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleScraperResult = (result: ScraperResult) => {
+    setScrapedData(result);
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Аукціони автомобілів</h1>
+    <div className="container mx-auto py-8 px-4">
+      <ScraperControls 
+        onScraperResult={handleScraperResult}
+        isLoading={isLoading}
+        setIsLoading={setIsLoading}
+      />
       
-      {!useMockData && (
-        <Alert className="mb-6 border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
-          <Network className="h-4 w-4 text-yellow-700" />
-          <AlertTitle className="text-yellow-700">Live Scraping Mode</AlertTitle>
-          <AlertDescription className="text-yellow-700">
-            You are in live scraping mode which uses Edge Functions. If you experience network errors,
-            please switch to "Use mock data" mode.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {useMockData && (
-        <Alert className="mb-6 border-blue-500 bg-blue-50 dark:bg-blue-950/20">
-          <Network className="h-4 w-4 text-blue-700" />
-          <AlertTitle className="text-blue-700">Mock Data Mode</AlertTitle>
-          <AlertDescription className="text-blue-700">
-            You are using mock data instead of live scraping. This avoids Edge Function errors and 
-            provides sample car listings for testing.
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {errorMessage && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>
-            {errorMessage}
-            <div className="mt-2">
-              Tip: Toggle "Use mock data" to see example results without using Edge Functions.
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      <Alert className="mb-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Аукціон інформація</AlertTitle>
-        <AlertDescription>
-          Ця сторінка дозволяє переглядати автомобілі з популярних аукціонів. 
-          {!useMockData && (
-            <div className="font-bold mt-2">
-              Якщо виникають помилки Edge Function, увімкніть опцію "Use mock data" щоб побачити приклади автомобілів.
-            </div>
+      {scrapedData?.cars && scrapedData.cars.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {scrapedData.cars.map((car: ScrapedCar) => (
+            <ScrapedCarCard key={car.id} car={car} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          {isLoading ? (
+            <p className="text-lg">{t('auctions.loading', 'Loading auction cars...')}</p>
+          ) : (
+            <p className="text-lg">
+              {scrapedData?.error 
+                ? t('auctions.error', 'Error: {{error}}', { error: scrapedData.error })
+                : t('auctions.noData', 'Click "Scrape Now" to load real auction cars')}
+            </p>
           )}
-        </AlertDescription>
-      </Alert>
-
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Параметри пошуку</CardTitle>
-          <CardDescription>Оберіть сайт аукціону та введіть URL для пошуку</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ScraperControls 
-            onScrape={handleScrape} 
-            loading={loading} 
-            useMockData={useMockData}
-            onUseMockDataChange={setUseMockData}
-          />
-        </CardContent>
-      </Card>
-
-      {cars.length > 0 && (
-        <Tabs defaultValue="grid" className="w-full">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold">Результати ({cars.length} авто)</h2>
-            <TabsList>
-              <TabsTrigger value="grid">Сітка</TabsTrigger>
-              <TabsTrigger value="list">Список</TabsTrigger>
-            </TabsList>
-          </div>
-          
-          <TabsContent value="grid" className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {cars.map((car, index) => (
-                <ScrapedCarCard key={index} car={car} />
-              ))}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="list" className="mt-0">
-            <div className="space-y-4">
-              {cars.map((car, index) => (
-                <ScrapedCarCard key={index} car={car} layout="list" />
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
-      )}
-
-      {!loading && cars.length === 0 && !errorMessage && (
-        <div className="text-center p-12 border rounded-lg">
-          <p className="text-xl text-gray-500">
-            Оберіть сайт аукціону та натисніть "Шукати" для отримання результатів
-          </p>
         </div>
       )}
+      
+      <HTMLDisplay 
+        html={scrapedData?.html} 
+        isLoading={isLoading}
+      />
     </div>
   );
 };

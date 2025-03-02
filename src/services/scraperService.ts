@@ -1,39 +1,45 @@
 
-import { scraperService } from './scraper';
+import { supabase } from '@/integrations/supabase/client';
 import { ScraperResult } from '@/types/scraped-car';
 
-export class ScraperService {
-  async scrape(site: string, url: string, useMockData: boolean): Promise<ScraperResult> {
+export const scraperService = {
+  async scrapeOpenLane(): Promise<ScraperResult> {
     try {
-      let result: ScraperResult;
-      
-      // Call the appropriate scraper method based on the site
-      if (site === 'openlane') {
-        result = await scraperService.scrapeOpenLane({
-          url: url || undefined,
-          useMockData
-        });
-      } else if (site === 'findcar') {
-        result = await scraperService.scrapeFindCar({
-          url: url || undefined,
-          useMockData
-        });
-      } else {
-        throw new Error(`Unknown site: ${site}`);
+      // Check if supabase is properly initialized
+      if (!supabase || !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        console.error("Supabase client is not fully initialized");
+        return { 
+          success: false, 
+          error: "Supabase client is not initialized",
+          timestamp: new Date().toISOString()
+        };
       }
       
-      return result;
+      console.log("Attempting to invoke Edge Function: scrape-openlane");
+      const { data, error } = await supabase.functions.invoke('scrape-openlane', {
+        body: { 
+          useRandomUserAgent: true
+        }
+      });
+      
+      if (error) {
+        console.error("Error from Supabase Edge Function:", error);
+        return { 
+          success: false, 
+          error: error.message || "Failed to call scraper function",
+          timestamp: new Date().toISOString()
+        };
+      }
+      
+      console.log("Received data from Edge Function:", data);
+      return data as ScraperResult;
     } catch (error) {
-      console.error('Error in ScraperService:', error);
-      return {
-        success: false,
-        cars: [],
-        message: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      console.error("Exception in scrapeOpenLane:", error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : "Unknown error occurred",
+        timestamp: new Date().toISOString()
       };
     }
   }
-}
-
-// Re-export the scraperService from the new structure
-export { scraperService } from './scraper';
-export type { ScraperOptions } from './scraper/base-scraper';
+};
