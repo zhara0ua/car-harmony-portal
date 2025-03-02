@@ -70,14 +70,6 @@ const Navbar = () => {
               {t('nav.inspection')}
             </Link>
             <Link
-              to="/auctions"
-              className={`${
-                isActive("/auctions") ? "text-navy font-semibold" : "text-gray-700"
-              } hover:text-navy transition-colors`}
-            >
-              {t('nav.auctions')}
-            </Link>
-            <Link
               to="/contact"
               className={`${
                 isActive("/contact") ? "text-navy font-semibold" : "text-gray-700"
@@ -146,15 +138,6 @@ const Navbar = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {t('nav.inspection')}
-                </Link>
-                <Link
-                  to="/auctions"
-                  className={`${
-                    isActive("/auctions") ? "text-navy font-semibold" : "text-gray-700"
-                  } hover:text-navy transition-colors`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {t('nav.auctions')}
                 </Link>
                 <Link
                   to="/contact"

@@ -1,82 +1,47 @@
 
-import { ScrapedCar } from '@/types/scraped-car';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { ScrapedCar } from "@/types/scraped-car";
+import { formatPrice } from "@/lib/utils";
 
 interface ScrapedCarCardProps {
   car: ScrapedCar;
 }
 
-const ScrapedCarCard = ({ car }: ScrapedCarCardProps) => {
+export const ScrapedCarCard = ({ car }: ScrapedCarCardProps) => {
   return (
-    <Card className="flex flex-col h-full">
-      <CardHeader className="p-4">
-        <CardTitle className="text-lg line-clamp-2 h-12">{car.title}</CardTitle>
+    <Card className="overflow-hidden">
+      <CardHeader className="p-0">
+        <div className="aspect-video relative overflow-hidden">
+          <img 
+            src={car.image_url || '/placeholder.svg'} 
+            alt={car.title}
+            className="object-cover w-full h-full"
+          />
+        </div>
       </CardHeader>
-      <div className="relative pt-[56.25%] w-full">
-        <img 
-          src={car.image || '/placeholder.svg'} 
-          alt={car.title}
-          className="absolute inset-0 w-full h-full object-cover"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = '/placeholder.svg';
-          }}
-        />
-      </div>
-      <CardContent className="p-4 flex-grow">
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          {car.details.year && (
-            <div>
-              <p className="text-muted-foreground">Year</p>
-              <p>{car.details.year}</p>
-            </div>
-          )}
-          {car.details.mileage && (
-            <div>
-              <p className="text-muted-foreground">Mileage</p>
-              <p>{car.details.mileage}</p>
-            </div>
-          )}
-          {car.details.engine && (
-            <div>
-              <p className="text-muted-foreground">Engine</p>
-              <p>{car.details.engine}</p>
-            </div>
-          )}
-          {car.details.transmission && (
-            <div>
-              <p className="text-muted-foreground">Transmission</p>
-              <p>{car.details.transmission}</p>
-            </div>
-          )}
-          {car.details.fuel && (
-            <div>
-              <p className="text-muted-foreground">Fuel</p>
-              <p>{car.details.fuel}</p>
-            </div>
-          )}
-          {car.details.color && (
-            <div>
-              <p className="text-muted-foreground">Color</p>
-              <p>{car.details.color}</p>
-            </div>
-          )}
+      <CardContent className="p-4">
+        <h3 className="font-semibold text-lg mb-2">{car.title}</h3>
+        <div className="space-y-1 text-sm text-muted-foreground">
+          <p>Рік: {car.year}</p>
+          {car.mileage && <p>Пробіг: {car.mileage}</p>}
+          {car.fuel_type && <p>Паливо: {car.fuel_type}</p>}
+          {car.transmission && <p>КПП: {car.transmission}</p>}
+          {car.location && <p>Локація: {car.location}</p>}
         </div>
       </CardContent>
-      <CardFooter className="p-4 border-t">
-        <div className="w-full flex justify-between items-center">
-          <p className="font-bold text-lg">{car.price}</p>
-          <a 
-            href={car.url} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="text-blue-600 hover:underline"
-          >
-            View Details
-          </a>
+      <CardFooter className="p-4 pt-0 flex justify-between items-center">
+        <div className="font-semibold text-xl">
+          {formatPrice(car.price)}
         </div>
+        <a 
+          href={car.external_url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-sm text-blue-600 hover:underline"
+        >
+          Деталі
+        </a>
       </CardFooter>
     </Card>
   );
 };
-
-export default ScrapedCarCard;

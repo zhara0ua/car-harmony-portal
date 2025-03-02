@@ -34,25 +34,10 @@ interface UseCarFilters {
 
 export const useCars = (filters: UseCarFilters) => {
   const [cars, setCars] = useState<Car[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchCars = async () => {
-    setIsLoading(true);
-    setError(null);
-    
     try {
-      console.log("Fetching cars with filters:", filters);
-      console.log("Checking Supabase connection status...");
-      
-      // Check Supabase connection
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) {
-        console.error("Supabase session error:", sessionError);
-        throw new Error(`Supabase session error: ${sessionError.message}`);
-      }
-      
       let query = supabase
         .from('cars')
         .select('*');
@@ -98,25 +83,15 @@ export const useCars = (filters: UseCarFilters) => {
 
       const { data, error } = await query;
 
-      if (error) {
-        console.error('Supabase query error:', error);
-        setError(`${error.code}: ${error.message}`);
-        throw error;
-      }
-      
-      console.log(`Fetched ${data?.length || 0} cars successfully`);
+      if (error) throw error;
       setCars(data || []);
     } catch (error) {
       console.error('Error fetching cars:', error);
-      setError(error instanceof Error ? error.message : 'Unknown error occurred');
       toast({
         title: "Помилка",
-        description: "Не вдалося завантажити список автомобілів. Перевірте підключення до бази даних.",
+        description: "Не вдалося завантажити список автомобілів",
         variant: "destructive",
       });
-      setCars([]);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -133,5 +108,5 @@ export const useCars = (filters: UseCarFilters) => {
     filters.sortBy
   ]);
 
-  return { cars, isLoading, error, refetch: fetchCars };
+  return { cars };
 };

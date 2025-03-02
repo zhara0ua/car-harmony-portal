@@ -28,13 +28,13 @@ export const ScrapedCarForm = ({ car, onSubmit }: ScrapedCarFormProps) => {
     const newCar = {
       external_id, // Required
       title: formData.get('title') as string, // Required
-      price: formData.get('price') as string, // Required - keep as string to match ScrapedCar type
-      year: Number(formData.get('year')) || undefined,
-      mileage: formData.get('mileage') as string || undefined,
-      fuel_type: formData.get('fuel_type') as string || undefined,
-      transmission: formData.get('transmission') as string || undefined,
-      location: formData.get('location') as string || undefined,
-      image_url: formData.get('image_url') as string || undefined,
+      price: Number(formData.get('price')), // Required
+      year: Number(formData.get('year')) || null,
+      mileage: formData.get('mileage') as string || null,
+      fuel_type: formData.get('fuel_type') as string || null,
+      transmission: formData.get('transmission') as string || null,
+      location: formData.get('location') as string || null,
+      image_url: formData.get('image_url') as string || null,
       external_url: formData.get('external_url') as string || `https://manual-entry/${external_id}`, // Required
       source: 'manual' // Required with default value
     };
@@ -55,7 +55,7 @@ export const ScrapedCarForm = ({ car, onSubmit }: ScrapedCarFormProps) => {
           <Input 
             id="price" 
             name="price" 
-            type="text" 
+            type="number" 
             defaultValue={car?.price} 
             required 
             placeholder="25000"

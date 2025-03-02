@@ -6,8 +6,7 @@
     "transit": "Samochody w drodze",
     "import": "Import",
     "inspection": "Inspekcje",
-    "contact": "Kontakt",
-    "auctions": "Aukcje"
+    "contact": "Kontakt"
   },
   "hero": {
     "title": "Odkryj Swój Wymarzony Samochód",
@@ -28,13 +27,5 @@
       "title": "Nasze Udane Dobory",
       "loadMore": "Pokaż więcej"
     }
-  },
-  "auctions": {
-    "title": "Samochody Aukcyjne",
-    "scrapeNow": "Pobierz Teraz",
-    "loading": "Ładowanie samochodów aukcyjnych...",
-    "noData": "Kliknij \"Pobierz Teraz\" aby załadować samochody aukcyjne",
-    "error": "Błąd: {{error}}",
-    "lastScraped": "Ostatnio pobrane: {{time}}"
   }
 }

@@ -5,9 +5,6 @@ import Footer from "@/components/Footer";
 import CarFilters from "@/components/inventory/CarFilters";
 import CarGrid from "@/components/inventory/CarGrid";
 import { useCars } from "@/hooks/useCars";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const Inventory = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,7 +18,7 @@ const Inventory = () => {
   const [sortBy, setSortBy] = useState<string>("default");
   const [visibleCars, setVisibleCars] = useState(9);
 
-  const { cars, isLoading, error, refetch } = useCars({
+  const { cars } = useCars({
     category,
     transmission,
     fuelType,
@@ -74,43 +71,12 @@ const Inventory = () => {
           uniqueModels={uniqueModels}
         />
         
-        {error && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertTitle>Помилка з'єднання з базою даних</AlertTitle>
-            <AlertDescription className="flex flex-col gap-2">
-              <p>Не вдалося завантажити автомобілі. Деталі помилки: {error}</p>
-              <p>Перевірте, що змінні середовища VITE_SUPABASE_URL та VITE_SUPABASE_ANON_KEY встановлені правильно.</p>
-              <Button 
-                onClick={refetch} 
-                variant="outline"
-                className="w-fit flex items-center gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Спробувати знову
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        {isLoading ? (
-          <div className="flex justify-center items-center py-20">
-            <Loader2 className="h-10 w-10 animate-spin text-navy" />
-            <span className="ml-4 text-lg">Завантаження автомобілів...</span>
-          </div>
-        ) : (
-          cars.length > 0 ? (
-            <CarGrid
-              cars={cars}
-              visibleCars={visibleCars}
-              hasMoreCars={hasMoreCars}
-              onLoadMore={loadMore}
-            />
-          ) : !error && (
-            <div className="text-center py-20">
-              <p className="text-xl">Немає автомобілів, що відповідають вашим критеріям пошуку.</p>
-            </div>
-          )
-        )}
+        <CarGrid
+          cars={cars}
+          visibleCars={visibleCars}
+          hasMoreCars={hasMoreCars}
+          onLoadMore={loadMore}
+        />
       </div>
 
       <Footer />

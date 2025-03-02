@@ -1,37 +1,25 @@
 
 export interface ScrapedCar {
-  id: string;
+  id: number;
+  external_id: string;
   title: string;
-  price: string;
-  image: string;
-  url: string;
-  details: ScrapedCarDetails;
-  
-  // Additional properties for the form component
-  external_id?: string;
-  year?: number;
-  mileage?: string;
-  fuel_type?: string;
-  transmission?: string;
-  location?: string;
-  image_url?: string;
-  external_url?: string;
-  source?: string;
+  price: number;
+  year: number;
+  mileage: string | null;
+  fuel_type: string | null;
+  transmission: string | null;
+  location: string | null;
+  image_url: string | null;
+  external_url: string;
+  source: string;
+  created_at?: string;
 }
 
-export interface ScrapedCarDetails {
-  year?: string;
-  mileage?: string;
-  engine?: string;
+export interface Filters {
+  minYear?: number;
+  maxYear?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  fuelType?: string;
   transmission?: string;
-  fuel?: string;
-  color?: string;
-}
-
-export interface ScraperResult {
-  success: boolean;
-  cars?: ScrapedCar[];
-  html?: string;
-  error?: string;
-  timestamp?: string;
 }

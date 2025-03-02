@@ -6,8 +6,7 @@
     "transit": "Cars in Transit",
     "import": "Import",
     "inspection": "Inspection",
-    "contact": "Contact",
-    "auctions": "Auctions"
+    "contact": "Contact"
   },
   "hero": {
     "title": "Discover Your Dream Car",
@@ -28,13 +27,5 @@
       "title": "Our Successful Selections",
       "loadMore": "Show more"
     }
-  },
-  "auctions": {
-    "title": "Auction Cars",
-    "scrapeNow": "Scrape Now",
-    "loading": "Loading auction cars...",
-    "noData": "Click \"Scrape Now\" to load auction cars",
-    "error": "Error: {{error}}",
-    "lastScraped": "Last scraped: {{time}}"
   }
 }
