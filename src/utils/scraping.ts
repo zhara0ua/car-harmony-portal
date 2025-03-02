@@ -56,7 +56,7 @@ export const invokeScrapingFunction = async () => {
       
       // Handle specific error cases
       if (error.message.includes("fetch")) {
-        throw new Error("Помилка доступу до сайту CarOutlet. Перевірте з'єднання з інтернетом або доступність сайту.");
+        throw new Error("Помилка доступу до сайту OpenLane. Перевірте з'єднання з інтернетом або доступність сайту.");
       } else if (error.message.includes("non-2xx")) {
         throw new Error("Сервер повернув неочікуваний статус відповіді. Перевірте логи функції");
       } else if (error.message.includes("JSON")) {

@@ -39,7 +39,7 @@ async def scrape_openlane():
         await page.setDefaultTimeout(60000)  # 1 minute
         
         # Go to the OpenLane auction website with extended timeout
-        url = "https://www.openlane.eu/en/vehicles"
+        url = "https://www.openlane.eu/en/findcar"
         logger.info(f"Navigating to {url}")
         try:
             await page.goto(url, {'waitUntil': 'networkidle0', 'timeout': 120000})
@@ -72,7 +72,7 @@ async def scrape_openlane():
         # Check if page contains expected content
         logger.info("Checking if page contains expected content")
         pageContent = await page.content()
-        if "vehicle" not in pageContent.lower() and "auction" not in pageContent.lower():
+        if "vehicle" not in pageContent.lower() and "auction" not in pageContent.lower() and "car" not in pageContent.lower():
             logger.error("Page does not contain expected content")
             await take_debug_screenshot(page, "unexpected-content")
             return create_error_response("Page does not contain expected content", "Content Error")
@@ -85,7 +85,12 @@ async def scrape_openlane():
             '.car-listing',
             '.auction-item',
             'article.vehicle',
-            'div[data-vehicle-id]'
+            'div[data-vehicle-id]',
+            '.vehicle-tiles',
+            '.tile',
+            '.car-tile',
+            '.product',
+            '.car-item'
         ]
         
         car_listing_found = False
