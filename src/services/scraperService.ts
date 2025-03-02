@@ -61,7 +61,8 @@ export const scraperService = {
       try {
         const { data, error } = await supabase.functions.invoke('scrape-findcar', {
           body: { 
-            useRandomUserAgent: true
+            useRandomUserAgent: true,
+            timeout: 60000 // Add a longer timeout (60 seconds)
           }
         });
         

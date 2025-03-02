@@ -2,13 +2,16 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { scraperService } from '@/services/scraperService';
 import { ScraperResult } from '@/types/scraped-car';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import HTMLDisplay from '@/components/scraped-cars/HTMLDisplay';
+
+type ScraperType = 'findcar' | 'openlane';
 
 const Parser = () => {
   const { t } = useTranslation();
@@ -17,14 +20,18 @@ const Parser = () => {
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
   const [lastScraped, setLastScraped] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [scraperType, setScraperType] = useState<ScraperType>('findcar');
 
   const handleScrape = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log("Attempting to scrape FindCar page...");
-      const result = await scraperService.scrapeFindCar();
+      console.log(`Attempting to scrape ${scraperType === 'findcar' ? 'FindCar' : 'OpenLane'} page...`);
+      
+      const result = scraperType === 'findcar' 
+        ? await scraperService.scrapeFindCar()
+        : await scraperService.scrapeOpenLane();
       
       if (result.success) {
         toast({
@@ -66,28 +73,42 @@ const Parser = () => {
     <div className="container mx-auto py-8 px-4">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold">OpenLane FindCar HTML Parser</h2>
+          <h2 className="text-2xl font-bold">OpenLane HTML Parser</h2>
           {lastScraped && (
             <p className="text-sm text-muted-foreground">Last scraped: {lastScraped}</p>
           )}
         </div>
-        <Button 
-          onClick={handleScrape} 
-          disabled={isLoading}
-          className="min-w-[140px]"
-        >
-          {isLoading ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              Scraping...
-            </>
-          ) : (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Scrape Now
-            </>
-          )}
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <Select 
+            value={scraperType} 
+            onValueChange={(value) => setScraperType(value as ScraperType)}
+          >
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Select source" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="findcar">FindCar</SelectItem>
+              <SelectItem value="openlane">OpenLane</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button 
+            onClick={handleScrape} 
+            disabled={isLoading}
+            className="w-full sm:w-auto min-w-[140px]"
+          >
+            {isLoading ? (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                Scraping...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Scrape Now
+              </>
+            )}
+          </Button>
+        </div>
       </div>
       
       {error && (
@@ -102,6 +123,7 @@ const Parser = () => {
                 <li>The Edge Function is not deployed correctly</li>
                 <li>There might be network connectivity issues</li>
                 <li>The external website might be blocking the request</li>
+                <li>The scraping operation might have timed out</li>
               </ul>
             </div>
           </AlertDescription>
@@ -122,7 +144,7 @@ const Parser = () => {
           <Card>
             <CardContent className="text-center py-12">
               <p className="text-lg">
-                {t('parser.noData', 'Click "Scrape Now" to load HTML content from OpenLane FindCar page')}
+                {t('parser.noData', 'Click "Scrape Now" to load HTML content')}
               </p>
             </CardContent>
           </Card>
