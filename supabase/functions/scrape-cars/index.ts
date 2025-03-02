@@ -82,67 +82,20 @@ serve(async (req: Request) => {
       );
     }
 
-    // For real data, run Python scraper using Deno subprocess
-    try {
-      console.log("Preparing to run Python scraper...");
-      
-      // Create Python command
-      const command = new Deno.Command("python3", {
-        args: ["supabase/functions/scrape-cars/openlane_scraper.py"],
-        stdout: "piped",
-        stderr: "piped",
-      });
-      
-      console.log("Executing Python scraper...");
-      const output = await command.output();
-      
-      // Check for errors from Python process
-      if (output.stderr.length > 0) {
-        const errorText = new TextDecoder().decode(output.stderr);
-        console.error("Python script error:", errorText);
-        throw new Error("Python scraper error: " + errorText);
+    // For now, return the message that we can't run the Python subprocess
+    // and fallback to mock data with an appropriate message
+    console.log("Subprocess spawning not allowed, returning mock data as fallback");
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "Unable to run web scraping directly in Edge Functions. Using mock data instead. Consider implementing a different approach such as a scheduled external scraper that saves data to the database.",
+        cars: MOCK_CARS
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
       }
-      
-      // Process successful output
-      const stdoutText = new TextDecoder().decode(output.stdout);
-      console.log("Python output received:", stdoutText.substring(0, 200) + "...");
-      
-      // Parse the JSON output from Python
-      let pythonData;
-      try {
-        pythonData = JSON.parse(stdoutText);
-        console.log(`Parsed ${pythonData?.length || 0} cars from Python output`);
-      } catch (parseError) {
-        console.error("Error parsing Python output:", parseError);
-        throw new Error("Failed to parse Python output");
-      }
-      
-      // Return the scraped cars
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: "Cars scraped successfully",
-          cars: pythonData
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        }
-      );
-    } catch (error) {
-      console.error("Scraper execution error:", error);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: `Error running scraper: ${error.message || "Unknown error"}`,
-          error: error.stack || "No stack trace available"
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 500,
-        }
-      );
-    }
+    );
   } catch (error) {
     console.error("Function error:", error);
     return new Response(

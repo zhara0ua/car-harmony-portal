@@ -46,7 +46,6 @@ export const invokeScrapingFunction = async () => {
     });
     
     console.log('Edge function response received:', data);
-    console.log('Request payload sent:', requestOptions);
     
     if (error) {
       console.error('Function error details:', {
@@ -57,7 +56,7 @@ export const invokeScrapingFunction = async () => {
       
       // Handle specific error cases
       if (error.message.includes("subprocess")) {
-        throw new Error("Помилка конфігурації сервера: виконання процесів не дозволено");
+        throw new Error("Обмеження середовища Supabase: запуск зовнішніх процесів не дозволено. Використовуються демо-дані.");
       } else if (error.message.includes("non-2xx")) {
         throw new Error("Сервер повернув неочікуваний статус відповіді. Перевірте логи функції");
       } else if (error.message.includes("JSON")) {
@@ -90,6 +89,12 @@ export const validateScrapingResults = (scrapingData: any) => {
   if (scrapingData.error) {
     console.error('Error in response data:', scrapingData.error);
     throw new Error(scrapingData.error || "Помилка при скрапінгу: " + scrapingData.error);
+  }
+  
+  // If the function returns mock data with a special message about using mock data due to limitations
+  if (scrapingData.message && scrapingData.message.includes("Unable to run web scraping directly")) {
+    console.log('Using mock data due to Edge Function limitations');
+    // We still return the data, but log the situation
   }
   
   // Check if the scraping was not successful based on the success field
