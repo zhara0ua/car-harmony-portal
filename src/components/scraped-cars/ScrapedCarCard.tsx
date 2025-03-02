@@ -31,7 +31,9 @@ export const ScrapedCarCard = ({ car }: ScrapedCarCardProps) => {
       </CardContent>
       <CardFooter className="p-4 pt-0 flex justify-between items-center">
         <div className="font-semibold text-xl">
-          {formatPrice(car.price)}
+          {typeof car.price === 'number' 
+            ? formatPrice(car.price) 
+            : car.price}
         </div>
         <a 
           href={car.external_url} 
