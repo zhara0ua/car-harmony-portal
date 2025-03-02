@@ -53,7 +53,13 @@ export const triggerScraping = async () => {
           name: error.name,
           status: error.status,
         });
-        throw new Error("Помилка при виконанні функції скрапінгу: " + error.message);
+        
+        // More specific error messages based on status or content
+        if (error.message.includes("subprocess")) {
+          throw new Error("Помилка конфігурації сервера: виконання процесів не дозволено");
+        } else {
+          throw new Error("Помилка при виконанні функції скрапінгу: " + error.message);
+        }
       }
       
       if (!scrapingData) {
