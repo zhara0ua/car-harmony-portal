@@ -5,6 +5,8 @@ import Footer from "@/components/Footer";
 import CarFilters from "@/components/inventory/CarFilters";
 import CarGrid from "@/components/inventory/CarGrid";
 import { useCars } from "@/hooks/useCars";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
 
 const Inventory = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +20,7 @@ const Inventory = () => {
   const [sortBy, setSortBy] = useState<string>("default");
   const [visibleCars, setVisibleCars] = useState(9);
 
-  const { cars } = useCars({
+  const { cars, isLoading, error, refetch } = useCars({
     category,
     transmission,
     fuelType,
@@ -71,12 +73,40 @@ const Inventory = () => {
           uniqueModels={uniqueModels}
         />
         
-        <CarGrid
-          cars={cars}
-          visibleCars={visibleCars}
-          hasMoreCars={hasMoreCars}
-          onLoadMore={loadMore}
-        />
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTitle>Помилка</AlertTitle>
+            <AlertDescription>
+              Не вдалося завантажити автомобілі. Помилка: {error}
+              <button 
+                onClick={refetch} 
+                className="ml-2 underline"
+              >
+                Спробувати знову
+              </button>
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="h-10 w-10 animate-spin text-navy" />
+            <span className="ml-4 text-lg">Завантаження автомобілів...</span>
+          </div>
+        ) : (
+          cars.length > 0 ? (
+            <CarGrid
+              cars={cars}
+              visibleCars={visibleCars}
+              hasMoreCars={hasMoreCars}
+              onLoadMore={loadMore}
+            />
+          ) : !error && (
+            <div className="text-center py-20">
+              <p className="text-xl">Немає автомобілів, що відповідають вашим критеріям пошуку.</p>
+            </div>
+          )
+        )}
       </div>
 
       <Footer />
