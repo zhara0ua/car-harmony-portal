@@ -22,7 +22,7 @@ export const ScrapedCarsFilters = ({ onFilterChange }: ScrapedCarsFiltersProps) 
         <Input 
           type="number" 
           placeholder="2015"
-          onChange={(e) => onFilterChange({ minYear: e.target.value || undefined })}
+          onChange={(e) => onFilterChange({ minYear: parseInt(e.target.value) || undefined })}
         />
       </div>
       <div className="grid gap-2">
@@ -30,7 +30,7 @@ export const ScrapedCarsFilters = ({ onFilterChange }: ScrapedCarsFiltersProps) 
         <Input 
           type="number" 
           placeholder="2024"
-          onChange={(e) => onFilterChange({ maxYear: e.target.value || undefined })}
+          onChange={(e) => onFilterChange({ maxYear: parseInt(e.target.value) || undefined })}
         />
       </div>
       <div className="grid gap-2">
@@ -38,7 +38,7 @@ export const ScrapedCarsFilters = ({ onFilterChange }: ScrapedCarsFiltersProps) 
         <Input 
           type="number" 
           placeholder="10000"
-          onChange={(e) => onFilterChange({ minPrice: e.target.value || undefined })}
+          onChange={(e) => onFilterChange({ minPrice: parseInt(e.target.value) || undefined })}
         />
       </div>
       <div className="grid gap-2">
@@ -46,7 +46,7 @@ export const ScrapedCarsFilters = ({ onFilterChange }: ScrapedCarsFiltersProps) 
         <Input 
           type="number" 
           placeholder="50000"
-          onChange={(e) => onFilterChange({ maxPrice: e.target.value || undefined })}
+          onChange={(e) => onFilterChange({ maxPrice: parseInt(e.target.value) || undefined })}
         />
       </div>
       <div className="grid gap-2">

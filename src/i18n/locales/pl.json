@@ -1,9 +1,7 @@
-
 {
   "nav": {
     "home": "Strona główna",
     "cars": "Samochody",
-    "transit": "Samochody w drodze",
     "import": "Import",
     "inspection": "Inspekcje",
     "contact": "Kontakt"
@@ -26,23 +24,6 @@
     "cases": {
       "title": "Nasze Udane Dobory",
       "loadMore": "Pokaż więcej"
-    }
-  },
-  "imports": {
-    "title": "Import Samochodów z Europy",
-    "subtitle": "Specjalizujemy się w imporcie samochodów premium z najlepszych europejskich aukcji. Nasz zespół ekspertów zapewnia pełne wsparcie transakcji i gwarantuje przejrzystość na każdym etapie.",
-    "whyEurope": "Dlaczego warto kupić samochód z Europy?",
-    "benefits": {
-      "quality": "Lepsza jakość samochodów i ich wyposażenie",
-      "history": "Przejrzysta historia użytkowania i serwisowania",
-      "noRust": "Brak korozji dzięki wysokiej jakości drogom",
-      "price": "Korzystniejsza cena w porównaniu do rynku lokalnego",
-      "choice": "Większy wybór modyfikacji i konfiguracji",
-      "support": "Pełne wsparcie importu i rejestracji"
-    },
-    "cta": {
-      "title": "Gotowy na import swojego idealnego samochodu?",
-      "subtitle": "Skontaktuj się z nami, aby uzyskać konsultację i kalkulację kosztów"
     }
   }
 }

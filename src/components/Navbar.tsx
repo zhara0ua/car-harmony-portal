@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
@@ -44,14 +43,6 @@ const Navbar = () => {
               } hover:text-navy transition-colors`}
             >
               {t('nav.cars')}
-            </Link>
-            <Link
-              to="/transit"
-              className={`${
-                isActive("/transit") ? "text-navy font-semibold" : "text-gray-700"
-              } hover:text-navy transition-colors`}
-            >
-              {t('nav.transit')}
             </Link>
             <Link
               to="/imports"
@@ -111,15 +102,6 @@ const Navbar = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {t('nav.cars')}
-                </Link>
-                <Link
-                  to="/transit"
-                  className={`${
-                    isActive("/transit") ? "text-navy font-semibold" : "text-gray-700"
-                  } hover:text-navy transition-colors`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {t('nav.transit')}
                 </Link>
                 <Link
                   to="/imports"

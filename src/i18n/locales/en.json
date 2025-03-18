@@ -1,9 +1,7 @@
-
 {
   "nav": {
     "home": "Home",
     "cars": "Cars",
-    "transit": "Cars in Transit",
     "import": "Import",
     "inspection": "Inspection",
     "contact": "Contact"
@@ -26,23 +24,6 @@
     "cases": {
       "title": "Our Successful Selections",
       "loadMore": "Show more"
-    }
-  },
-  "imports": {
-    "title": "Car Import from Europe",
-    "subtitle": "We specialize in importing premium cars from the best European auctions. Our team of experts provides full support for the transaction and guarantees transparency at every stage.",
-    "whyEurope": "Why buy a car from Europe?",
-    "benefits": {
-      "quality": "Better car quality and specifications",
-      "history": "Transparent history of use and maintenance",
-      "noRust": "No corrosion thanks to quality roads",
-      "price": "Better price compared to the local market",
-      "choice": "Greater choice of modifications and specifications",
-      "support": "Full import and registration support"
-    },
-    "cta": {
-      "title": "Ready to import your ideal car?",
-      "subtitle": "Contact us for consultation and cost calculation"
     }
   }
 }
