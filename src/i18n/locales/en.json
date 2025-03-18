@@ -1,3 +1,4 @@
+
 {
   "nav": {
     "home": "Home",
@@ -24,6 +25,55 @@
     "cases": {
       "title": "Our Successful Selections",
       "loadMore": "Show more"
+    }
+  },
+  "import": {
+    "title": "Car Import from Europe",
+    "subtitle": "We specialize in importing premium cars from the best European auctions. Our team of experts provides full support for the transaction and guarantees transparency at every stage.",
+    "phoneNumber": "+48 123 456 789",
+    "whyEurope": {
+      "title": "Why buy a car from Europe?",
+      "benefits": [
+        "Better quality of cars and their equipment",
+        "Transparent history of operation and maintenance",
+        "No corrosion thanks to quality roads",
+        "Better price compared to the local market",
+        "Greater choice of modifications and configurations",
+        "Full support for import and registration"
+      ]
+    },
+    "services": {
+      "title": "Our advantages",
+      "items": [
+        {
+          "title": "Wide selection of cars",
+          "description": "Access to thousands of cars from the best European auctions."
+        },
+        {
+          "title": "Verified history",
+          "description": "Full transparency of the car's history, including service records and accidents."
+        },
+        {
+          "title": "Better price",
+          "description": "Significant savings compared to the local market thanks to direct import."
+        },
+        {
+          "title": "Full support",
+          "description": "We take care of all issues with transportation and customs clearance."
+        },
+        {
+          "title": "Legality",
+          "description": "All cars go through official customs clearance and registration."
+        },
+        {
+          "title": "Technical condition",
+          "description": "European cars have better technical condition and maintenance."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Ready to import your perfect car?",
+      "subtitle": "Contact us for consultation and cost calculation"
     }
   }
 }

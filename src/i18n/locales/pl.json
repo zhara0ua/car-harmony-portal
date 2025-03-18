@@ -1,3 +1,4 @@
+
 {
   "nav": {
     "home": "Strona główna",
@@ -24,6 +25,55 @@
     "cases": {
       "title": "Nasze Udane Dobory",
       "loadMore": "Pokaż więcej"
+    }
+  },
+  "import": {
+    "title": "Import samochodów z Europy",
+    "subtitle": "Specjalizujemy się w imporcie premium samochodów z najlepszych europejskich aukcji. Nasz zespół ekspertów zapewnia pełne wsparcie transakcji i gwarantuje przejrzystość na każdym etapie.",
+    "phoneNumber": "+48 123 456 789",
+    "whyEurope": {
+      "title": "Dlaczego warto kupić samochód z Europy?",
+      "benefits": [
+        "Lepsza jakość samochodów i ich wyposażenie",
+        "Przejrzysta historia użytkowania i konserwacji",
+        "Brak korozji dzięki dobrej jakości drogom",
+        "Lepsza cena w porównaniu do rynku lokalnego",
+        "Większy wybór modyfikacji i konfiguracji",
+        "Pełne wsparcie importu i rejestracji"
+      ]
+    },
+    "services": {
+      "title": "Nasze zalety",
+      "items": [
+        {
+          "title": "Szeroki wybór samochodów",
+          "description": "Dostęp do tysięcy samochodów z najlepszych europejskich aukcji."
+        },
+        {
+          "title": "Zweryfikowana historia",
+          "description": "Pełna przejrzystość historii samochodu, w tym zapisy serwisowe i wypadki."
+        },
+        {
+          "title": "Lepsza cena",
+          "description": "Znaczne oszczędności w porównaniu do rynku lokalnego dzięki bezpośredniemu importowi."
+        },
+        {
+          "title": "Pełne wsparcie",
+          "description": "Zajmujemy się wszystkimi sprawami związanymi z transportem i odprawą celną."
+        },
+        {
+          "title": "Legalność",
+          "description": "Wszystkie samochody przechodzą oficjalną odprawę celną i rejestrację."
+        },
+        {
+          "title": "Stan techniczny",
+          "description": "Europejskie samochody mają lepszy stan techniczny i konserwację."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Gotowy zaimportować swój idealny samochód?",
+      "subtitle": "Skontaktuj się z nami, aby uzyskać konsultację i kalkulację kosztów"
     }
   }
 }
