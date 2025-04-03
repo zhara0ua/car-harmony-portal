@@ -1,12 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { adminSupabase } from "@/integrations/supabase/adminClient";
 import { toast } from "@/hooks/use-toast";
 
 export const deleteCar = async (carId: number): Promise<boolean> => {
   try {
     // Check admin authentication status from localStorage
     const isAdminAuthenticated = localStorage.getItem("adminAuthenticated") === "true";
+    console.log("Admin authentication status:", isAdminAuthenticated);
+    
     if (!isAdminAuthenticated) {
       toast({
         title: "Помилка авторизації",

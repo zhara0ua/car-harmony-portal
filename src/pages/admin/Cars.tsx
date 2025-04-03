@@ -14,24 +14,53 @@ import { Car } from "./types/car";
 import { CarForm } from "./components/CarForm";
 import { CarsTable } from "./components/CarsTable";
 import { fetchCars, createCar, updateCar, deleteCar } from "./utils/carUtils";
+import { toast } from "@/hooks/use-toast";
 
 const Cars = () => {
   const [cars, setCars] = useState<Car[]>([]);
   const [editingCar, setEditingCar] = useState<Car | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-
-  const loadCars = async () => {
-    const data = await fetchCars();
-    setCars(data);
-  };
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Check if user is authenticated
+    const isAuthenticated = localStorage.getItem("adminAuthenticated") === "true";
+    console.log("Cars component - Authentication status:", isAuthenticated);
+    
+    if (!isAuthenticated) {
+      toast({
+        title: "Помилка авторизації",
+        description: "Ви не авторизовані. Будь ласка, увійдіть у систему.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     loadCars();
   }, []);
 
+  const loadCars = async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchCars();
+      setCars(data);
+    } catch (error) {
+      console.error("Error loading cars:", error);
+      toast({
+        title: "Помилка завантаження",
+        description: "Не вдалося завантажити список автомобілів",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleAdd = async (e: React.FormEvent<HTMLFormElement>, imageFiles: File[], mainImageIndex: number) => {
     e.preventDefault();
-    const success = await createCar(new FormData(e.target as HTMLFormElement), imageFiles, mainImageIndex);
+    const formData = new FormData(e.target as HTMLFormElement);
+    console.log("Adding car with formData:", Object.fromEntries(formData));
+    const success = await createCar(formData, imageFiles, mainImageIndex);
     if (success) {
       setIsAddDialogOpen(false);
       loadCars();
@@ -40,14 +69,20 @@ const Cars = () => {
   };
 
   const handleEdit = (car: Car) => {
+    console.log("Editing car:", car);
     setEditingCar(car);
   };
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>, imageFiles: File[], mainImageIndex: number) => {
     e.preventDefault();
-    if (!editingCar) return;
+    if (!editingCar) {
+      console.error("No car selected for editing");
+      return;
+    }
 
-    const success = await updateCar(new FormData(e.target as HTMLFormElement), editingCar.id, imageFiles, mainImageIndex);
+    const formData = new FormData(e.target as HTMLFormElement);
+    console.log("Saving car with ID:", editingCar.id, "FormData:", Object.fromEntries(formData));
+    const success = await updateCar(formData, editingCar.id, imageFiles, mainImageIndex);
     if (success) {
       setEditingCar(null);
       loadCars();
@@ -55,6 +90,7 @@ const Cars = () => {
   };
 
   const handleDelete = async (carId: number) => {
+    console.log("Deleting car with ID:", carId);
     const success = await deleteCar(carId);
     if (success) {
       loadCars();
@@ -86,13 +122,17 @@ const Cars = () => {
           <CardTitle>Список автомобілів</CardTitle>
         </CardHeader>
         <CardContent>
-          <CarsTable 
-            cars={cars}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onSave={handleSave}
-            editingCar={editingCar}
-          />
+          {isLoading ? (
+            <div className="text-center py-4">Завантаження...</div>
+          ) : (
+            <CarsTable 
+              cars={cars}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onSave={handleSave}
+              editingCar={editingCar}
+            />
+          )}
         </CardContent>
       </Card>
     </div>

@@ -5,6 +5,15 @@ import { Car } from "../types/car";
 
 export const fetchCars = async () => {
   try {
+    // Check admin authentication status from localStorage
+    const isAdminAuthenticated = localStorage.getItem("adminAuthenticated") === "true";
+    console.log("Admin authentication status when fetching cars:", isAdminAuthenticated);
+    
+    if (!isAdminAuthenticated) {
+      console.warn("User is not authenticated as admin");
+      return [];
+    }
+    
     console.log("Fetching cars...");
     const { data, error } = await supabase
       .from('cars')

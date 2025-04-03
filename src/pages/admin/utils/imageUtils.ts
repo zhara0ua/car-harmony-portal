@@ -1,6 +1,5 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { adminSupabase } from "@/integrations/supabase/adminClient";
 import { toast } from "@/hooks/use-toast";
 
 export const uploadImage = async (file: File, folderName: string): Promise<string | null> => {
@@ -13,6 +12,7 @@ export const uploadImage = async (file: File, folderName: string): Promise<strin
     
     if (!carsBucketExists) {
       // Create the bucket if it doesn't exist
+      console.log("Creating 'cars' bucket");
       const { error: createBucketError } = await supabase.storage.createBucket('cars', {
         public: true
       });
@@ -24,6 +24,7 @@ export const uploadImage = async (file: File, folderName: string): Promise<strin
     }
     
     // Upload the file
+    console.log(`Uploading image: ${filename}`);
     const { data, error } = await supabase.storage
       .from('cars')
       .upload(filename, file, {
@@ -41,6 +42,7 @@ export const uploadImage = async (file: File, folderName: string): Promise<strin
       .from('cars')
       .getPublicUrl(filename);
 
+    console.log(`Image uploaded successfully. Public URL: ${urlData.publicUrl}`);
     return urlData.publicUrl;
   } catch (error) {
     console.error('Error uploading image:', error);
@@ -55,6 +57,7 @@ export const uploadImage = async (file: File, folderName: string): Promise<strin
 
 export const uploadMultipleImages = async (files: File[], carId: string): Promise<string[]> => {
   try {
+    console.log(`Uploading ${files.length} images for car: ${carId}`);
     const uploadPromises = files.map(file => uploadImage(file, carId));
     const results = await Promise.all(uploadPromises);
     const validUrls = results.filter((url): url is string => url !== null);
@@ -67,6 +70,7 @@ export const uploadMultipleImages = async (files: File[], carId: string): Promis
       });
     }
     
+    console.log(`Successfully uploaded ${validUrls.length} out of ${files.length} images`);
     return validUrls;
   } catch (error) {
     console.error('Error uploading multiple images:', error);

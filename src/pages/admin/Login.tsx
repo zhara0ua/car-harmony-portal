@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const AdminLogin = () => {
   const [username, setUsername] = useState("");
@@ -20,22 +20,37 @@ const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Check if already logged in
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem("adminAuthenticated") === "true";
+    console.log("Login page - Current authentication status:", isAuthenticated);
+    
+    if (isAuthenticated) {
+      console.log("User already authenticated, redirecting to admin dashboard");
+      navigate("/admin");
+    }
+  }, [navigate]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log("Login attempt with username:", username);
 
     // Simple hardcoded admin credentials
     // In a real app, this would use proper authentication from a backend
     if (username === "admin" && password === "admin123") {
       // Store auth status in localStorage
       localStorage.setItem("adminAuthenticated", "true");
+      console.log("Login successful, authentication status set to true");
+      
       toast({
         title: "Успішний вхід",
         description: "Ви успішно увійшли в панель адміністратора",
       });
       navigate("/admin");
     } else {
+      console.log("Login failed: incorrect credentials");
       toast({
         title: "Помилка входу",
         description: "Неправильне ім'я користувача або пароль",

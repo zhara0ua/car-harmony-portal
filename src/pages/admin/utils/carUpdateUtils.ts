@@ -1,6 +1,5 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { adminSupabase } from "@/integrations/supabase/adminClient";
 import { toast } from "@/hooks/use-toast";
 import { uploadMultipleImages } from "./imageUtils";
 
