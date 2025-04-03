@@ -60,12 +60,14 @@ export const AuctionFileUploader = ({ onUploadSuccess, onSuccess }: AuctionFileU
             return;
           }
           
-          // First, validate all cars before processing
-          const invalidCars = rawCars.filter(car => !car.title || !car.detailUrl);
-          if (invalidCars.length > 0) {
+          // Filter out invalid cars instead of rejecting the whole file
+          const validCars = rawCars.filter(car => car.title && car.detailUrl);
+          const skippedCars = rawCars.length - validCars.length;
+          
+          if (validCars.length === 0) {
             toast({
               title: "Błąd walidacji",
-              description: `${invalidCars.length} samochód(ów) nie ma wymaganego tytułu lub URL. Każdy samochód musi posiadać title i detailUrl.`,
+              description: "Brak prawidłowych danych samochodów. Wszystkie samochody w pliku muszą posiadać title i detailUrl.",
               variant: "destructive",
             });
             event.target.value = '';
@@ -73,7 +75,7 @@ export const AuctionFileUploader = ({ onUploadSuccess, onSuccess }: AuctionFileU
             return;
           }
           
-          const cars = rawCars.map(car => {
+          const cars = validCars.map(car => {
             let price = car.price || 0;
             
             if (typeof price === 'string') {
@@ -175,9 +177,10 @@ export const AuctionFileUploader = ({ onUploadSuccess, onSuccess }: AuctionFileU
           
           console.log("Successfully inserted all auction cars");
           
+          // Include information about skipped cars in success message
           toast({
             title: "Sukces",
-            description: `Zaimportowano ${cars.length} samochodów`,
+            description: `Zaimportowano ${cars.length} samochodów${skippedCars > 0 ? `, pominięto ${skippedCars} nieprawidłowych` : ''}`,
           });
           
           handleSuccess();
@@ -241,7 +244,7 @@ export const AuctionFileUploader = ({ onUploadSuccess, onSuccess }: AuctionFileU
       <div className="text-sm text-muted-foreground">
         Uwaga: Wczytanie nowego pliku spowoduje usunięcie wszystkich istniejących danych. 
         Maksymalny rozmiar pliku: 100MB, maksymalna liczba samochodów: 100,000.
-        Każdy samochód musi posiadać tytuł (title) i URL ogłoszenia (detailUrl).
+        Samochody bez tytułu (title) lub URL ogłoszenia (detailUrl) zostaną pominięte.
       </div>
     </div>
   );

@@ -109,8 +109,16 @@ export const triggerAuctionScraping = async () => {
         throw new Error(scrapingData?.error || "Unexpected response from server");
       }
       
+      // Add information about skipped cars if available
+      const message = scrapingData.skipped > 0 
+        ? `Auction data updated. Added ${scrapingData.count} cars, skipped ${scrapingData.skipped} invalid entries.`
+        : `Auction data updated. Added ${scrapingData.count} cars.`;
+      
       console.log('Function response:', scrapingData);
-      return scrapingData;
+      return {
+        ...scrapingData,
+        message
+      };
     } catch (functionError) {
       console.error('Edge function execution error:', functionError);
       throw functionError;

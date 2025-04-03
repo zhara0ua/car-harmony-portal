@@ -64,12 +64,12 @@ Deno.serve(async (req) => {
     const carData = parseHtmlForCars(htmlContent);
     console.log(`Extracted ${carData.length} cars using simple parsing`);
     
-    // Filter out any cars missing required fields
+    // Filter out cars missing required fields, instead of failing the whole operation
     const validCars = carData.filter(car => car.title && car.external_url);
-    const invalidCount = carData.length - validCars.length;
+    const skippedCount = carData.length - validCars.length;
     
-    if (invalidCount > 0) {
-      console.warn(`Filtered out ${invalidCount} cars with missing title or external_url`);
+    if (skippedCount > 0) {
+      console.warn(`Skipped ${skippedCount} cars with missing title or external_url`);
     }
     
     if (validCars.length > 0) {
@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
         success: true,
         message: 'Dane z aukcji zostały zaktualizowane',
         count: validCars.length,
-        filtered: invalidCount
+        skipped: skippedCount
       }),
       { 
         status: 200,
@@ -138,7 +138,13 @@ function parseHtmlForCars(htmlContent: string) {
       
       // Extract basic info
       const titleMatch = cardHtml.match(/<div[^>]*class="vehicle-card__title"[^>]*>([\s\S]*?)<\/div>/);
-      const title = titleMatch ? cleanHtml(titleMatch[1]) : 'Unknown Vehicle';
+      const title = titleMatch ? cleanHtml(titleMatch[1]) : '';
+      
+      // Skip if no title (just continue to next car without returning)
+      if (!title) {
+        console.log(`Car #${index + 1} has no title, skipping`);
+        continue;
+      }
       
       // Price
       const priceMatch = cardHtml.match(/<div[^>]*class="vehicle-card__price"[^>]*>([\s\S]*?)<\/div>/);
@@ -152,7 +158,13 @@ function parseHtmlForCars(htmlContent: string) {
       
       // Link
       const linkMatch = cardHtml.match(/<a[^>]*href="([^"]*)"[^>]*>/);
-      const externalUrl = linkMatch ? 'https://www.openlane.eu' + linkMatch[1] : 'https://www.openlane.eu/en/findcar';
+      const externalUrl = linkMatch ? 'https://www.openlane.eu' + linkMatch[1] : '';
+      
+      // Skip if no external URL (just continue to next car without returning)
+      if (!externalUrl) {
+        console.log(`Car #${index + 1} has no external URL, skipping`);
+        continue;
+      }
       
       // Extract details
       const detailsMatch = cardHtml.match(/<div[^>]*class="vehicle-card__details"[^>]*>([\s\S]*?)<\/div>/);
@@ -192,7 +204,7 @@ function parseHtmlForCars(htmlContent: string) {
       
       cars.push({
         external_id: externalId,
-        title: title || 'Unknown Vehicle',
+        title: title,
         start_price: price,
         current_price: price,
         year,

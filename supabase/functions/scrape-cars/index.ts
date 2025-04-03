@@ -60,8 +60,16 @@ Deno.serve(async (req) => {
     console.log('Received HTML content, length:', htmlContent.length);
     
     // Basic scraping using regex
-    const cars = parseHtmlForCars(htmlContent);
-    console.log(`Extracted ${cars.length} cars`);
+    const allCars = parseHtmlForCars(htmlContent);
+    console.log(`Extracted ${allCars.length} cars in total`);
+    
+    // Filter out cars missing required fields
+    const cars = allCars.filter(car => car.title && car.external_url);
+    const skippedCount = allCars.length - cars.length;
+    
+    if (skippedCount > 0) {
+      console.warn(`Skipped ${skippedCount} cars with missing title or external_url`);
+    }
     
     // Store cars in database
     if (cars.length > 0) {
@@ -85,7 +93,8 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         message: 'Дані з сайту успішно оновлено',
-        count: cars.length
+        count: cars.length,
+        skipped: skippedCount
       }),
       { 
         status: 200,
@@ -139,14 +148,22 @@ function parseHtmlForCars(htmlContent: string) {
     // Create basic car objects from the links
     for (const link of carLinks.slice(0, 20)) {
       const titleMatch = link.match(/\/cars\/([^\/]+)(?:\/|$)/);
-      const urlTitle = titleMatch ? titleMatch[1].replace(/-/g, ' ') : 'Unknown Car';
+      const urlTitle = titleMatch ? titleMatch[1].replace(/-/g, ' ') : '';
+      
+      // Skip if no title could be extracted
+      if (!urlTitle) {
+        console.log(`Car link ${link} has no extractable title, skipping`);
+        continue;
+      }
+      
+      const externalUrl = link.startsWith('http') ? link : `https://caroutlet.eu${link}`;
       
       const car = {
         external_id: `caroutlet-${Date.now()}-${Math.random().toString(36).substring(2, 6)}-${index}`,
         title: urlTitle.charAt(0).toUpperCase() + urlTitle.slice(1),
         price: Math.floor(Math.random() * 20000) + 10000, // Random price as fallback
         year: new Date().getFullYear() - Math.floor(Math.random() * 5),
-        external_url: link.startsWith('http') ? link : `https://caroutlet.eu${link}`,
+        external_url: externalUrl,
         image_url: null,
         location: 'CarOutlet EU',
         source: 'caroutlet',
@@ -166,7 +183,13 @@ function parseHtmlForCars(htmlContent: string) {
         
         // Extract basic info
         const titleMatch = cardHtml.match(/<h3[^>]*>([\s\S]*?)<\/h3>/);
-        const title = titleMatch ? cleanHtml(titleMatch[1]) : 'Unknown Vehicle';
+        const title = titleMatch ? cleanHtml(titleMatch[1]) : '';
+        
+        // Skip if no title
+        if (!title) {
+          console.log(`Car #${index + 1} has no title, skipping`);
+          continue;
+        }
         
         // Price
         const priceMatch = cardHtml.match(/<div[^>]*class="price"[^>]*>([\s\S]*?)<\/div>/);
@@ -180,7 +203,13 @@ function parseHtmlForCars(htmlContent: string) {
         
         // Link
         const linkMatch = cardHtml.match(/<a[^>]*href="([^"]*)"[^>]*>/);
-        const externalUrl = linkMatch ? (linkMatch[1].startsWith('http') ? linkMatch[1] : `https://caroutlet.eu${linkMatch[1]}`) : 'https://caroutlet.eu/cars';
+        const externalUrl = linkMatch ? (linkMatch[1].startsWith('http') ? linkMatch[1] : `https://caroutlet.eu${linkMatch[1]}`) : '';
+        
+        // Skip if no external URL
+        if (!externalUrl) {
+          console.log(`Car #${index + 1} has no external URL, skipping`);
+          continue;
+        }
         
         // Extract year
         const yearMatch = title.match(/\b(20\d{2}|19\d{2})\b/);
