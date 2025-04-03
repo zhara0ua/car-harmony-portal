@@ -1,4 +1,3 @@
-
 const Footer = () => {
   return (
     <div className="w-full min-w-full bg-navy">
@@ -7,11 +6,7 @@ const Footer = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div className="mb-4">
-                <img 
-                  src="/lovable-uploads/40b1e27f-66cd-44c0-8312-7503c9315f53.png" 
-                  alt="KRIST IN AUTO" 
-                  className="h-12 w-auto bg-white p-2 rounded"
-                />
+                <h1 className="text-2xl font-bold text-white">KRIST IN AUTO</h1>
               </div>
               <p className="text-gray-300">
                 Twój niezawodny partner w wyborze samochodu
