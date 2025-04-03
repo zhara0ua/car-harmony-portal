@@ -34,7 +34,8 @@ export const JsonFormatInfo = () => {
   "title": "Mercedes-Benz A 180d AMG Line",
   "make": "Mercedes-Benz",
   "model": "A 180d AMG Line",
-  "price": 20000,
+  "price": 20000,         // Cena w pełnych jednostkach lub
+  "price": 11.8,          // Cena w tysiącach (zostanie przeliczona na 11800)
   "priceFormatted": "€20,000",
   "fuel": "Diesel",
   "transmission": "Automatic",
@@ -57,11 +58,18 @@ export const JsonFormatInfo = () => {
           </pre>
         </div>
         <div className="py-2">
+          <p className="text-sm font-medium">Uwaga dotycząca pola "price":</p>
+          <ul className="text-xs space-y-1 mt-2 list-disc pl-4">
+            <li>Można podać jako pełną kwotę (np. 20000) lub jako kwotę w tysiącach (np. 11.8 dla €11,800)</li>
+            <li>Jeśli wartość jest mniejsza niż 100, system automatycznie pomnoży ją przez 1000</li>
+          </ul>
+        </div>
+        <div className="py-2">
           <p className="text-sm font-medium">Obsługiwane formaty daty zakończenia (endTime):</p>
           <ul className="text-xs space-y-1 mt-2 list-disc pl-4">
             <li>Standardowy format ISO: "2025-04-10T15:53:25.815Z"</li>
             <li>Obiekt z datą: {"{ fullDate: '20/03/2025 11:00' }"}</li>
-            <li>Jeśli pole jest puste, aukcja będzie aktywna przez 7 dni od importu</li>
+            <li>Jeśli pole jest puste lub ma wartość null, aukcja będzie aktywna przez 7 dni od importu</li>
           </ul>
         </div>
         <SheetFooter>

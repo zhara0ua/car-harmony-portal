@@ -34,6 +34,13 @@ export const AuctionFileUploader = ({ onUploadSuccess }: AuctionFileUploaderProp
           
           // Transform the JSON data to match our database structure
           const cars = rawCars.map(car => {
+            // Handle price conversion - convert to number and multiply by 1000 if less than 100
+            // This handles cases where price might be in thousands (e.g., 11.8 for €11,800)
+            let price = car.price || 0;
+            if (typeof price === 'number' && price < 100) {
+              price = Math.round(price * 1000);
+            }
+            
             // Parse endTime correctly, handling different formats
             let endDate;
             try {
@@ -67,17 +74,22 @@ export const AuctionFileUploader = ({ onUploadSuccess }: AuctionFileUploaderProp
               endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
             }
             
+            // Parse mileage if it's a number
+            const mileage = typeof car.mileage === 'number' 
+              ? car.mileage.toString() 
+              : car.mileageFormatted || car.mileage?.toString();
+            
             return {
               external_id: car.auctionId || `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`,
               title: car.title,
-              start_price: car.price || 0,
+              start_price: price,
               year: parseInt(car.year) || new Date().getFullYear(),
               make: car.make,
               model: car.model,
-              mileage: car.mileageFormatted || car.mileage?.toString(),
+              mileage: mileage,
               fuel_type: car.fuel,
               transmission: car.transmission,
-              location: car.country,
+              location: car.country || "Unknown",
               image_url: car.imageSrc,
               external_url: car.detailUrl || "#",
               end_date: endDate,
@@ -91,6 +103,8 @@ export const AuctionFileUploader = ({ onUploadSuccess }: AuctionFileUploaderProp
               throw new Error("Each car must have title, start_price, and external_url");
             }
           }
+          
+          console.log("Processed cars:", cars);
           
           // Delete existing cars if there are any in the import
           if (cars.length > 0) {
