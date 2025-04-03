@@ -1,26 +1,11 @@
 
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { CarForm } from "../CarForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Edit, Trash } from "lucide-react";
+import { useState } from "react";
 import { Car } from "../../types/car";
+import { CarForm } from "../CarForm";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface CarActionButtonsProps {
   car: Car;
@@ -30,39 +15,64 @@ interface CarActionButtonsProps {
   editingCar: Car | null;
 }
 
-export const CarActionButtons = ({ car, onEdit, onDelete, onSave, editingCar }: CarActionButtonsProps) => {
+export const CarActionButtons = ({ 
+  car, 
+  onEdit, 
+  onDelete, 
+  onSave, 
+  editingCar 
+}: CarActionButtonsProps) => {
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const handleEdit = () => {
+    onEdit(car);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSave = async (e: React.FormEvent<HTMLFormElement>, imageFiles: File[], mainImageIndex: number) => {
+    await onSave(e, imageFiles, mainImageIndex);
+    setIsEditDialogOpen(false);
+  };
+
+  const handleDelete = async () => {
+    console.log("Confirming delete for car:", car.id);
+    await onDelete(car.id);
+    setIsDeleteDialogOpen(false);
+  };
+
   return (
-    <div className="space-x-2">
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button variant="outline" size="sm" onClick={() => onEdit(car)}>
-            <Pencil className="h-4 w-4" />
-          </Button>
-        </DialogTrigger>
+    <div className="flex gap-2">
+      <Button size="sm" variant="outline" onClick={handleEdit}>
+        <Edit className="h-4 w-4" />
+      </Button>
+      
+      <Button size="sm" variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>
+        <Trash className="h-4 w-4" />
+      </Button>
+      
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Редагувати автомобіль</DialogTitle>
           </DialogHeader>
-          {editingCar && <CarForm car={editingCar} onSubmit={onSave} />}
+          <CarForm car={car} onSubmit={handleSave} />
         </DialogContent>
       </Dialog>
-
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button variant="outline" size="sm">
-            <Trash2 className="h-4 w-4 text-red-500" />
-          </Button>
-        </AlertDialogTrigger>
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Видалити автомобіль?</AlertDialogTitle>
             <AlertDialogDescription>
-              Ця дія не може бути скасована. Автомобіль буде назавжди видалений з системи.
+              Ви впевнені, що хочете видалити {car.make} {car.model}? Цю дію не можна буде скасувати.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Скасувати</AlertDialogCancel>
-            <AlertDialogAction onClick={() => onDelete(car.id)} className="bg-red-500 hover:bg-red-600">
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
               Видалити
             </AlertDialogAction>
           </AlertDialogFooter>

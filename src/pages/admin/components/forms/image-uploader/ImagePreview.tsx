@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, ImageIcon, X } from "lucide-react";
 
@@ -12,6 +11,11 @@ interface ImagePreviewProps {
 }
 
 export const ImagePreview = ({ src, index, isMain, onRemove, onSetMain }: ImagePreviewProps) => {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    console.error(`Error loading image at index ${index}:`, src);
+    (e.target as HTMLImageElement).src = "/placeholder.svg";
+  };
+
   return (
     <div 
       className={`relative rounded-md overflow-hidden border-2 ${
@@ -22,10 +26,7 @@ export const ImagePreview = ({ src, index, isMain, onRemove, onSetMain }: ImageP
         src={src} 
         alt={`Preview ${index + 1}`} 
         className="w-full h-32 object-cover"
-        onError={(e) => {
-          console.error(`Error loading image at index ${index}:`, src);
-          (e.target as HTMLImageElement).src = "/placeholder.svg";
-        }}
+        onError={handleImageError}
       />
       
       <div className="absolute top-1 right-1 flex space-x-1">

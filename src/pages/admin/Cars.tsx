@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -70,8 +69,7 @@ const Cars = () => {
     const success = await createCar(formData, imageFiles, mainImageIndex);
     if (success) {
       setIsAddDialogOpen(false);
-      loadCars();
-      (e.target as HTMLFormElement).reset();
+      await loadCars(); // Reload cars after successful addition
     }
   };
 
@@ -95,7 +93,7 @@ const Cars = () => {
     const success = await updateCar(formData, editingCar.id, imageFiles, mainImageIndex);
     if (success) {
       setEditingCar(null);
-      loadCars();
+      await loadCars(); // Reload cars after successful update
     }
   };
 
@@ -103,7 +101,7 @@ const Cars = () => {
     console.log("Deleting car with ID:", carId);
     const success = await deleteCar(carId);
     if (success) {
-      loadCars();
+      await loadCars(); // Reload cars after successful deletion
     }
   };
 

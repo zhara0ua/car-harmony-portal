@@ -8,6 +8,7 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
     // Check admin authentication status from localStorage
     const isAdminAuthenticated = localStorage.getItem("adminAuthenticated") === "true";
     if (!isAdminAuthenticated) {
+      console.error("Authentication check failed - user not authenticated");
       toast({
         title: "Помилка авторизації",
         description: "Ви не авторизовані. Будь ласка, увійдіть у систему.",
@@ -19,9 +20,23 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
     const priceString = formData.get('price') as string;
+    
+    console.log("Updating car data:", { carId, make, model, priceString });
+    
+    if (!make || !model || !priceString) {
+      console.error("Missing required fields:", { make, model, priceString });
+      toast({
+        title: "Помилка",
+        description: "Всі обов'язкові поля повинні бути заповнені",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     const priceNumber = parseInt(priceString.replace(/\s+/g, '').replace(',', '.'));
     
     if (isNaN(priceNumber)) {
+      console.error("Invalid price value:", priceString);
       toast({
         title: "Помилка",
         description: "Некоректне значення ціни",
@@ -76,6 +91,7 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
     
     // Make sure we have at least one image
     if (allImageUrls.length === 0) {
+      console.error("No images available for the car");
       toast({
         title: "Увага",
         description: "Необхідно мати хоча б одне зображення",
@@ -97,19 +113,18 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
       price: `${priceNumber.toLocaleString()} zł`,
       price_number: priceNumber,
       year: parseInt(formData.get('year') as string) || currentCar.year,
-      mileage,
-      category: formData.get('category') as string,
-      transmission: formData.get('transmission') as string,
-      fuel_type: formData.get('fuel_type') as string,
-      engine_size: formData.get('engine_size') as string,
-      engine_power: formData.get('engine_power') as string,
+      mileage: mileage ? `${mileage} km` : "",
+      category: formData.get('category') as string || currentCar.category,
+      transmission: formData.get('transmission') as string || currentCar.transmission,
+      fuel_type: formData.get('fuel_type') as string || currentCar.fuel_type,
+      engine_size: formData.get('engine_size') as string || currentCar.engine_size,
+      engine_power: formData.get('engine_power') as string || currentCar.engine_power,
       image: mainImage,
       images: allImageUrls,
     };
 
-    console.log("Updating car:", updatedCar);
+    console.log("Attempting to update car:", { carId, updatedCar });
 
-    // Use the regular supabase client for database operations
     const { error } = await supabase
       .from('cars')
       .update(updatedCar)
@@ -125,6 +140,7 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
       return false;
     }
 
+    console.log("Car updated successfully");
     toast({
       title: "Успішно",
       description: "Дані автомобіля оновлено",

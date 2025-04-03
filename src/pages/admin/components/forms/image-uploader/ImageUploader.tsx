@@ -21,7 +21,9 @@ export const ImageUploader = ({ initialImages = [], onImagesChange }: ImageUploa
   useEffect(() => {
     // Initialize with initial images
     if (initialImages.length > 0) {
+      console.log("ImageUploader: Initializing with images:", initialImages);
       setImagePreviews(initialImages);
+      
       // Notify parent component
       onImagesChange(uploadedFiles, initialImages, mainImageIndex);
     }
@@ -30,6 +32,8 @@ export const ImageUploader = ({ initialImages = [], onImagesChange }: ImageUploa
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
+      console.log("Files selected:", newFiles.map(f => f.name));
+      
       const newPreviews: string[] = [];
       
       // Generate previews for each file
@@ -41,6 +45,8 @@ export const ImageUploader = ({ initialImages = [], onImagesChange }: ImageUploa
       // Update state with new files and previews
       const updatedFiles = [...uploadedFiles, ...newFiles];
       const updatedPreviews = [...imagePreviews, ...newPreviews];
+      
+      console.log("ImageUploader: Updated previews:", updatedPreviews.length);
       
       setUploadedFiles(updatedFiles);
       setImagePreviews(updatedPreviews);
@@ -57,6 +63,8 @@ export const ImageUploader = ({ initialImages = [], onImagesChange }: ImageUploa
 
   const handleUrlSubmit = (url: string) => {
     if (url && url.trim() !== "" && url.startsWith("http")) {
+      console.log("URL image added:", url);
+      
       // Add URL to previews
       const updatedPreviews = [...imagePreviews, url];
       setImagePreviews(updatedPreviews);
@@ -67,6 +75,8 @@ export const ImageUploader = ({ initialImages = [], onImagesChange }: ImageUploa
   };
 
   const removeImage = (index: number) => {
+    console.log("Removing image at index:", index);
+    
     const updatedPreviews = [...imagePreviews];
     updatedPreviews.splice(index, 1);
     
@@ -97,6 +107,7 @@ export const ImageUploader = ({ initialImages = [], onImagesChange }: ImageUploa
   };
 
   const setAsMain = (index: number) => {
+    console.log("Setting image as main:", index);
     setMainImageIndex(index);
     
     // Notify parent component

@@ -21,16 +21,22 @@ export const CarForm = ({ car, onSubmit }: CarFormProps) => {
   useEffect(() => {
     // Update imagePreviews if car prop changes
     if (car) {
+      console.log("CarForm: Car data received:", car);
       const images = car.images && car.images.length > 0 
         ? car.images 
         : car.image ? [car.image] : [];
       
+      console.log("CarForm: Setting images:", images);
       setImagePreviews(images);
     }
   }, [car]);
 
   const handleImagesChange = (files: File[], previews: string[], mainIndex: number) => {
-    console.log("Images changed:", { files, previews, mainIndex });
+    console.log("Images changed:", { 
+      files: files.map(f => f.name), 
+      previewsCount: previews.length, 
+      mainIndex 
+    });
     setImageFiles(files);
     setImagePreviews(previews);
     setMainImageIndex(mainIndex);
@@ -38,14 +44,29 @@ export const CarForm = ({ car, onSubmit }: CarFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if (imagePreviews.length === 0) {
+      console.error("No images provided");
+      toast({
+        title: "Помилка",
+        description: "Будь ласка, додайте хоча б одне зображення",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
       console.log("Form submitted with:", {
         imageFiles: imageFiles.map(f => f.name),
-        previews: imagePreviews,
+        previews: imagePreviews.length,
         mainImageIndex
       });
+      
+      // Clear any existing hidden inputs first to avoid duplicates
+      const existingHiddenInputs = e.currentTarget.querySelectorAll('input[type="hidden"][name^="image_url_"]');
+      existingHiddenInputs.forEach(input => input.remove());
       
       // Add image URLs from previews that are not from uploaded files
       // These will be added to the form data
@@ -57,6 +78,7 @@ export const CarForm = ({ car, onSubmit }: CarFormProps) => {
           input.name = `image_url_${index}`;
           input.value = preview;
           e.currentTarget.appendChild(input);
+          console.log(`Added hidden input for image URL: ${preview}`);
         }
       });
       
@@ -88,7 +110,7 @@ export const CarForm = ({ car, onSubmit }: CarFormProps) => {
         initialImages={imagePreviews}
         onImagesChange={handleImagesChange}
       />
-      <Button type="submit" disabled={isSubmitting}>
+      <Button type="submit" disabled={isSubmitting} className="w-full">
         {isSubmitting ? "Обробка..." : car ? "Зберегти" : "Додати"}
       </Button>
     </form>

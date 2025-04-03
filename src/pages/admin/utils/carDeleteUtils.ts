@@ -9,6 +9,7 @@ export const deleteCar = async (carId: number): Promise<boolean> => {
     console.log("Admin authentication status when deleting car:", isAdminAuthenticated);
     
     if (!isAdminAuthenticated) {
+      console.error("Authentication check failed when deleting car - user not authenticated");
       toast({
         title: "Помилка авторизації",
         description: "Ви не авторизовані. Будь ласка, увійдіть у систему.",
@@ -24,7 +25,7 @@ export const deleteCar = async (carId: number): Promise<boolean> => {
       .from('cars')
       .delete()
       .eq('id', carId);
-
+    
     if (error) {
       console.error('Database error when deleting car:', error);
       toast({
@@ -34,12 +35,14 @@ export const deleteCar = async (carId: number): Promise<boolean> => {
       });
       return false;
     }
-
+    
+    console.log("Car deleted successfully:", carId);
+    
     toast({
       title: "Успішно",
       description: "Автомобіль видалено",
     });
-
+    
     return true;
   } catch (error) {
     console.error('Error deleting car:', error);

@@ -1,46 +1,42 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
 import { Car } from "../types/car";
+import { toast } from "@/hooks/use-toast";
 
-export const fetchCars = async () => {
+export const fetchCars = async (): Promise<Car[]> => {
   try {
     // Check admin authentication status from localStorage
     const isAdminAuthenticated = localStorage.getItem("adminAuthenticated") === "true";
     console.log("Admin authentication status when fetching cars:", isAdminAuthenticated);
     
     if (!isAdminAuthenticated) {
-      console.warn("User is not authenticated as admin");
       toast({
         title: "Помилка авторизації",
-        description: "Ви не авторизовані як адміністратор",
+        description: "Ви не авторизовані для перегляду автомобілів",
         variant: "destructive",
       });
       return [];
     }
     
     console.log("Fetching cars...");
+    
     const { data, error } = await supabase
       .from('cars')
       .select('*')
-      .order('created_at', { ascending: false });
-
+      .order('id', { ascending: false });
+    
     if (error) {
-      console.error("Error fetching cars:", error);
+      console.error('Error fetching cars:', error);
       throw error;
     }
-
-    console.log("Fetched cars count:", data?.length);
-    console.log("Sample car data:", data?.[0]);
-
-    // Fix formatting of car data
-    const formattedCars = data?.map(car => ({
-      ...car,
-      price: car.price || `${car.price_number.toLocaleString()} zł`,
-      mileage: car.mileage || `${car.mileage} km.`
-    })) || [];
-
-    return formattedCars;
+    
+    console.log(`Fetched cars count: ${data?.length}`);
+    
+    if (data && data.length > 0) {
+      console.log(`Sample car data:`, data[0]);
+    }
+    
+    return data || [];
   } catch (error) {
     console.error('Error fetching cars:', error);
     toast({
@@ -49,5 +45,25 @@ export const fetchCars = async () => {
       variant: "destructive",
     });
     return [];
+  }
+};
+
+export const fetchCarById = async (id: number): Promise<Car | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('cars')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      console.error(`Error fetching car with ID ${id}:`, error);
+      return null;
+    }
+    
+    return data as Car;
+  } catch (error) {
+    console.error(`Error fetching car with ID ${id}:`, error);
+    return null;
   }
 };

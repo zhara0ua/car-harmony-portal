@@ -24,7 +24,7 @@ export const uploadImage = async (file: File, folderName: string): Promise<strin
     }
     
     // Upload the file
-    console.log(`Uploading image: ${filename}`);
+    console.log(`Uploading image: ${filename} (${file.size} bytes, type: ${file.type})`);
     const { data, error } = await supabase.storage
       .from('cars')
       .upload(filename, file, {
@@ -58,9 +58,23 @@ export const uploadImage = async (file: File, folderName: string): Promise<strin
 export const uploadMultipleImages = async (files: File[], carId: string): Promise<string[]> => {
   try {
     console.log(`Uploading ${files.length} images for car: ${carId}`);
+    
+    // Added validation for empty files array
+    if (files.length === 0) {
+      console.log("No files to upload");
+      return [];
+    }
+    
+    // Log file details for debugging
+    files.forEach((file, index) => {
+      console.log(`File ${index+1}: ${file.name}, Size: ${file.size} bytes, Type: ${file.type}`);
+    });
+    
     const uploadPromises = files.map(file => uploadImage(file, carId));
     const results = await Promise.all(uploadPromises);
     const validUrls = results.filter((url): url is string => url !== null);
+    
+    console.log(`Upload results: ${results.length} total, ${validUrls.length} successful`);
     
     if (validUrls.length === 0 && files.length > 0) {
       toast({
