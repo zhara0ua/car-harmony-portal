@@ -1,5 +1,5 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { adminSupabase } from "@/integrations/supabase/adminClient";
 import { toast } from "@/hooks/use-toast";
 import { uploadMultipleImages } from "./imageUtils";
 
@@ -110,7 +110,7 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
 
     console.log("Attempting to create new car:", newCar);
 
-    const { data, error } = await supabase
+    const { data, error } = await adminSupabase
       .from('cars')
       .insert(newCar)
       .select()

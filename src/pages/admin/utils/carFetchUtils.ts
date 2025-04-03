@@ -1,5 +1,5 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { adminSupabase } from "@/integrations/supabase/adminClient";
 import { Car } from "../types/car";
 import { toast } from "@/hooks/use-toast";
 
@@ -20,7 +20,7 @@ export const fetchCars = async (): Promise<Car[]> => {
     
     console.log("Fetching cars...");
     
-    const { data, error } = await supabase
+    const { data, error } = await adminSupabase
       .from('cars')
       .select('*')
       .order('id', { ascending: false });
@@ -50,7 +50,7 @@ export const fetchCars = async (): Promise<Car[]> => {
 
 export const fetchCarById = async (id: number): Promise<Car | null> => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await adminSupabase
       .from('cars')
       .select('*')
       .eq('id', id)
