@@ -5,17 +5,23 @@ import { Car } from "../types/car";
 
 export const fetchCars = async () => {
   try {
+    console.log("Fetching cars...");
     const { data, error } = await supabase
       .from('cars')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error fetching cars:", error);
+      throw error;
+    }
+
+    console.log("Fetched cars:", data);
 
     const formattedCars = data?.map(car => ({
       ...car,
-      price: `${car.price_number.toLocaleString()} zł`,
-      mileage: `${car.mileage} km.`
+      price: car.price || `${car.price_number.toLocaleString()} zł`,
+      mileage: car.mileage || `${car.mileage} km.`
     })) || [];
 
     return formattedCars;

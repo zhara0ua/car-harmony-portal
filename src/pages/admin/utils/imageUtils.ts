@@ -7,11 +7,27 @@ export const uploadImage = async (file: File, folderName: string): Promise<strin
   try {
     const filename = `${folderName}/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
     
-    // Using the admin client for storage operations with explicit content-type
-    const { data, error } = await adminSupabase.storage
+    // Make sure the cars bucket exists
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const carsBucketExists = buckets?.some(bucket => bucket.name === 'cars');
+    
+    if (!carsBucketExists) {
+      // Create the bucket if it doesn't exist
+      const { error: createBucketError } = await supabase.storage.createBucket('cars', {
+        public: true
+      });
+      
+      if (createBucketError) {
+        console.error('Error creating bucket:', createBucketError);
+        throw createBucketError;
+      }
+    }
+    
+    // Upload the file
+    const { data, error } = await supabase.storage
       .from('cars')
       .upload(filename, file, {
-        contentType: file.type, // Explicitly set the content type
+        contentType: file.type,
         cacheControl: '3600'
       });
 
@@ -21,7 +37,7 @@ export const uploadImage = async (file: File, folderName: string): Promise<strin
     }
 
     // Get the public URL of the uploaded file
-    const { data: urlData } = adminSupabase.storage
+    const { data: urlData } = supabase.storage
       .from('cars')
       .getPublicUrl(filename);
 

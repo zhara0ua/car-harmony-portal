@@ -13,7 +13,7 @@ interface CarFormProps {
 
 export const CarForm = ({ car, onSubmit }: CarFormProps) => {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>(car?.images || (car?.image ? [car.image] : []));
   const [mainImageIndex, setMainImageIndex] = useState<number>(0);
 
   const handleImagesChange = (files: File[], previews: string[], mainIndex: number) => {

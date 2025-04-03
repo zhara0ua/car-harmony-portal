@@ -19,11 +19,22 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
     
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
-    const priceNumber = parseInt(formData.get('price') as string);
+    const priceString = formData.get('price') as string;
+    const priceNumber = parseInt(priceString);
+    
+    if (isNaN(priceNumber)) {
+      toast({
+        title: "Помилка",
+        description: "Некоректне значення ціни",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
     const mileage = `${formData.get('mileage')}`;
     
     // Get current car data to access existing images
-    const { data: currentCar, error: fetchError } = await adminSupabase
+    const { data: currentCar, error: fetchError } = await supabase
       .from('cars')
       .select('*')
       .eq('id', carId)
@@ -85,7 +96,7 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
       model,
       price: `${priceNumber.toLocaleString()} zł`,
       price_number: priceNumber,
-      year: parseInt(formData.get('year') as string),
+      year: parseInt(formData.get('year') as string) || currentCar.year,
       mileage,
       category: formData.get('category') as string,
       transmission: formData.get('transmission') as string,
@@ -96,27 +107,21 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
       images: allImageUrls,
     };
 
-    // Use the admin client for database operations
-    const { error } = await adminSupabase
+    console.log("Updating car:", updatedCar);
+
+    // Use the regular supabase client for database operations
+    const { error } = await supabase
       .from('cars')
       .update(updatedCar)
       .eq('id', carId);
 
     if (error) {
       console.error('Database error:', error);
-      if (error.message.includes('row-level security')) {
-        toast({
-          title: "Помилка безпеки",
-          description: "Немає прав для оновлення автомобіля. Будь ласка, перевірте, чи ви авторизовані.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Помилка бази даних",
-          description: `${error.message}`,
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Помилка бази даних",
+        description: `${error.message}`,
+        variant: "destructive",
+      });
       return false;
     }
 

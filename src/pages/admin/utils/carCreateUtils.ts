@@ -19,7 +19,18 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
     
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
-    const priceNumber = parseInt(formData.get('price') as string);
+    const priceString = formData.get('price') as string;
+    const priceNumber = parseInt(priceString);
+    
+    if (isNaN(priceNumber)) {
+      toast({
+        title: "Помилка",
+        description: "Некоректне значення ціни",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
     const mileage = `${formData.get('mileage')}`;
     
     // Generate a unique ID for the car folder
@@ -60,7 +71,7 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
       model,
       price: `${priceNumber.toLocaleString()} zł`,
       price_number: priceNumber,
-      year: parseInt(formData.get('year') as string),
+      year: parseInt(formData.get('year') as string) || new Date().getFullYear(),
       mileage,
       category: formData.get('category') as string,
       transmission: formData.get('transmission') as string,
@@ -71,23 +82,18 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
       images: imageUrls,
     };
 
-    // Use the admin client for database operations when authenticated as admin
-    const { error } = await adminSupabase.from('cars').insert(newCar);
+    console.log("Creating new car:", newCar);
+
+    // Use the regular supabase client for anonymous operations
+    const { data, error } = await supabase.from('cars').insert(newCar).select();
+    
     if (error) {
       console.error('Database error:', error);
-      if (error.message.includes('row-level security')) {
-        toast({
-          title: "Помилка безпеки",
-          description: "Немає прав для додавання автомобіля. Будь ласка, перевірте, чи ви авторизовані.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Помилка бази даних",
-          description: `${error.message}`,
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Помилка бази даних",
+        description: `${error.message}`,
+        variant: "destructive",
+      });
       return false;
     }
 

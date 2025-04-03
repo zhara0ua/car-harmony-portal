@@ -16,27 +16,21 @@ export const deleteCar = async (carId: number): Promise<boolean> => {
       return false;
     }
     
-    // Use the admin client for database operations
-    const { error } = await adminSupabase
+    console.log("Deleting car with ID:", carId);
+    
+    // Use the regular supabase client for database operations
+    const { error } = await supabase
       .from('cars')
       .delete()
       .eq('id', carId);
 
     if (error) {
       console.error('Database error:', error);
-      if (error.message.includes('row-level security')) {
-        toast({
-          title: "Помилка безпеки",
-          description: "Немає прав для видалення автомобіля. Будь ласка, перевірте, чи ви авторизовані.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Помилка бази даних",
-          description: `${error.message}`,
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Помилка бази даних",
+        description: `${error.message}`,
+        variant: "destructive",
+      });
       return false;
     }
 
