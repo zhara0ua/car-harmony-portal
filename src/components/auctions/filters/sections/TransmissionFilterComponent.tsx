@@ -27,50 +27,36 @@ export const TransmissionFilterComponent = ({
     "manual": "Manual"
   };
 
+  // Map backend values to display names
+  const getDisplayName = (backendValue: string) => {
+    if (backendValue === "all_transmissions") {
+      return "Wszystkie skrzynie biegów";
+    }
+    return transmissionMap[backendValue] || backendValue;
+  };
+
   // Map display names back to backend values
-  const getBackendValue = (displayValue: string) => {
-    // Check if it's the "all" option
-    if (displayValue === "Wszystkie skrzynie biegów") {
+  const getBackendValue = (displayName: string) => {
+    if (displayName === "Wszystkie skrzynie biegów") {
       return "all_transmissions";
     }
     
-    // Look up in the map
-    for (const [backendValue, displayName] of Object.entries(transmissionMap)) {
-      if (displayName === displayValue) {
-        return backendValue;
-      }
-    }
-    
-    // If not found, return as is (shouldn't happen with controlled options)
-    return displayValue;
-  };
-
-  // Map backend values to display names
-  const getDisplayName = (value: string) => {
-    // Check if it's the "all" option
-    if (value === "all_transmissions") {
-      return "Wszystkie skrzynie biegów";
-    }
-    
-    // Return the mapped display name or the original value if not found
-    return transmissionMap[value] || value;
+    // Find backend value by display name
+    const entry = Object.entries(transmissionMap).find(([_, display]) => display === displayName);
+    return entry ? entry[0] : displayName;
   };
 
   const handleTransmissionChange = (selectedValue: string) => {
-    // Convert display name to backend value before sending to parent
     const backendValue = getBackendValue(selectedValue);
     console.log(`Transmission selected: ${selectedValue} -> backend value: ${backendValue}`);
     onChange(backendValue);
   };
 
-  // Determine what to display in the select
-  const displayValue = value ? getDisplayName(value) : undefined;
-
   return (
     <div className="space-y-2">
       <Label htmlFor="transmission">Skrzynia biegów</Label>
       <Select 
-        value={displayValue} 
+        value={value ? getDisplayName(value) : undefined} 
         onValueChange={handleTransmissionChange}
       >
         <SelectTrigger id="transmission" className="w-full">
@@ -80,9 +66,9 @@ export const TransmissionFilterComponent = ({
           <SelectItem value="Wszystkie skrzynie biegów">
             Wszystkie skrzynie biegów
           </SelectItem>
-          {transmissions.map((item) => (
-            <SelectItem key={item} value={getDisplayName(item)}>
-              {getDisplayName(item)}
+          {transmissions.map((transmission) => (
+            <SelectItem key={transmission} value={getDisplayName(transmission)}>
+              {getDisplayName(transmission)}
             </SelectItem>
           ))}
         </SelectContent>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,16 +54,14 @@ export const useAuctionFiltering = () => {
       };
       
       if (filters.fuelType && filters.fuelType !== "all_fuel_types") {
-        // Check if the fuel type is a display name and map it to backend value if needed
         const backendFuelType = fuelTypeBackendMap[filters.fuelType] || filters.fuelType;
         console.log(`Applying fuel type filter: ${filters.fuelType} -> ${backendFuelType}`);
         query = query.eq('fuel_type', backendFuelType);
       }
       
       if (filters.transmission && filters.transmission !== "all_transmissions") {
-        // No need to map since we're already using backend values from the component
         console.log(`Applying transmission filter: ${filters.transmission}`);
-        query = query.eq('transmission', filters.transmission);
+        query = query.eq('transmission', filters.transmission.toLowerCase());
       }
       
       // Fetch all matching cars using pagination to bypass 1000 row limit
