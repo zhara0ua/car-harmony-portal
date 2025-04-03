@@ -38,10 +38,11 @@ export const fetchCars = async (): Promise<Car[]> => {
     
     return data || [];
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Невідома помилка";
     console.error('Error fetching cars:', error);
     toast({
       title: "Помилка",
-      description: "Не вдалося завантажити список автомобілів",
+      description: `Не вдалося завантажити список автомобілів: ${errorMessage}`,
       variant: "destructive",
     });
     return [];
@@ -63,7 +64,13 @@ export const fetchCarById = async (id: number): Promise<Car | null> => {
     
     return data as Car;
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Невідома помилка";
     console.error(`Error fetching car with ID ${id}:`, error);
+    toast({
+      title: "Помилка",
+      description: `Не вдалося завантажити дані автомобіля: ${errorMessage}`,
+      variant: "destructive",
+    });
     return null;
   }
 };

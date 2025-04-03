@@ -14,7 +14,7 @@ interface CarFormProps {
 
 export const CarForm = ({ car, onSubmit }: CarFormProps) => {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>(car?.images || (car?.image ? [car.image] : []));
+  const [imagePreviews, setImagePreviews] = useState<string[]>(car?.images && car.images.length > 0 ? car.images : (car?.image ? [car.image] : []));
   const [mainImageIndex, setMainImageIndex] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 

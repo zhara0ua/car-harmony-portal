@@ -4,7 +4,7 @@ import { toast } from "@/hooks/use-toast";
 
 export const deleteCar = async (carId: number): Promise<boolean> => {
   try {
-    // Check admin authentication status from localStorage
+    // Check admin authentication status
     const isAdminAuthenticated = localStorage.getItem("adminAuthenticated") === "true";
     console.log("Admin authentication status when deleting car:", isAdminAuthenticated);
     
@@ -20,7 +20,7 @@ export const deleteCar = async (carId: number): Promise<boolean> => {
     
     console.log("Deleting car with ID:", carId);
     
-    // Use the adminSupabase client for database operations
+    // Delete car from database
     const { error } = await adminSupabase
       .from('cars')
       .delete()
@@ -45,10 +45,11 @@ export const deleteCar = async (carId: number): Promise<boolean> => {
     
     return true;
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Невідома помилка";
     console.error('Error deleting car:', error);
     toast({
       title: "Помилка",
-      description: error instanceof Error ? error.message : "Не вдалося видалити автомобіль",
+      description: `Не вдалося видалити автомобіль: ${errorMessage}`,
       variant: "destructive",
     });
     return false;

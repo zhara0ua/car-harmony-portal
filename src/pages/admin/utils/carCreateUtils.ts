@@ -5,7 +5,7 @@ import { uploadMultipleImages } from "./imageUtils";
 
 export const createCar = async (formData: FormData, imageFiles: File[], mainImageIndex: number): Promise<boolean> => {
   try {
-    // Check admin authentication status from localStorage
+    // Check admin authentication status
     const isAdminAuthenticated = localStorage.getItem("adminAuthenticated") === "true";
     if (!isAdminAuthenticated) {
       console.error("Authentication check failed - user not authenticated");
@@ -17,12 +17,14 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
       return false;
     }
     
+    // Extract form data
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
     const priceString = formData.get('price') as string;
     
-    console.log("Form data received:", { make, model, priceString });
+    console.log("Form data received for car creation:", { make, model, priceString });
     
+    // Validate required fields
     if (!make || !model || !priceString) {
       console.error("Missing required fields:", { make, model, priceString });
       toast({
@@ -33,8 +35,8 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
       return false;
     }
 
+    // Parse and validate price
     const priceNumber = parseInt(priceString.replace(/\s+/g, '').replace(',', '.'));
-    
     if (isNaN(priceNumber)) {
       console.error("Invalid price value:", priceString);
       toast({
@@ -45,15 +47,16 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
       return false;
     }
     
+    // Get mileage
     const mileage = `${formData.get('mileage')}`;
     
-    // Generate a unique ID for the car folder
+    // Generate a unique folder name for car images
     const folderName = `car_${Date.now()}`;
     
     // Upload all image files
     let imageUrls: string[] = [];
     if (imageFiles.length > 0) {
-      console.log("Uploading images:", imageFiles.map(f => f.name));
+      console.log("Uploading car images:", imageFiles.map(f => f.name));
       imageUrls = await uploadMultipleImages(imageFiles, folderName);
       
       if (imageUrls.length === 0) {
@@ -67,7 +70,7 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
       }
     }
 
-    // Collect image URLs from form data
+    // Collect additional image URLs from form data
     for (const [key, value] of formData.entries()) {
       if (key.startsWith('image_url_') && typeof value === 'string' && value.startsWith('http')) {
         imageUrls.push(value);
@@ -91,6 +94,7 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
     // Set the main image (for backward compatibility)
     const mainImage = imageUrls[validMainIndex] || imageUrls[0];
 
+    // Prepare car data
     const newCar = {
       name: `${make} ${model}`,
       make,
@@ -108,8 +112,9 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
       images: imageUrls,
     };
 
-    console.log("Attempting to create new car:", newCar);
+    console.log("Creating new car:", newCar);
 
+    // Insert car into database
     const { data, error } = await adminSupabase
       .from('cars')
       .insert(newCar)
@@ -117,7 +122,7 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
       .single();
     
     if (error) {
-      console.error('Database error:', error);
+      console.error('Database error when creating car:', error);
       toast({
         title: "Помилка бази даних",
         description: `${error.message}`,
@@ -134,10 +139,11 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
 
     return true;
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Невідома помилка";
     console.error('Error adding car:', error);
     toast({
       title: "Помилка",
-      description: error instanceof Error ? error.message : "Не вдалося додати автомобіль",
+      description: `Не вдалося додати автомобіль: ${errorMessage}`,
       variant: "destructive",
     });
     return false;

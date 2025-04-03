@@ -5,7 +5,7 @@ import { uploadMultipleImages } from "./imageUtils";
 
 export const updateCar = async (formData: FormData, carId: number, imageFiles: File[], mainImageIndex: number): Promise<boolean> => {
   try {
-    // Check admin authentication status from localStorage
+    // Check admin authentication status
     const isAdminAuthenticated = localStorage.getItem("adminAuthenticated") === "true";
     if (!isAdminAuthenticated) {
       console.error("Authentication check failed - user not authenticated");
@@ -17,12 +17,14 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
       return false;
     }
     
+    // Extract form data
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
     const priceString = formData.get('price') as string;
     
-    console.log("Updating car data:", { carId, make, model, priceString });
+    console.log("Updating car:", { carId, make, model, priceString });
     
+    // Validate required fields
     if (!make || !model || !priceString) {
       console.error("Missing required fields:", { make, model, priceString });
       toast({
@@ -33,8 +35,8 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
       return false;
     }
 
+    // Parse and validate price
     const priceNumber = parseInt(priceString.replace(/\s+/g, '').replace(',', '.'));
-    
     if (isNaN(priceNumber)) {
       console.error("Invalid price value:", priceString);
       toast({
@@ -47,7 +49,7 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
     
     const mileage = `${formData.get('mileage')}`;
     
-    // Get current car data to access existing images
+    // Fetch current car to get existing images
     const { data: currentCar, error: fetchError } = await adminSupabase
       .from('cars')
       .select('*')
@@ -55,7 +57,7 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
       .single();
     
     if (fetchError) {
-      console.error('Error fetching car data:', fetchError);
+      console.error('Error fetching car data for update:', fetchError);
       throw fetchError;
     }
     
@@ -65,7 +67,7 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
     // Collect all image sources
     let allImageUrls: string[] = [];
     
-    // If there are files to upload, upload them
+    // If there are new files to upload, upload them
     if (imageFiles.length > 0) {
       console.log(`Uploading ${imageFiles.length} new images for car ${carId}`);
       const uploadedImageUrls = await uploadMultipleImages(imageFiles, folderName);
@@ -79,7 +81,7 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
       }
     }
     
-    // Make sure we have at least one image
+    // Use existing images if no new images
     if (allImageUrls.length === 0) {
       allImageUrls = currentCar.images || [];
       
@@ -106,6 +108,7 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
     // Set the main image (for backward compatibility)
     const mainImage = allImageUrls[validMainIndex] || allImageUrls[0];
 
+    // Prepare update data
     const updatedCar = {
       name: `${make} ${model}`,
       make,
@@ -123,15 +126,16 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
       images: allImageUrls,
     };
 
-    console.log("Attempting to update car:", { carId, updatedCar });
+    console.log("Updating car data:", { carId, updatedCar });
 
+    // Update car in database
     const { error } = await adminSupabase
       .from('cars')
       .update(updatedCar)
       .eq('id', carId);
 
     if (error) {
-      console.error('Database error:', error);
+      console.error('Database error when updating car:', error);
       toast({
         title: "Помилка бази даних",
         description: `${error.message}`,
@@ -148,10 +152,11 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
 
     return true;
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Невідома помилка";
     console.error('Error updating car:', error);
     toast({
       title: "Помилка",
-      description: error instanceof Error ? error.message : "Не вдалося оновити дані автомобіля",
+      description: `Не вдалося оновити дані автомобіля: ${errorMessage}`,
       variant: "destructive",
     });
     return false;
