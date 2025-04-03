@@ -28,4 +28,5 @@ export interface AuctionFilters {
   minMileage?: number;
   maxMileage?: number;
   fuelType?: string;
+  transmission?: string;
 }

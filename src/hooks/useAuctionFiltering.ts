@@ -47,6 +47,9 @@ export const useAuctionFiltering = () => {
       if (filters.fuelType && filters.fuelType !== "all_fuel_types") {
         query = query.eq('fuel_type', filters.fuelType);
       }
+      if (filters.transmission && filters.transmission !== "all_transmissions") {
+        query = query.eq('transmission', filters.transmission);
+      }
       
       // Fetch all matching cars using pagination to bypass 1000 row limit
       const fetchAllFilteredCars = async () => {

@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Label } from "@/components/ui/label";
+import React from "react";
+import { AuctionFilters } from "@/types/auction-car";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -10,95 +10,89 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Fuel, Gauge } from "lucide-react";
-import { AuctionFilters } from "@/types/auction-car";
+import { TransmissionFilterComponent } from "./TransmissionFilterComponent";
 
 interface FuelMileageFilterSectionProps {
   fuelType?: string;
   minMileage?: number;
   maxMileage?: number;
-  onFilterChange: (filters: Partial<AuctionFilters>) => void;
+  transmission?: string;
+  onFilterChange: (filters: AuctionFilters) => void;
 }
 
 export const FuelMileageFilterSection = ({
   fuelType,
   minMileage,
   maxMileage,
-  onFilterChange
+  transmission,
+  onFilterChange,
 }: FuelMileageFilterSectionProps) => {
-  const [fuelTypes, setFuelTypes] = useState<string[]>([]);
-  
-  // Load fuel types on component mount
-  useEffect(() => {
-    const fetchFuelTypes = async () => {
-      const { data: fuelData, error: fuelError } = await supabase
-        .from('auction_cars')
-        .select('fuel_type')
-        .not('fuel_type', 'is', null);
-      
-      if (fuelError) {
-        console.error('Error fetching fuel types:', fuelError);
-        return;
-      }
-      
-      // Extract unique fuel types
-      const uniqueFuelTypes = Array.from(
-        new Set(fuelData.map(item => item.fuel_type).filter(Boolean))
-      ).sort() as string[];
-      
-      setFuelTypes(uniqueFuelTypes);
-    };
-    
-    fetchFuelTypes();
-  }, []);
-  
+  // Fuel type options
+  const fuelTypes = [
+    { value: "petrol", label: "Benzyna" },
+    { value: "diesel", label: "Diesel" },
+    { value: "electric", label: "Elektryczny" },
+    { value: "hybrid", label: "Hybryda" },
+    { value: "lpg", label: "LPG" },
+  ];
+
   return (
-    <>
+    <div className="space-y-4">
+      {/* Fuel Type Filter */}
       <div className="space-y-2">
-        <Label htmlFor="fuelType" className="flex items-center gap-1">
-          <Fuel className="h-4 w-4" /> Paliwo
-        </Label>
+        <Label htmlFor="fuel-type">Rodzaj paliwa</Label>
         <Select
           value={fuelType}
           onValueChange={(value) => onFilterChange({ fuelType: value })}
         >
-          <SelectTrigger id="fuelType">
-            <SelectValue placeholder="Wszystkie rodzaje" />
+          <SelectTrigger id="fuel-type">
+            <SelectValue placeholder="Wybierz paliwo" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all_fuel_types">Wszystkie rodzaje</SelectItem>
-            {fuelTypes.map((type) => (
-              <SelectItem key={type} value={type}>
-                {type}
+            <SelectItem value="all_fuel_types">Wszystkie paliwa</SelectItem>
+            {fuelTypes.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
-      
+
+      {/* Transmission Filter */}
+      <TransmissionFilterComponent
+        value={transmission}
+        onChange={(value) => onFilterChange({ transmission: value })}
+      />
+
+      {/* Mileage Range Filters */}
       <div className="space-y-2">
-        <Label htmlFor="minMileage" className="flex items-center gap-1">
-          <Gauge className="h-4 w-4" /> Przebieg od
-        </Label>
-        <Input
-          id="minMileage"
-          type="number"
-          placeholder="0"
-          value={minMileage || ''}
-          onChange={(e) => onFilterChange({ minMileage: e.target.value ? Number(e.target.value) : undefined })}
-        />
+        <Label>Przebieg (km)</Label>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Input
+              type="number"
+              placeholder="Min"
+              value={minMileage || ""}
+              onChange={(e) => {
+                const value = e.target.value ? parseInt(e.target.value) : undefined;
+                onFilterChange({ minMileage: value });
+              }}
+            />
+          </div>
+          <div>
+            <Input
+              type="number"
+              placeholder="Max"
+              value={maxMileage || ""}
+              onChange={(e) => {
+                const value = e.target.value ? parseInt(e.target.value) : undefined;
+                onFilterChange({ maxMileage: value });
+              }}
+            />
+          </div>
+        </div>
       </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="maxMileage">Przebieg do</Label>
-        <Input
-          id="maxMileage"
-          type="number"
-          placeholder="500000"
-          value={maxMileage || ''}
-          onChange={(e) => onFilterChange({ maxMileage: e.target.value ? Number(e.target.value) : undefined })}
-        />
-      </div>
-    </>
+    </div>
   );
 };
