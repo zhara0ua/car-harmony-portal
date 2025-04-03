@@ -8,9 +8,9 @@ const Footer = () => {
             <div>
               <div className="mb-4">
                 <img 
-                  src="/lovable-uploads/c8f9be96-d35e-4886-8360-b609f3786200.png" 
+                  src="/lovable-uploads/40b1e27f-66cd-44c0-8312-7503c9315f53.png" 
                   alt="KRIST IN AUTO" 
-                  className="h-20 bg-white p-2 rounded"
+                  className="h-24 bg-white p-2 rounded"
                 />
               </div>
               <p className="text-gray-300">

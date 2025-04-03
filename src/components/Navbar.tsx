@@ -26,9 +26,9 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center">
             <img 
-              src="/lovable-uploads/c8f9be96-d35e-4886-8360-b609f3786200.png" 
+              src="/lovable-uploads/40b1e27f-66cd-44c0-8312-7503c9315f53.png" 
               alt="KRIST IN AUTO" 
-              className="h-16 md:h-20"
+              className="h-24 md:h-28"
             />
           </Link>
 

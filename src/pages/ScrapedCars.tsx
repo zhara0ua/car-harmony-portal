@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -98,7 +97,7 @@ export default function ScrapedCars() {
             </Button>
           </div>
 
-          <ScrapedCarsFilters onFilterChange={handleFilterChange} />
+          <ScrapedCarsFilters onFiltersChange={handleFilterChange} />
 
           {isLoading ? (
             <div className="text-center py-8">
