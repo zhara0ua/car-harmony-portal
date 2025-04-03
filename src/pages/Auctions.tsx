@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -33,7 +32,7 @@ export default function Auctions() {
 
   useEffect(() => {
     // Check if the user has already registered
-    const hasRegistered = localStorage.getItem('auctionRegistered') === 'true';
+    const hasRegistered = localStorage.getItem('auction_registration_completed') === 'true';
     
     if (!hasRegistered) {
       // Show the registration dialog if not registered
@@ -83,7 +82,8 @@ export default function Auctions() {
       />
 
       <AuctionRegistrationDialog
-        isOpen={showRegistrationDialog}
+        open={showRegistrationDialog}
+        onOpenChange={setShowRegistrationDialog}
         onRegistrationComplete={handleRegistrationComplete}
       />
     </div>
