@@ -15,10 +15,23 @@ interface AuctionFileUploaderProps {
 export const AuctionFileUploader = ({ onUploadSuccess }: AuctionFileUploaderProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+  const MAX_CARS = 100000; // 100,000 cars
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast({
+        title: "Błąd",
+        description: `Plik jest za duży. Maksymalny rozmiar to ${MAX_FILE_SIZE / (1024 * 1024)}MB`,
+        variant: "destructive",
+      });
+      event.target.value = '';
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -32,11 +45,27 @@ export const AuctionFileUploader = ({ onUploadSuccess }: AuctionFileUploaderProp
           // Handle both array and single object formats
           const rawCars = Array.isArray(jsonData) ? jsonData : [jsonData];
           
+          // Check number of cars
+          if (rawCars.length > MAX_CARS) {
+            toast({
+              title: "Błąd",
+              description: `Zbyt wiele samochodów w pliku. Maksymalna liczba to ${MAX_CARS}`,
+              variant: "destructive",
+            });
+            event.target.value = '';
+            return;
+          }
+          
           // Transform the JSON data to match our database structure
           const cars = rawCars.map(car => {
             // Handle price conversion - convert to number and multiply by 1000 if less than 100
             // This handles cases where price might be in thousands (e.g., 11.8 for €11,800)
             let price = car.price || 0;
+            if (typeof price === 'string') {
+              // Try to parse string price to number
+              price = parseFloat(price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+            }
+            
             if (typeof price === 'number' && price < 100) {
               price = Math.round(price * 1000);
             }
@@ -99,12 +128,12 @@ export const AuctionFileUploader = ({ onUploadSuccess }: AuctionFileUploaderProp
           
           // Validate each car
           for (const car of cars) {
-            if (!car.title || !car.external_url || car.start_price === undefined) {
-              throw new Error("Each car must have title, start_price, and external_url");
+            if (!car.title || !car.external_url) {
+              throw new Error("Each car must have title and external_url");
             }
           }
           
-          console.log("Processed cars:", cars);
+          console.log("Processed cars:", cars.length);
           
           // Delete existing cars if there are any in the import
           if (cars.length > 0) {
@@ -122,19 +151,31 @@ export const AuctionFileUploader = ({ onUploadSuccess }: AuctionFileUploaderProp
             console.log("Successfully deleted existing auction cars");
           }
           
-          // Insert new cars
+          // Insert new cars - handle in batches of 1000 to avoid payload size limitations
           if (cars.length > 0) {
-            console.log("Inserting new auction cars:", cars.length);
-            const { error: insertError } = await supabase
-              .from('auction_cars')
-              .insert(cars);
+            const BATCH_SIZE = 1000;
+            const batches = Math.ceil(cars.length / BATCH_SIZE);
             
-            if (insertError) {
-              console.error("Error inserting new cars:", insertError);
-              throw insertError;
+            console.log(`Inserting ${cars.length} cars in ${batches} batches`);
+            
+            for (let i = 0; i < batches; i++) {
+              const start = i * BATCH_SIZE;
+              const end = Math.min(start + BATCH_SIZE, cars.length);
+              const batch = cars.slice(start, end);
+              
+              console.log(`Inserting batch ${i+1}/${batches} (${batch.length} cars)`);
+              
+              const { error: insertError } = await supabase
+                .from('auction_cars')
+                .insert(batch);
+              
+              if (insertError) {
+                console.error("Error inserting cars batch:", insertError);
+                throw insertError;
+              }
             }
             
-            console.log("Successfully inserted new auction cars");
+            console.log("Successfully inserted all auction cars");
           }
           
           toast({
@@ -204,7 +245,8 @@ export const AuctionFileUploader = ({ onUploadSuccess }: AuctionFileUploaderProp
         </div>
         
         <div className="text-sm text-muted-foreground">
-          Uwaga: Wczytanie nowego pliku spowoduje usunięcie wszystkich istniejących danych.
+          Uwaga: Wczytanie nowego pliku spowoduje usunięcie wszystkich istniejących danych. 
+          Maksymalny rozmiar pliku: 100MB, maksymalna liczba samochodów: 100,000.
         </div>
       </CardContent>
     </Card>
