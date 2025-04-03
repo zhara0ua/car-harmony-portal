@@ -23,8 +23,8 @@ export const TransmissionFilterComponent = ({
   
   // Transmission mapping - backend values to display names
   const transmissionMap: Record<string, string> = {
-    "automatic": "Automat",
-    "manual": "Manual"
+    "Automatic": "Automatic",
+    "Manual": "Manual"
   };
 
   // Map backend values to display names
@@ -44,7 +44,7 @@ export const TransmissionFilterComponent = ({
     
     // Special case for "Manual"
     if (displayName === "Manual") {
-      return "manual";
+      return "Manual";
     }
     
     // Special case for "Automat"
@@ -84,7 +84,7 @@ export const TransmissionFilterComponent = ({
             Wszystkie skrzynie biegów
           </SelectItem>
           <SelectItem value="Manual">Manual</SelectItem>
-          <SelectItem value="Automat">Automat</SelectItem>
+          <SelectItem value="Automatic">Automatic</SelectItem>
           {transmissions
             .filter(t => t.toLowerCase() !== "manual" && t.toLowerCase() !== "automatic")
             .map((transmission) => (
