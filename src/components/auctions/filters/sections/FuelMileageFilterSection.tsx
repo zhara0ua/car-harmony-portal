@@ -27,7 +27,7 @@ export const FuelMileageFilterSection = ({
   transmission,
   onFilterChange,
 }: FuelMileageFilterSectionProps) => {
-  // Fuel type options
+  // Fuel type options with mapping between display name and backend value
   const fuelTypes = [
     { value: "petrol", label: "Benzyna" },
     { value: "diesel", label: "Diesel" },
@@ -35,6 +35,13 @@ export const FuelMileageFilterSection = ({
     { value: "hybrid", label: "Hybryda" },
     { value: "lpg", label: "LPG" },
   ];
+
+  // Get display label from value
+  const getFuelTypeLabel = (value?: string) => {
+    if (!value || value === 'all_fuel_types') return undefined;
+    const fuelType = fuelTypes.find(fuel => fuel.value === value);
+    return fuelType ? fuelType.value : value;
+  };
 
   return (
     <div className="space-y-4">
