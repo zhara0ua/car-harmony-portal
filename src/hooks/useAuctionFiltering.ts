@@ -60,22 +60,23 @@ export const useAuctionFiltering = () => {
         query = query.eq('fuel_type', backendFuelType);
       }
       
-      // Special handling for transmission
+      // Handle transmission filter specifically
       if (filters.transmission && filters.transmission !== "all_transmissions") {
-        console.log(`Applying transmission filter, raw value: "${filters.transmission}"`);
+        console.log(`Applying transmission filter: "${filters.transmission}"`);
         
-        // Handle manual/automatic case specially
         let transmissionValue: string;
         
-        if (filters.transmission.toLowerCase() === "manual") {
+        // Exact matches for our special cases
+        if (filters.transmission === "manual") {
           transmissionValue = "manual";
-          console.log(`Setting transmission filter to lowercase "manual"`);
-        } else if (filters.transmission.toLowerCase() === "automatic") {
+          console.log(`Using exact transmission value: "manual"`);
+        } else if (filters.transmission === "automatic") {
           transmissionValue = "automatic";
-          console.log(`Setting transmission filter to lowercase "automatic"`);
+          console.log(`Using exact transmission value: "automatic"`);
         } else {
+          // For any other value, use it as-is but lowercase
           transmissionValue = filters.transmission.toLowerCase();
-          console.log(`Converted transmission value to lowercase: "${transmissionValue}"`);
+          console.log(`Using transmission value as lowercase: "${transmissionValue}"`);
         }
         
         query = query.eq('transmission', transmissionValue);
