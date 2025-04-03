@@ -48,7 +48,8 @@ export const useAuctionFiltering = () => {
       // Apply fuel type filter
       if (filters.fuelType && filters.fuelType !== "all_fuel_types") {
         console.log(`Applying fuel type filter: ${filters.fuelType}`);
-        query = query.eq('fuel_type', filters.fuelType);
+        // Make the filter case-insensitive for fuel type
+        query = query.ilike('fuel_type', filters.fuelType);
       }
       
       // Handle transmission filter specifically

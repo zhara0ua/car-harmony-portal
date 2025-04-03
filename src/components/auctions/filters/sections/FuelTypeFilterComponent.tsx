@@ -45,6 +45,11 @@ export const FuelTypeFilterComponent = ({
       return "all_fuel_types";
     }
     
+    // Special case for "Diesel" - preserve exact case in database
+    if (displayValue === "Diesel") {
+      return "diesel";
+    }
+    
     // For other display values, find the corresponding backend value
     for (const [backendValue, displayName] of Object.entries(fuelTypeMap)) {
       if (displayName === displayValue) {
