@@ -123,7 +123,10 @@ export const useAuctionFiltering = () => {
 
   const handleFilterChange = (newFilters: AuctionFilters) => {
     console.log('Applying new filters:', newFilters);
-    setFilters(newFilters);
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      ...newFilters
+    }));
     setCurrentPage(1); // Reset to first page when filters change
   };
 

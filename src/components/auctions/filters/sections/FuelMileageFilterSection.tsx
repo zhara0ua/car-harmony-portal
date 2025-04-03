@@ -27,20 +27,39 @@ export const FuelMileageFilterSection = ({
   transmission,
   onFilterChange,
 }: FuelMileageFilterSectionProps) => {
-  // Fuel type options with mapping between display name and backend value
-  const fuelTypes = [
-    { value: "petrol", label: "Benzyna" },
-    { value: "diesel", label: "Diesel" },
-    { value: "electric", label: "Elektryczny" },
-    { value: "hybrid", label: "Hybryda" },
-    { value: "lpg", label: "LPG" },
-  ];
+  // Fuel type mapping between display names and backend values
+  const fuelTypeMap = {
+    "petrol": "Benzyna",
+    "diesel": "Diesel",
+    "electric": "Elektryczny",
+    "hybrid": "Hybryda",
+    "lpg": "LPG"
+  };
 
-  // Get display label from value
-  const getFuelTypeLabel = (value?: string) => {
+  // Function to get the display name from backend value
+  const getDisplayName = (value?: string) => {
     if (!value || value === 'all_fuel_types') return undefined;
-    const fuelType = fuelTypes.find(fuel => fuel.value === value);
-    return fuelType ? fuelType.value : value;
+    return fuelTypeMap[value as keyof typeof fuelTypeMap] || value;
+  };
+
+  // Function to get the backend value from display name
+  const getBackendValue = (displayValue: string) => {
+    for (const [backendValue, displayName] of Object.entries(fuelTypeMap)) {
+      if (displayName === displayValue) {
+        return backendValue;
+      }
+    }
+    return displayValue;
+  };
+
+  const handleFuelTypeChange = (displayValue: string) => {
+    if (displayValue === "all_fuel_types") {
+      onFilterChange({ fuelType: displayValue });
+    } else {
+      // Convert display name to backend value
+      const backendValue = getBackendValue(displayValue);
+      onFilterChange({ fuelType: backendValue });
+    }
   };
 
   return (
@@ -49,17 +68,17 @@ export const FuelMileageFilterSection = ({
       <div className="space-y-2">
         <Label htmlFor="fuel-type">Rodzaj paliwa</Label>
         <Select
-          value={fuelType}
-          onValueChange={(value) => onFilterChange({ fuelType: value })}
+          value={fuelType === "all_fuel_types" ? fuelType : getDisplayName(fuelType)}
+          onValueChange={handleFuelTypeChange}
         >
           <SelectTrigger id="fuel-type" className="w-full">
             <SelectValue placeholder="Wybierz paliwo" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all_fuel_types">Wszystkie paliwa</SelectItem>
-            {fuelTypes.map((item) => (
-              <SelectItem key={item.value} value={item.value}>
-                {item.label}
+            {Object.entries(fuelTypeMap).map(([backendValue, displayName]) => (
+              <SelectItem key={backendValue} value={displayName}>
+                {displayName}
               </SelectItem>
             ))}
           </SelectContent>
