@@ -1,11 +1,12 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AuctionFilters } from "@/components/auctions/AuctionFilters";
 import { AuctionSorting } from "@/components/auctions/AuctionSorting";
 import { AuctionsContent } from "@/components/auctions/AuctionsContent";
 import { AuctionErrorDialog } from "@/components/auctions/AuctionErrorDialog";
+import { AuctionRegistrationDialog } from "@/components/auctions/AuctionRegistrationDialog";
 import { useAuctionFiltering } from "@/hooks/useAuctionFiltering";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -28,6 +29,21 @@ export default function Auctions() {
   } = useAuctionFiltering();
 
   const isMobile = useIsMobile();
+  const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
+
+  useEffect(() => {
+    // Check if the user has already registered
+    const hasRegistered = localStorage.getItem('auctionRegistered') === 'true';
+    
+    if (!hasRegistered) {
+      // Show the registration dialog if not registered
+      setShowRegistrationDialog(true);
+    }
+  }, []);
+
+  const handleRegistrationComplete = () => {
+    setShowRegistrationDialog(false);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -64,6 +80,11 @@ export default function Auctions() {
         isOpen={isErrorDialogOpen}
         errorMessage={errorMessage}
         onClose={() => setIsErrorDialogOpen(false)}
+      />
+
+      <AuctionRegistrationDialog
+        isOpen={showRegistrationDialog}
+        onRegistrationComplete={handleRegistrationComplete}
       />
     </div>
   );

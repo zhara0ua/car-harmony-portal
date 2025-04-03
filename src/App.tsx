@@ -15,6 +15,7 @@ import AdminInspections from "@/pages/admin/Inspections";
 import AdminSettings from "@/pages/admin/Settings";
 import AdminStatistics from "@/pages/admin/Statistics";
 import AdminAuctionCars from "@/pages/admin/AuctionCars";
+import AdminAuctionRegistrations from "@/pages/admin/AuctionRegistrations";
 import AdminLogin from "@/pages/admin/Login";
 import { AdminAuthGuard } from "@/components/admin/AdminAuthGuard";
 import ScrapedCars from "@/pages/ScrapedCars";
@@ -49,6 +50,7 @@ function App() {
             <Route path="settings" element={<AdminSettings />} />
             <Route path="statistics" element={<AdminStatistics />} />
             <Route path="auction-cars" element={<AdminAuctionCars />} />
+            <Route path="auction-registrations" element={<AdminAuctionRegistrations />} />
           </Route>
         </Route>
         
