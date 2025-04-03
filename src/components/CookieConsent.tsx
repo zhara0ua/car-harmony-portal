@@ -43,7 +43,7 @@ export const CookieConsent = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
           <div className="flex-1 pr-4">
             <h3 className="text-lg font-medium mb-1 text-white">
-              {isPolish ? "Ta strona używa plików cookie" : "This site uses cookies"}
+              {isPolish ? <span className="text-white">Ta strona używa plików cookie</span> : "This site uses cookies"}
             </h3>
             <p className="text-sm text-white mb-4 md:mb-0">
               {isPolish 
