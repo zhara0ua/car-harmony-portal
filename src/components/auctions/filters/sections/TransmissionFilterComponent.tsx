@@ -43,12 +43,14 @@ export const TransmissionFilterComponent = ({
     
     // Find backend value by display name
     const entry = Object.entries(transmissionMap).find(([_, display]) => display === displayName);
+    console.log(`Finding backend value for "${displayName}". Result:`, entry);
     return entry ? entry[0] : displayName;
   };
 
   const handleTransmissionChange = (selectedValue: string) => {
     const backendValue = getBackendValue(selectedValue);
     console.log(`Transmission selected: ${selectedValue} -> backend value: ${backendValue}`);
+    console.log(`Setting transmission filter: ${backendValue}`);
     onChange(backendValue);
   };
 

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,7 +62,9 @@ export const useAuctionFiltering = () => {
       
       if (filters.transmission && filters.transmission !== "all_transmissions") {
         console.log(`Applying transmission filter: ${filters.transmission}`);
-        query = query.eq('transmission', filters.transmission.toLowerCase());
+        // Ensure we're using lowercase 'manual' or 'automatic' to match the database
+        const transmissionValue = filters.transmission.toLowerCase();
+        query = query.eq('transmission', transmissionValue);
       }
       
       // Fetch all matching cars using pagination to bypass 1000 row limit
