@@ -29,9 +29,9 @@ const Cars = () => {
     loadCars();
   }, []);
 
-  const handleAdd = async (e: React.FormEvent<HTMLFormElement>, imageFile: File | null) => {
+  const handleAdd = async (e: React.FormEvent<HTMLFormElement>, imageFiles: File[], mainImageIndex: number) => {
     e.preventDefault();
-    const success = await createCar(new FormData(e.target as HTMLFormElement), imageFile);
+    const success = await createCar(new FormData(e.target as HTMLFormElement), imageFiles, mainImageIndex);
     if (success) {
       setIsAddDialogOpen(false);
       loadCars();
@@ -43,11 +43,11 @@ const Cars = () => {
     setEditingCar(car);
   };
 
-  const handleSave = async (e: React.FormEvent<HTMLFormElement>, imageFile: File | null) => {
+  const handleSave = async (e: React.FormEvent<HTMLFormElement>, imageFiles: File[], mainImageIndex: number) => {
     e.preventDefault();
     if (!editingCar) return;
 
-    const success = await updateCar(new FormData(e.target as HTMLFormElement), editingCar.id, imageFile);
+    const success = await updateCar(new FormData(e.target as HTMLFormElement), editingCar.id, imageFiles, mainImageIndex);
     if (success) {
       setEditingCar(null);
       loadCars();
@@ -72,7 +72,7 @@ const Cars = () => {
               Додати автомобіль
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Додати автомобіль</DialogTitle>
             </DialogHeader>

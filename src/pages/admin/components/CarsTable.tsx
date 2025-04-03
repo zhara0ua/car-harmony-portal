@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Images } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -29,12 +29,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { CarForm } from "./CarForm";
 import { Car } from "../types/car";
+import { Badge } from "@/components/ui/badge";
 
 interface CarsTableProps {
   cars: Car[];
   onEdit: (car: Car) => void;
   onDelete: (carId: number) => Promise<void>;
-  onSave: (e: React.FormEvent<HTMLFormElement>, imageFile: File | null) => Promise<void>;
+  onSave: (e: React.FormEvent<HTMLFormElement>, imageFiles: File[], mainImageIndex: number) => Promise<void>;
   editingCar: Car | null;
 }
 
@@ -49,6 +50,7 @@ export const CarsTable = ({ cars, onEdit, onDelete, onSave, editingCar }: CarsTa
           <TableHead>Модель</TableHead>
           <TableHead>Рік</TableHead>
           <TableHead>Ціна</TableHead>
+          <TableHead>Фото</TableHead>
           <TableHead>Дії</TableHead>
         </TableRow>
       </TableHeader>
@@ -61,6 +63,16 @@ export const CarsTable = ({ cars, onEdit, onDelete, onSave, editingCar }: CarsTa
             <TableCell>{car.model}</TableCell>
             <TableCell>{car.year}</TableCell>
             <TableCell>{car.price}</TableCell>
+            <TableCell>
+              {car.images && car.images.length > 0 ? (
+                <Badge variant="outline" className="flex items-center">
+                  <Images className="h-3 w-3 mr-1" />
+                  {car.images.length}
+                </Badge>
+              ) : (
+                <Badge variant="outline">1</Badge>
+              )}
+            </TableCell>
             <TableCell className="space-x-2">
               <Dialog>
                 <DialogTrigger asChild>
@@ -68,7 +80,7 @@ export const CarsTable = ({ cars, onEdit, onDelete, onSave, editingCar }: CarsTa
                     <Pencil className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Редагувати автомобіль</DialogTitle>
                   </DialogHeader>

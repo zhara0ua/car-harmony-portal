@@ -30,9 +30,9 @@ export const fetchCars = async () => {
   }
 };
 
-const uploadImage = async (file: File): Promise<string | null> => {
+const uploadImage = async (file: File, folderName: string): Promise<string | null> => {
   try {
-    const filename = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+    const filename = `${folderName}/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
     const { data, error } = await supabase.storage
       .from('cars')
       .upload(filename, file);
@@ -55,31 +55,48 @@ const uploadImage = async (file: File): Promise<string | null> => {
   }
 };
 
-export const createCar = async (formData: FormData, imageFile: File | null): Promise<boolean> => {
+const uploadMultipleImages = async (files: File[], carId: string): Promise<string[]> => {
+  const uploadPromises = files.map(file => uploadImage(file, carId));
+  const results = await Promise.all(uploadPromises);
+  return results.filter((url): url is string => url !== null);
+};
+
+export const createCar = async (formData: FormData, imageFiles: File[], mainImageIndex: number): Promise<boolean> => {
   try {
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
     const priceNumber = parseInt(formData.get('price') as string);
     const mileage = `${formData.get('mileage')}`;
     
-    // Handle image upload or use provided URL
-    let imageUrl = formData.get('image') as string;
+    // Generate a unique ID for the car folder
+    const folderName = `car_${Date.now()}`;
     
-    if (imageFile) {
-      const uploadedUrl = await uploadImage(imageFile);
-      if (uploadedUrl) {
-        imageUrl = uploadedUrl;
+    // Upload all images
+    let imageUrls: string[] = [];
+    if (imageFiles.length > 0) {
+      imageUrls = await uploadMultipleImages(imageFiles, folderName);
+      if (imageUrls.length === 0) {
+        toast({
+          title: "Увага",
+          description: "Не вдалося завантажити жодне зображення",
+          variant: "destructive",
+        });
+        return false;
       }
     }
 
-    if (!imageUrl) {
+    // Make sure we have at least one image
+    if (imageUrls.length === 0) {
       toast({
         title: "Увага",
-        description: "Необхідно вказати URL зображення або завантажити файл",
+        description: "Необхідно завантажити хоча б одне зображення",
         variant: "destructive",
       });
       return false;
     }
+
+    // Set the main image (for backward compatibility)
+    const mainImage = imageUrls[mainImageIndex] || imageUrls[0];
 
     const newCar = {
       name: `${make} ${model}`,
@@ -94,7 +111,8 @@ export const createCar = async (formData: FormData, imageFile: File | null): Pro
       fuel_type: formData.get('fuel_type') as string,
       engine_size: formData.get('engine_size') as string,
       engine_power: formData.get('engine_power') as string,
-      image: imageUrl,
+      image: mainImage,
+      images: imageUrls,
     };
 
     const { error } = await supabase.from('cars').insert(newCar);
@@ -117,22 +135,51 @@ export const createCar = async (formData: FormData, imageFile: File | null): Pro
   }
 };
 
-export const updateCar = async (formData: FormData, carId: number, imageFile: File | null): Promise<boolean> => {
+export const updateCar = async (formData: FormData, carId: number, imageFiles: File[], mainImageIndex: number): Promise<boolean> => {
   try {
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
     const priceNumber = parseInt(formData.get('price') as string);
     const mileage = `${formData.get('mileage')}`;
     
-    // Handle image upload or use provided URL
-    let imageUrl = formData.get('image') as string;
+    // Get current car data to access existing images
+    const { data: currentCar, error: fetchError } = await supabase
+      .from('cars')
+      .select('*')
+      .eq('id', carId)
+      .single();
     
-    if (imageFile) {
-      const uploadedUrl = await uploadImage(imageFile);
-      if (uploadedUrl) {
-        imageUrl = uploadedUrl;
-      }
+    if (fetchError) throw fetchError;
+    
+    // Create a folder name based on car ID
+    const folderName = `car_${carId}`;
+    
+    // Combine existing images with new ones
+    let allImageUrls: string[] = currentCar.images || [];
+    
+    // If no images array but has image property, initialize with it
+    if (!allImageUrls.length && currentCar.image) {
+      allImageUrls = [currentCar.image];
     }
+    
+    // Upload new images if any
+    if (imageFiles.length > 0) {
+      const newImageUrls = await uploadMultipleImages(imageFiles, folderName);
+      allImageUrls = [...allImageUrls, ...newImageUrls];
+    }
+    
+    // Make sure we have at least one image
+    if (allImageUrls.length === 0) {
+      toast({
+        title: "Увага",
+        description: "Необхідно мати хоча б одне зображення",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    // Set the main image (for backward compatibility)
+    const mainImage = allImageUrls[mainImageIndex] || allImageUrls[0];
 
     const updatedCar = {
       name: `${make} ${model}`,
@@ -147,7 +194,8 @@ export const updateCar = async (formData: FormData, carId: number, imageFile: Fi
       fuel_type: formData.get('fuel_type') as string,
       engine_size: formData.get('engine_size') as string,
       engine_power: formData.get('engine_power') as string,
-      image: imageUrl,
+      image: mainImage,
+      images: allImageUrls,
     };
 
     const { error } = await supabase

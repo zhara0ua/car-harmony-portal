@@ -14,4 +14,5 @@ export interface Car {
   engine_size: string;
   engine_power: string;
   image: string;
+  images?: string[];
 }

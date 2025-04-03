@@ -10,17 +10,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Car } from "../types/car";
-import { useState } from "react";
-import { Upload, Image as ImageIcon } from "lucide-react";
+import { useState, useRef } from "react";
+import { Upload, Image as ImageIcon, X, Plus } from "lucide-react";
 
 interface CarFormProps {
   car?: Car;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>, imageFile?: File | null) => Promise<void>;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>, imageFiles: File[], mainImageIndex: number) => Promise<void>;
 }
 
 export const CarForm = ({ car, onSubmit }: CarFormProps) => {
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(car?.image || null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>(car?.images || (car?.image ? [car.image] : []));
+  const [mainImageIndex, setMainImageIndex] = useState<number>(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Extract numeric price value from formatted price string
   const getNumericPrice = () => {
@@ -29,17 +31,53 @@ export const CarForm = ({ car, onSubmit }: CarFormProps) => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newFiles: File[] = [...imageFiles];
+    const newPreviews: string[] = [...imagePreviews];
+
+    Array.from(files).forEach(file => {
+      newFiles.push(file);
       const objectUrl = URL.createObjectURL(file);
-      setImagePreview(objectUrl);
+      newPreviews.push(objectUrl);
+    });
+
+    setImageFiles(newFiles);
+    setImagePreviews(newPreviews);
+
+    // Reset the file input to allow selecting the same files again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
+  };
+
+  const removeImage = (index: number) => {
+    const newFiles = [...imageFiles];
+    const newPreviews = [...imagePreviews];
+
+    // Remove the file and preview at the specified index
+    newFiles.splice(index, 1);
+    newPreviews.splice(index, 1);
+
+    setImageFiles(newFiles);
+    setImagePreviews(newPreviews);
+
+    // Adjust main image index if needed
+    if (index === mainImageIndex) {
+      setMainImageIndex(0);
+    } else if (index < mainImageIndex) {
+      setMainImageIndex(mainImageIndex - 1);
+    }
+  };
+
+  const setAsMainImage = (index: number) => {
+    setMainImageIndex(index);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await onSubmit(e, imageFile);
+    await onSubmit(e, imageFiles, mainImageIndex);
   };
 
   return (
@@ -132,9 +170,9 @@ export const CarForm = ({ car, onSubmit }: CarFormProps) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="image">Фото автомобіля</Label>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
+        <Label htmlFor="images">Фото автомобіля</Label>
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center gap-4">
             <Input 
               id="image_upload" 
               name="image_upload" 
@@ -142,37 +180,68 @@ export const CarForm = ({ car, onSubmit }: CarFormProps) => {
               accept="image/*"
               onChange={handleFileChange}
               className="hidden"
+              ref={fileInputRef}
+              multiple
             />
             <Label 
               htmlFor="image_upload" 
-              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-md cursor-pointer hover:bg-muted transition-colors"
+              className="flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90 transition-colors"
             >
-              <Upload className="mb-2" />
-              <span className="text-sm">Натисніть для вибору файлу</span>
+              <Upload className="mr-2 h-4 w-4" />
+              <span>Вибрати файли</span>
             </Label>
-            {!imagePreview && (
-              <Input 
-                id="image" 
-                name="image" 
-                placeholder="або вставте URL зображення" 
-                defaultValue={car?.image}
-                className="mt-2" 
-              />
-            )}
+            <span className="text-sm text-muted-foreground">
+              Виберіть до 40 зображень (Головне зображення буде відмічено зеленою рамкою)
+            </span>
           </div>
-          <div className="flex items-center justify-center h-32 bg-muted rounded-md overflow-hidden">
-            {imagePreview ? (
-              <img 
-                src={imagePreview} 
-                alt="Попередній перегляд" 
-                className="max-h-full max-w-full object-contain" 
-              />
-            ) : (
+
+          {imagePreviews.length === 0 && (
+            <div className="flex items-center justify-center h-32 bg-muted rounded-md overflow-hidden">
               <div className="flex flex-col items-center text-muted-foreground">
                 <ImageIcon className="h-8 w-8 mb-2" />
-                <span className="text-sm">Попередній перегляд</span>
+                <span className="text-sm">Немає зображень</span>
               </div>
-            )}
+            </div>
+          )}
+
+          <div className="grid grid-cols-5 gap-4 mt-4">
+            {imagePreviews.map((preview, index) => (
+              <div 
+                key={index} 
+                className={`relative group h-40 bg-muted rounded-md overflow-hidden ${index === mainImageIndex ? 'ring-2 ring-green-500' : ''}`}
+              >
+                <img 
+                  src={preview} 
+                  alt={`Preview ${index + 1}`}
+                  className="h-full w-full object-cover" 
+                />
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <Button 
+                    type="button" 
+                    size="sm" 
+                    variant="secondary"
+                    onClick={() => setAsMainImage(index)}
+                    title="Встановити як головне"
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    type="button" 
+                    size="sm" 
+                    variant="destructive"
+                    onClick={() => removeImage(index)}
+                    title="Видалити"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                {index === mainImageIndex && (
+                  <div className="absolute bottom-1 right-1 bg-green-500 text-white text-xs px-1 rounded">
+                    Головне
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>
