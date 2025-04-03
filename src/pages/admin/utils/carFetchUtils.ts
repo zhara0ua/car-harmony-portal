@@ -33,6 +33,7 @@ export const fetchCars = async () => {
     console.log("Fetched cars count:", data?.length);
     console.log("Sample car data:", data?.[0]);
 
+    // Fix formatting of car data
     const formattedCars = data?.map(car => ({
       ...car,
       price: car.price || `${car.price_number.toLocaleString()} zł`,
