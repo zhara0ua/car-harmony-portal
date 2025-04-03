@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +60,19 @@ export const AuctionFileUploader = ({ onUploadSuccess, onSuccess }: AuctionFileU
             return;
           }
           
+          // First, validate all cars before processing
+          const invalidCars = rawCars.filter(car => !car.title || !car.detailUrl);
+          if (invalidCars.length > 0) {
+            toast({
+              title: "Błąd walidacji",
+              description: `${invalidCars.length} samochód(ów) nie ma wymaganego tytułu lub URL. Każdy samochód musi posiadać title i detailUrl.`,
+              variant: "destructive",
+            });
+            event.target.value = '';
+            setIsLoading(false);
+            return;
+          }
+          
           const cars = rawCars.map(car => {
             let price = car.price || 0;
             
@@ -114,17 +128,11 @@ export const AuctionFileUploader = ({ onUploadSuccess, onSuccess }: AuctionFileU
               transmission: car.transmission,
               location: car.country || "Unknown",
               image_url: car.imageSrc,
-              external_url: car.detailUrl || "#",
+              external_url: car.detailUrl,
               end_date: endDate,
               status: "active"
             };
           });
-          
-          for (const car of cars) {
-            if (!car.title || !car.external_url) {
-              throw new Error("Each car must have title and external_url");
-            }
-          }
           
           console.log("Processed cars:", cars.length);
           
@@ -180,6 +188,9 @@ export const AuctionFileUploader = ({ onUploadSuccess, onSuccess }: AuctionFileU
             description: error instanceof Error ? error.message : "Nie udało się przetworzyć pliku JSON",
             variant: "destructive",
           });
+        } finally {
+          setIsLoading(false);
+          event.target.value = '';
         }
       };
       
@@ -191,7 +202,6 @@ export const AuctionFileUploader = ({ onUploadSuccess, onSuccess }: AuctionFileU
         description: "Wystąpił błąd podczas wczytywania pliku",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
       event.target.value = '';
     }
@@ -231,6 +241,7 @@ export const AuctionFileUploader = ({ onUploadSuccess, onSuccess }: AuctionFileU
       <div className="text-sm text-muted-foreground">
         Uwaga: Wczytanie nowego pliku spowoduje usunięcie wszystkich istniejących danych. 
         Maksymalny rozmiar pliku: 100MB, maksymalna liczba samochodów: 100,000.
+        Każdy samochód musi posiadać tytuł (title) i URL ogłoszenia (detailUrl).
       </div>
     </div>
   );

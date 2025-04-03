@@ -111,8 +111,8 @@ Deno.serve(async (req) => {
         endDate.setDate(endDate.getDate() + Math.floor(Math.random() * 7) + 1);
         
         return {
-          external_id: externalId,
-          title,
+          external_id: externalId || `openlane-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`,
+          title: title || 'Unknown Vehicle', // Provide default title if missing
           start_price: price,
           current_price: price,
           year,
@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
           transmission,
           location: 'Openlane EU',
           image_url: imageUrl,
-          external_url: externalUrl,
+          external_url: externalUrl || `https://www.openlane.eu/en/findcar`, // Provide default URL if missing
           end_date: endDate.toISOString(),
           status: 'active'
         };
@@ -136,11 +136,19 @@ Deno.serve(async (req) => {
     await browser.close();
     console.log('Browser closed');
     
-    if (cars.length > 0) {
+    // Filter out any cars missing required fields
+    const validCars = cars.filter(car => car.title && car.external_url);
+    const invalidCount = cars.length - validCars.length;
+    
+    if (invalidCount > 0) {
+      console.warn(`Filtered out ${invalidCount} cars with missing title or external_url`);
+    }
+    
+    if (validCars.length > 0) {
       // Store the scraped cars in the database
       const { data: insertData, error: insertError } = await supabaseAdmin
         .from('auction_cars')
-        .upsert(cars, { 
+        .upsert(validCars, { 
           onConflict: 'external_id',
           ignoreDuplicates: false
         });
@@ -152,14 +160,15 @@ Deno.serve(async (req) => {
       
       console.log('Cars successfully stored in the database');
     } else {
-      console.warn('No cars found during scraping');
+      console.warn('No valid cars found during scraping');
     }
 
     return new Response(
       JSON.stringify({
         success: true,
         message: 'Dane z aukcji zostały zaktualizowane',
-        count: cars.length
+        count: validCars.length,
+        filtered: invalidCount
       }),
       { 
         status: 200,
