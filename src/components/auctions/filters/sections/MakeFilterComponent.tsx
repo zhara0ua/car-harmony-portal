@@ -27,21 +27,50 @@ export const MakeFilterComponent = ({
     const fetchMakes = async () => {
       setIsLoading(true);
       try {
-        const { data: makesData, error: makesError } = await supabase
-          .from('auction_cars')
-          .select('make')
-          .not('make', 'is', null);
+        // Fetch all makes using pagination to get all results
+        const fetchAllMakes = async () => {
+          const PAGE_SIZE = 1000; // Supabase's max rows per request
+          let allMakes = new Set<string>();
+          let page = 0;
+          let hasMore = true;
+          
+          while (hasMore) {
+            const from = page * PAGE_SIZE;
+            const to = from + PAGE_SIZE - 1;
+            
+            console.log(`Fetching makes page ${page + 1}, rows ${from} to ${to}`);
+            
+            const { data, error, count } = await supabase
+              .from('auction_cars')
+              .select('make', { count: 'exact' })
+              .not('make', 'is', null)
+              .range(from, to);
+            
+            if (error) {
+              console.error('Error fetching makes:', error);
+              break;
+            }
+            
+            if (data.length === 0) {
+              hasMore = false;
+            } else {
+              // Add makes to set to ensure uniqueness
+              data.forEach(item => {
+                if (item.make) allMakes.add(item.make);
+              });
+              
+              page++;
+              
+              // Check if we should continue fetching
+              hasMore = count !== null && from + data.length < count;
+              console.log(`Fetched ${allMakes.size} unique makes from ${from + data.length} of ${count} total cars`);
+            }
+          }
+          
+          return Array.from(allMakes).sort();
+        };
         
-        if (makesError) {
-          console.error('Error fetching makes:', makesError);
-          return;
-        }
-        
-        // Extract unique makes
-        const uniqueMakes = Array.from(
-          new Set(makesData.map(item => item.make).filter(Boolean))
-        ).sort() as string[];
-        
+        const uniqueMakes = await fetchAllMakes();
         setMakes(uniqueMakes);
       } catch (error) {
         console.error('Failed to fetch makes:', error);

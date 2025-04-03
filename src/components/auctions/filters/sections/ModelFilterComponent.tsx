@@ -34,22 +34,51 @@ export const ModelFilterComponent = ({
       
       setIsLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('auction_cars')
-          .select('model')
-          .eq('make', makeValue)
-          .not('model', 'is', null);
+        // Fetch all models for specific make using pagination
+        const fetchAllModels = async () => {
+          const PAGE_SIZE = 1000; // Supabase's max rows per request
+          let allModels = new Set<string>();
+          let page = 0;
+          let hasMore = true;
+          
+          while (hasMore) {
+            const from = page * PAGE_SIZE;
+            const to = from + PAGE_SIZE - 1;
+            
+            console.log(`Fetching models for ${makeValue}, page ${page + 1}, rows ${from} to ${to}`);
+            
+            const { data, error, count } = await supabase
+              .from('auction_cars')
+              .select('model', { count: 'exact' })
+              .eq('make', makeValue)
+              .not('model', 'is', null)
+              .range(from, to);
+            
+            if (error) {
+              console.error('Error fetching models:', error);
+              break;
+            }
+            
+            if (data.length === 0) {
+              hasMore = false;
+            } else {
+              // Add models to set to ensure uniqueness
+              data.forEach(item => {
+                if (item.model) allModels.add(item.model);
+              });
+              
+              page++;
+              
+              // Check if we should continue fetching
+              hasMore = count !== null && from + data.length < count;
+              console.log(`Fetched ${allModels.size} unique models from ${from + data.length} of ${count} total cars`);
+            }
+          }
+          
+          return Array.from(allModels).sort();
+        };
         
-        if (error) {
-          console.error('Error fetching models:', error);
-          return;
-        }
-        
-        // Extract unique models
-        const uniqueModels = Array.from(
-          new Set(data.map(item => item.model).filter(Boolean))
-        ).sort() as string[];
-        
+        const uniqueModels = await fetchAllModels();
         setModels(uniqueModels);
       } catch (error) {
         console.error('Failed to fetch models:', error);
