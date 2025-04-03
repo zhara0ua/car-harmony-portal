@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -107,7 +108,7 @@ export const useAuctionFiltering = () => {
       
       // Handle mileage filtering separately since it requires JS filtering
       if (filters.minMileage || filters.maxMileage) {
-        // Get all results first then filter in JS since mileage is a string
+        // Get all results first then filter in JS
         const allCars = await fetchAllFilteredCars();
         
         // Now filter by mileage
