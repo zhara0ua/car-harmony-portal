@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ScrapedCarCard } from "@/components/scraped-cars/ScrapedCarCard";
-import { ScrapedCarsFilters } from "@/components/scraped-cars/ScrapedCarsFilters";
+import ScrapedCarsFilters from "@/components/scraped-cars/ScrapedCarsFilters";
 import { useToast } from "@/components/ui/use-toast";
 import { type Filters, type ScrapedCar } from "@/types/scraped-car";
 import { triggerScraping } from "@/utils/scraping";

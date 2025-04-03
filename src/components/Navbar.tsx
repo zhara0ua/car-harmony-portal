@@ -28,7 +28,7 @@ const Navbar = () => {
             <img 
               src="/lovable-uploads/c8f9be96-d35e-4886-8360-b609f3786200.png" 
               alt="KRIST IN AUTO" 
-              className="h-12 md:h-16"
+              className="h-16 md:h-20"
             />
           </Link>
 
