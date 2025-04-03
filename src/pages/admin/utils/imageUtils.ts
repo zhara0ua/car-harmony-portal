@@ -1,35 +1,20 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { adminSupabase } from "@/integrations/supabase/adminClient";
 import { toast } from "@/hooks/use-toast";
 
 export const uploadImage = async (file: File, folderName: string): Promise<string | null> => {
   try {
     const filename = `${folderName}/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
     
-    // Make sure the cars bucket exists
-    const { data: buckets } = await supabase.storage.listBuckets();
-    const carsBucketExists = buckets?.some(bucket => bucket.name === 'cars');
-    
-    if (!carsBucketExists) {
-      // Create the bucket if it doesn't exist
-      console.log("Creating 'cars' bucket");
-      const { error: createBucketError } = await supabase.storage.createBucket('cars', {
-        public: true
-      });
-      
-      if (createBucketError) {
-        console.error('Error creating bucket:', createBucketError);
-        throw createBucketError;
-      }
-    }
-    
-    // Upload the file
     console.log(`Uploading image: ${filename} (${file.size} bytes, type: ${file.type})`);
-    const { data, error } = await supabase.storage
+    
+    // Upload the file using adminSupabase client to bypass RLS
+    const { data, error } = await adminSupabase.storage
       .from('cars')
       .upload(filename, file, {
         contentType: file.type,
-        cacheControl: '3600'
+        cacheControl: '3600',
+        upsert: false
       });
 
     if (error) {
@@ -38,7 +23,7 @@ export const uploadImage = async (file: File, folderName: string): Promise<strin
     }
 
     // Get the public URL of the uploaded file
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = adminSupabase.storage
       .from('cars')
       .getPublicUrl(filename);
 
@@ -77,6 +62,7 @@ export const uploadMultipleImages = async (files: File[], carId: string): Promis
     console.log(`Upload results: ${results.length} total, ${validUrls.length} successful`);
     
     if (validUrls.length === 0 && files.length > 0) {
+      console.error("Failed to upload any images");
       toast({
         title: "Помилка",
         description: "Не вдалося завантажити жодне зображення",

@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileUploadTab } from "./FileUploadTab";
 import { UrlUploadTab } from "./UrlUploadTab";
 import { ImagePreviewGrid } from "./ImagePreviewGrid";
+import { toast } from "@/hooks/use-toast";
 
 interface ImageUploaderProps {
   initialImages: string[];
@@ -33,6 +34,26 @@ export const ImageUploader = ({ initialImages = [], onImagesChange }: ImageUploa
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
       console.log("Files selected:", newFiles.map(f => f.name));
+      
+      // Validate file sizes
+      const maxSizeMB = 5;
+      const maxSizeBytes = maxSizeMB * 1024 * 1024;
+      const oversizedFiles = newFiles.filter(file => file.size > maxSizeBytes);
+      
+      if (oversizedFiles.length > 0) {
+        const fileNames = oversizedFiles.map(f => f.name).join(", ");
+        toast({
+          title: "Файл занадто великий",
+          description: `Файли перевищують ${maxSizeMB}MB: ${fileNames}`,
+          variant: "destructive",
+        });
+        
+        // Filter out oversized files
+        const validFiles = newFiles.filter(file => file.size <= maxSizeBytes);
+        if (validFiles.length === 0) {
+          return;
+        }
+      }
       
       const newPreviews: string[] = [];
       

@@ -1,5 +1,5 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { adminSupabase } from "@/integrations/supabase/adminClient";
 import { toast } from "@/hooks/use-toast";
 
 export const deleteCar = async (carId: number): Promise<boolean> => {
@@ -20,8 +20,8 @@ export const deleteCar = async (carId: number): Promise<boolean> => {
     
     console.log("Deleting car with ID:", carId);
     
-    // Use the regular supabase client for database operations
-    const { error } = await supabase
+    // Use the adminSupabase client for database operations
+    const { error } = await adminSupabase
       .from('cars')
       .delete()
       .eq('id', carId);
