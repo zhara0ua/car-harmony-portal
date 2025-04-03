@@ -16,10 +16,15 @@ export const adminSupabase = createClient<Database>(
     auth: {
       autoRefreshToken: false,
       persistSession: false
+    },
+    // Set global headers directly when creating the client
+    global: {
+      headers: {
+        Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+      }
     }
   }
 );
 
-// Configure storage to be available to anyone
-// This should be used only in admin contexts where the user is authenticated
-adminSupabase.storage.setAuth(SUPABASE_PUBLISHABLE_KEY);
+// The setAuth function doesn't exist anymore, using global headers instead
+// as configured above when creating the client
