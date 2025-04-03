@@ -1,14 +1,12 @@
+
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from "./LanguageSwitcher";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
-  const { t } = useTranslation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -34,7 +32,7 @@ const Navbar = () => {
                 isActive("/") ? "text-navy font-semibold" : "text-gray-700"
               } hover:text-navy transition-colors`}
             >
-              {t('nav.home')}
+              Strona główna
             </Link>
             <Link
               to="/inventory"
@@ -42,7 +40,7 @@ const Navbar = () => {
                 isActive("/inventory") ? "text-navy font-semibold" : "text-gray-700"
               } hover:text-navy transition-colors`}
             >
-              {t('nav.cars')}
+              Samochody
             </Link>
             <Link
               to="/imports"
@@ -50,7 +48,7 @@ const Navbar = () => {
                 isActive("/imports") ? "text-navy font-semibold" : "text-gray-700"
               } hover:text-navy transition-colors`}
             >
-              {t('nav.import')}
+              Import
             </Link>
             <Link
               to="/inspection"
@@ -58,7 +56,7 @@ const Navbar = () => {
                 isActive("/inspection") ? "text-navy font-semibold" : "text-gray-700"
               } hover:text-navy transition-colors`}
             >
-              {t('nav.inspection')}
+              Inspekcje
             </Link>
             <Link
               to="/contact"
@@ -66,7 +64,7 @@ const Navbar = () => {
                 isActive("/contact") ? "text-navy font-semibold" : "text-gray-700"
               } hover:text-navy transition-colors`}
             >
-              {t('nav.contact')}
+              Kontakt
             </Link>
           </div>
 
@@ -79,7 +77,6 @@ const Navbar = () => {
             >
               {isMenuOpen ? <X /> : <Menu />}
             </Button>
-            <LanguageSwitcher />
           </div>
 
           {isMenuOpen && (
@@ -92,7 +89,7 @@ const Navbar = () => {
                   } hover:text-navy transition-colors`}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  {t('nav.home')}
+                  Strona główna
                 </Link>
                 <Link
                   to="/inventory"
@@ -101,7 +98,7 @@ const Navbar = () => {
                   } hover:text-navy transition-colors`}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  {t('nav.cars')}
+                  Samochody
                 </Link>
                 <Link
                   to="/imports"
@@ -110,7 +107,7 @@ const Navbar = () => {
                   } hover:text-navy transition-colors`}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  {t('nav.import')}
+                  Import
                 </Link>
                 <Link
                   to="/inspection"
@@ -119,7 +116,7 @@ const Navbar = () => {
                   } hover:text-navy transition-colors`}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  {t('nav.inspection')}
+                  Inspekcje
                 </Link>
                 <Link
                   to="/contact"
@@ -128,7 +125,7 @@ const Navbar = () => {
                   } hover:text-navy transition-colors`}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  {t('nav.contact')}
+                  Kontakt
                 </Link>
               </div>
             </div>

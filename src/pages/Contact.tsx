@@ -10,19 +10,19 @@ const Contact = () => {
       <Navbar />
       
       <main className="container mx-auto px-6 py-12">
-        <h1 className="text-4xl font-bold text-navy mb-8 text-center">Контакти</h1>
+        <h1 className="text-4xl font-bold text-navy mb-8 text-center">Kontakt</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
           <div>
             <Card className="mb-8">
               <CardContent className="p-6">
-                <h2 className="text-2xl font-semibold mb-6">Наші контакти</h2>
+                <h2 className="text-2xl font-semibold mb-6">Nasze kontakty</h2>
                 
                 <div className="space-y-6">
                   <div className="flex items-start space-x-4">
                     <MapPin className="w-6 h-6 text-navy flex-shrink-0 mt-1" />
                     <div>
-                      <h3 className="font-semibold mb-1">Адреса</h3>
+                      <h3 className="font-semibold mb-1">Adres</h3>
                       <p className="text-gray-600">Strzygłowska 15, Wawer 04-872 Warszawa</p>
                     </div>
                   </div>
@@ -30,7 +30,7 @@ const Contact = () => {
                   <div className="flex items-start space-x-4">
                     <Phone className="w-6 h-6 text-navy flex-shrink-0 mt-1" />
                     <div>
-                      <h3 className="font-semibold mb-1">Телефон</h3>
+                      <h3 className="font-semibold mb-1">Telefon</h3>
                       <p className="text-gray-600">+48 123 456 789</p>
                     </div>
                   </div>
@@ -46,10 +46,10 @@ const Contact = () => {
                   <div className="flex items-start space-x-4">
                     <Clock className="w-6 h-6 text-navy flex-shrink-0 mt-1" />
                     <div>
-                      <h3 className="font-semibold mb-1">Графік роботи</h3>
-                      <p className="text-gray-600">Пн-Пт: 9:00 - 18:00</p>
-                      <p className="text-gray-600">Сб: 10:00 - 15:00</p>
-                      <p className="text-gray-600">Нд: Вихідний</p>
+                      <h3 className="font-semibold mb-1">Godziny pracy</h3>
+                      <p className="text-gray-600">Pon-Pt: 9:00 - 18:00</p>
+                      <p className="text-gray-600">Sb: 10:00 - 15:00</p>
+                      <p className="text-gray-600">Nd: Zamknięte</p>
                     </div>
                   </div>
                 </div>
@@ -58,14 +58,14 @@ const Contact = () => {
 
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-2xl font-semibold mb-4">Про нас</h2>
+                <h2 className="text-2xl font-semibold mb-4">O nas</h2>
                 <p className="text-gray-600 mb-4">
-                  Kristin Auto - це команда професіоналів з багаторічним досвідом у сфері продажу та імпорту автомобілів преміум класу. 
-                  Ми спеціалізуємося на підборі та доставці автомобілів з європейських аукціонів, забезпечуючи повний супровід угоди та прозорість на кожному етапі.
+                  Kristin Auto - to zespół profesjonalistów z wieloletnim doświadczeniem w sprzedaży i imporcie samochodów klasy premium. 
+                  Specjalizujemy się w doborze i dostawie samochodów z europejskich aukcji, zapewniając pełną obsługę transakcji i przejrzystość na każdym etapie.
                 </p>
                 <p className="text-gray-600">
-                  Наша місія - зробити процес купівлі автомобіля максимально комфортним та безпечним для наших клієнтів, 
-                  надаючи доступ до найкращих пропозицій на європейському ринку.
+                  Naszą misją jest uczynienie procesu zakupu samochodu jak najbardziej komfortowym i bezpiecznym dla naszych klientów, 
+                  zapewniając dostęp do najlepszych ofert na rynku europejskim.
                 </p>
               </CardContent>
             </Card>
