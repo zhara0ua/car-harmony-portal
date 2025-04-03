@@ -1,84 +1,89 @@
 
-import React, { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { adminSupabase } from "@/integrations/supabase/adminClient";
-import { z } from "zod";
-import { useNavigate } from "react-router-dom";
-
-// Validation schema for the form
-const registrationSchema = z.object({
-  name: z.string().min(2, { message: "Imię musi mieć co najmniej 2 znaki" }),
-  phone: z.string().min(9, { message: "Wprowadź poprawny numer telefonu" }),
-});
+import { Label } from "@/components/ui/label";
+import { X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuctionRegistrationDialogProps {
-  isOpen: boolean;
-  onRegistrationComplete: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export const AuctionRegistrationDialog: React.FC<AuctionRegistrationDialogProps> = ({
-  isOpen,
-  onRegistrationComplete,
-}) => {
+const LOCAL_STORAGE_KEY = "auction_registration_completed";
+
+export function AuctionRegistrationDialog({
+  open,
+  onOpenChange,
+}: AuctionRegistrationDialogProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+  const [hasError, setHasError] = useState({ name: false, phone: false });
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleClose = () => {
+    toast({
+      title: "Rejestracja wymagana",
+      description: "Wymagana jest szybka rejestracja na stronie aukcji",
+      variant: "destructive",
+    });
+    navigate("/");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate inputs
+    const errors = {
+      name: name.trim() === "",
+      phone: phone.trim() === "",
+    };
+    setHasError(errors);
+
+    if (errors.name || errors.phone) {
+      return;
+    }
+
     setIsSubmitting(true);
-    setErrors({});
 
     try {
-      // Validate the form data
-      const validationResult = registrationSchema.safeParse({ name, phone });
-      
-      if (!validationResult.success) {
-        const formattedErrors: Record<string, string> = {};
-        validationResult.error.errors.forEach((error) => {
-          if (error.path[0]) {
-            formattedErrors[error.path[0] as string] = error.message;
-          }
-        });
-        setErrors(formattedErrors);
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Store the data in Supabase
-      const { error } = await adminSupabase
+      // Insert data into Supabase
+      const { error } = await supabase
         .from('auction_registrations')
-        .insert([
-          { name, phone }
-        ]);
+        .insert([{ name, phone }]);
 
       if (error) {
-        console.error("Error inserting into auction_registrations:", error);
         throw error;
       }
 
-      // Save to localStorage to remember this user
-      localStorage.setItem('auctionRegistered', 'true');
-
-      // Show success message
+      // Save to local storage to remember this user
+      localStorage.setItem(LOCAL_STORAGE_KEY, "true");
+      
+      // Close dialog
+      onOpenChange(false);
+      
       toast({
-        title: "Rejestracja pomyślna",
-        description: "Dziękujemy za rejestrację. Możesz teraz przeglądać aukcje.",
+        title: "Rejestracja udana",
+        description: "Dziękujemy za rejestrację na naszej stronie aukcji!",
       });
-
-      // Complete registration
-      onRegistrationComplete();
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("Error registering:", error);
       toast({
         title: "Błąd rejestracji",
-        description: "Wystąpił problem podczas rejestracji. Spróbuj ponownie.",
+        description: "Spróbuj ponownie później",
         variant: "destructive",
       });
     } finally {
@@ -86,62 +91,70 @@ export const AuctionRegistrationDialog: React.FC<AuctionRegistrationDialogProps>
     }
   };
 
-  const handleCloseDialog = () => {
-    // Navigate to home page when close button is clicked
-    navigate('/');
-    
-    // Show toast notification about quick registration
-    toast({
-      title: "Wymagana rejestracja",
-      description: "Szybka rejestracja jest wymagana, aby przeglądać aukcje samochodowe.",
-      variant: "default",
-    });
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleCloseDialog}>
-      <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      if (!newOpen) {
+        handleClose();
+      } else {
+        onOpenChange(newOpen);
+      }
+    }}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl">Dostęp do aukcji</DialogTitle>
+          <DialogTitle className="text-xl">Rejestracja na aukcję</DialogTitle>
           <DialogDescription>
-            Aby uzyskać dostęp do aukcji samochodowych, musisz podać swoje dane kontaktowe.
+            Aby przejść do strony aukcji, wypełnij poniższy formularz. Używamy tych danych, aby skontaktować się z Tobą w sprawie szczegółów.
           </DialogDescription>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-4 top-4"
+            onClick={handleClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
-              Imię i nazwisko
-            </label>
+            <Label htmlFor="name">Imię i nazwisko</Label>
             <Input
               id="name"
-              placeholder="Twoje pełne imię"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              disabled={isSubmitting}
+              className={hasError.name ? "border-red-500" : ""}
+              placeholder="Jan Kowalski"
             />
-            {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+            {hasError.name && (
+              <p className="text-red-500 text-sm">Imię jest wymagane</p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="phone" className="text-sm font-medium">
-              Numer telefonu
-            </label>
+            <Label htmlFor="phone">Numer telefonu</Label>
             <Input
               id="phone"
-              type="tel" 
-              placeholder="+48"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              disabled={isSubmitting}
+              className={hasError.phone ? "border-red-500" : ""}
+              placeholder="+48 123 456 789"
             />
-            {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
+            {hasError.phone && (
+              <p className="text-red-500 text-sm">Telefon jest wymagany</p>
+            )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Zapisywanie..." : "Uzyskaj dostęp"}
-          </Button>
+          <DialogFooter className="sm:justify-end">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto"
+            >
+              {isSubmitting ? "Zapisywanie..." : "Zarejestruj się"}
+            </Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   );
-};
+}
