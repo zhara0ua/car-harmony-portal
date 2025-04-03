@@ -22,7 +22,7 @@ export const FuelTypeFilterComponent = ({
   const { fuelTypes, isLoading } = useFilterData();
   
   // Fuel type mapping - backend values to display names
-  const fuelTypeMap = {
+  const fuelTypeMap: Record<string, string> = {
     "petrol": "Benzyna",
     "diesel": "Diesel",
     "electric": "Elektryczny",
@@ -30,35 +30,41 @@ export const FuelTypeFilterComponent = ({
     "lpg": "LPG"
   };
 
+  // Map backend values to display names
+  const getDisplayName = (backendValue: string) => {
+    if (backendValue === "all_fuel_types") {
+      return "Wszystkie paliwa";
+    }
+    return fuelTypeMap[backendValue] || backendValue;
+  };
+
   // Map display names back to backend values
   const getBackendValue = (displayValue: string) => {
+    // Special case for "Wszystkie paliwa"
+    if (displayValue === "Wszystkie paliwa") {
+      return "all_fuel_types";
+    }
+    
+    // For other display values, find the corresponding backend value
     for (const [backendValue, displayName] of Object.entries(fuelTypeMap)) {
       if (displayName === displayValue) {
         return backendValue;
       }
     }
+    
+    // Default: return as is
     return displayValue;
   };
 
-  // Map backend values to display names
-  const getDisplayName = (value: string) => {
-    return fuelTypeMap[value as keyof typeof fuelTypeMap] || value;
-  };
-
   const handleFuelTypeChange = (selectedValue: string) => {
-    if (selectedValue === "all_fuel_types") {
-      onChange(selectedValue);
-    } else {
-      // Convert display name to backend value before sending to parent
-      const backendValue = getBackendValue(selectedValue);
-      console.log(`Fuel type selected: ${selectedValue} -> backend value: ${backendValue}`);
-      onChange(backendValue);
-    }
+    const backendValue = getBackendValue(selectedValue);
+    console.log(`Fuel type selected: ${selectedValue} -> backend value: ${backendValue}`);
+    onChange(backendValue);
   };
 
   // Determine what to display in the select
   const displayValue = value === "all_fuel_types" 
-    ? value 
+    ? "Wszystkie paliwa" 
     : value 
       ? getDisplayName(value) 
       : undefined;
@@ -74,7 +80,7 @@ export const FuelTypeFilterComponent = ({
           <SelectValue placeholder="Wybierz paliwo" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all_fuel_types">Wszystkie paliwa</SelectItem>
+          <SelectItem value="Wszystkie paliwa">Wszystkie paliwa</SelectItem>
           {fuelTypes.map((item) => (
             <SelectItem key={item} value={getDisplayName(item)}>
               {getDisplayName(item)}

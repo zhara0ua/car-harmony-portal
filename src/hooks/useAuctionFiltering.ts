@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,19 +45,10 @@ export const useAuctionFiltering = () => {
         query = query.eq('model', filters.model);
       }
       
-      // Fuel type mapping from display to backend values
-      const fuelTypeBackendMap: Record<string, string> = {
-        "Benzyna": "petrol",
-        "Diesel": "diesel",
-        "Elektryczny": "electric",
-        "Hybryda": "hybrid",
-        "LPG": "lpg"
-      };
-      
+      // Apply fuel type filter
       if (filters.fuelType && filters.fuelType !== "all_fuel_types") {
-        const backendFuelType = fuelTypeBackendMap[filters.fuelType] || filters.fuelType;
-        console.log(`Applying fuel type filter: ${filters.fuelType} -> ${backendFuelType}`);
-        query = query.eq('fuel_type', backendFuelType);
+        console.log(`Applying fuel type filter: ${filters.fuelType}`);
+        query = query.eq('fuel_type', filters.fuelType);
       }
       
       // Handle transmission filter specifically
