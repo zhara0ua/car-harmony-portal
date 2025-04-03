@@ -91,6 +91,12 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
       }
     }
     
+    // Add an extra stock image if it doesn't exist already
+    const extraImage = "https://images.unsplash.com/photo-1485291571150-772bcfc10da5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80";
+    if (!allImageUrls.includes(extraImage)) {
+      allImageUrls.push(extraImage);
+    }
+    
     // Make sure we have at least one image
     if (allImageUrls.length === 0) {
       console.error("No images available for the car");

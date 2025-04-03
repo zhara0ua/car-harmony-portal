@@ -77,6 +77,10 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
       }
     }
 
+    // Add an extra stock image
+    const extraImage = "https://images.unsplash.com/photo-1485291571150-772bcfc10da5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80";
+    imageUrls.push(extraImage);
+
     // Make sure we have at least one image
     if (imageUrls.length === 0) {
       console.error("No images provided");
