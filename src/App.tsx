@@ -10,6 +10,7 @@ import Contact from './pages/Contact';
 import Inspection from './pages/Inspection';
 import InspectionCase from './pages/InspectionCase';
 import ScrapedCars from './pages/ScrapedCars';
+import Regulations from './pages/Regulations';
 import Login from './pages/admin/Login';
 import Dashboard from './pages/admin/Dashboard';
 import Cars from './pages/admin/Cars';
@@ -24,6 +25,7 @@ import AuctionRegistrations from './pages/admin/AuctionRegistrations';
 import { Toaster } from "@/components/ui/toaster";
 import { AdminAuthGuard } from './components/admin/AdminAuthGuard';
 import { ThemeProvider } from "./components/theme-provider";
+import { CookieConsent } from './components/CookieConsent';
 
 function App() {
   const [isMounted, setIsMounted] = useState(false);
@@ -46,6 +48,7 @@ function App() {
             <Route path="/inspection" element={<Inspection />} />
             <Route path="/inspection-case/:id" element={<InspectionCase />} />
             <Route path="/scraped-cars" element={<ScrapedCars />} />
+            <Route path="/regulations" element={<Regulations />} />
             
             {/* Admin routes */}
             <Route path="/admin" element={<AdminAuthGuard />}>
@@ -65,6 +68,7 @@ function App() {
             <Route path="/admin/login" element={<Login />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <CookieConsent />
         </BrowserRouter>
         <Toaster />
       </div>

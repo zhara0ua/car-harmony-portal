@@ -130,5 +130,36 @@
       "phone": "+48 123 456 789",
       "email": "info@kristinauto.com"
     }
+  },
+  "regulations": {
+    "title": "Regulamin i Polityka Prywatności",
+    "general": {
+      "title": "Postanowienia ogólne",
+      "description": "Niniejszy regulamin określa zasady korzystania z serwisu KRIST IN AUTO dostępnego pod adresem www.kristinauto.com.",
+      "scope": "Właścicielem i administratorem serwisu jest firma KRIST IN AUTO z siedzibą w Warszawie. Korzystanie z serwisu oznacza akceptację niniejszego regulaminu w całości."
+    },
+    "personalData": {
+      "title": "Ochrona danych osobowych",
+      "collection": "Zbieramy dane osobowe takie jak: imię i nazwisko, adres e-mail, numer telefonu, które są niezbędne do realizacji usług oferowanych przez naszą firmę.",
+      "purpose": "Dane osobowe są przetwarzane w celu: realizacji zamówień, odpowiedzi na zapytania, marketingu bezpośredniego naszych produktów i usług, prowadzenia analiz statystycznych.",
+      "processing": "Administrowanie danymi odbywa się zgodnie z przepisami RODO oraz ustawy o ochronie danych osobowych. Mają Państwo prawo do dostępu do swoich danych, ich sprostowania, usunięcia lub ograniczenia przetwarzania.",
+      "rights": "W każdej chwili mogą Państwo wycofać zgodę na przetwarzanie danych osobowych, co nie wpłynie na zgodność z prawem przetwarzania dokonanego przed jej wycofaniem."
+    },
+    "cookies": {
+      "title": "Polityka plików cookies",
+      "description": "Nasza strona wykorzystuje pliki cookies (ciasteczka), które są zapisywane na urządzeniu użytkownika w celu identyfikacji przeglądarki podczas korzystania z naszej strony.",
+      "types": "Używamy plików cookies niezbędnych do działania strony, analitycznych (zbierających informacje o sposobie korzystania ze strony) oraz marketingowych (umożliwiających dostarczanie spersonalizowanych treści).",
+      "management": "Użytkownik może samodzielnie zarządzać plikami cookies poprzez zmianę ustawień przeglądarki internetowej. Wyłączenie lub ograniczenie plików cookies może wpłynąć na funkcjonalność strony."
+    },
+    "terms": {
+      "title": "Warunki korzystania z serwisu",
+      "usage": "Użytkownik zobowiązany jest do korzystania z serwisu w sposób zgodny z prawem, dobrymi obyczajami oraz postanowieniami regulaminu.",
+      "liability": "KRIST IN AUTO nie ponosi odpowiedzialności za przerwy w działaniu serwisu spowodowane przyczynami technicznymi, konserwacją systemu lub innymi okolicznościami, na które nie ma wpływu.",
+      "changes": "Zastrzegamy sobie prawo do zmiany regulaminu w dowolnym czasie. Zmiany wchodzą w życie z chwilą opublikowania ich na stronie."
+    },
+    "contact": {
+      "title": "Kontakt w sprawach ochrony danych",
+      "information": "W sprawach związanych z ochroną danych osobowych można kontaktować się z nami pod adresem email: contact.kristinauto@gmail.com lub telefonicznie pod numerem +48 732 727 686."
+    }
   }
 }

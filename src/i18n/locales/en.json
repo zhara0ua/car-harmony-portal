@@ -130,5 +130,36 @@
       "phone": "+48 123 456 789",
       "email": "info@kristinauto.com"
     }
+  },
+  "regulations": {
+    "title": "Terms and Privacy Policy",
+    "general": {
+      "title": "General Provisions",
+      "description": "These terms and conditions specify the rules for using the KRIST IN AUTO service available at www.kristinauto.com.",
+      "scope": "The owner and administrator of the website is KRIST IN AUTO company based in Warsaw. Using the website means accepting these terms and conditions in their entirety."
+    },
+    "personalData": {
+      "title": "Personal Data Protection",
+      "collection": "We collect personal data such as: name and surname, email address, phone number, which are necessary to provide the services offered by our company.",
+      "purpose": "Personal data is processed for the purpose of: order fulfillment, responding to inquiries, direct marketing of our products and services, conducting statistical analyses.",
+      "processing": "Data administration takes place in accordance with the GDPR regulations and the Data Protection Act. You have the right to access your data, rectify it, delete it or limit its processing.",
+      "rights": "You can withdraw your consent to the processing of personal data at any time, which will not affect the lawfulness of processing based on consent before its withdrawal."
+    },
+    "cookies": {
+      "title": "Cookies Policy",
+      "description": "Our website uses cookies, which are saved on the user's device to identify the browser when using our website.",
+      "types": "We use cookies that are necessary for the operation of the website, analytical cookies (collecting information about how the website is used) and marketing cookies (enabling the delivery of personalized content).",
+      "management": "The user can independently manage cookies by changing the settings of the internet browser. Disabling or limiting cookies may affect the functionality of the website."
+    },
+    "terms": {
+      "title": "Terms of Website Use",
+      "usage": "The user is obliged to use the website in a manner consistent with the law, good practices and the provisions of the regulations.",
+      "liability": "KRIST IN AUTO is not responsible for interruptions in the operation of the service caused by technical reasons, system maintenance or other circumstances beyond its control.",
+      "changes": "We reserve the right to change the regulations at any time. Changes come into force upon their publication on the website."
+    },
+    "contact": {
+      "title": "Contact for Data Protection Matters",
+      "information": "For matters related to the protection of personal data, you can contact us at the email address: contact.kristinauto@gmail.com or by phone at +48 732 727 686."
+    }
   }
 }

@@ -1,3 +1,6 @@
+
+import { Link } from 'react-router-dom';
+
 const Footer = () => {
   return (
     <div className="w-full min-w-full bg-navy">
@@ -34,11 +37,14 @@ const Footer = () => {
             </div>
             
             <div>
-              <h4 className="text-lg font-semibold mb-4">Godziny pracy</h4>
+              <h4 className="text-lg font-semibold mb-4">Informacje</h4>
               <div className="space-y-2 text-gray-300">
                 <p>Pon-Pt: 9:00 - 18:00</p>
                 <p>Sb: 10:00 - 15:00</p>
                 <p>Nd: Zamknięte</p>
+                <Link to="/regulations" className="block hover:underline pt-2">
+                  Regulamin & Polityka prywatności
+                </Link>
               </div>
             </div>
           </div>
