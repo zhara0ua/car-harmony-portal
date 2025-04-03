@@ -150,7 +150,7 @@ const Cars = () => {
         <CardContent>
           {isLoading ? (
             <div className="text-center py-4">Завантаження...</div>
-          ) : (
+          ) : cars.length > 0 ? (
             <CarsTable 
               cars={cars}
               onEdit={handleEdit}
@@ -158,6 +158,8 @@ const Cars = () => {
               onSave={handleSave}
               editingCar={editingCar}
             />
+          ) : (
+            <div className="text-center py-4">Немає доступних автомобілів</div>
           )}
         </CardContent>
       </Card>

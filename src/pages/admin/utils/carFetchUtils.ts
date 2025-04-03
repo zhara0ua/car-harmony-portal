@@ -30,7 +30,8 @@ export const fetchCars = async () => {
       throw error;
     }
 
-    console.log("Fetched cars:", data);
+    console.log("Fetched cars count:", data?.length);
+    console.log("Sample car data:", data?.[0]);
 
     const formattedCars = data?.map(car => ({
       ...car,

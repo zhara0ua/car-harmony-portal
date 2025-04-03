@@ -19,7 +19,7 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
     const priceString = formData.get('price') as string;
-    const priceNumber = parseInt(priceString);
+    const priceNumber = parseInt(priceString.replace(/\s+/g, '').replace(',', '.'));
     
     if (isNaN(priceNumber)) {
       toast({
@@ -39,6 +39,15 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
     let imageUrls: string[] = [];
     if (imageFiles.length > 0) {
       imageUrls = await uploadMultipleImages(imageFiles, folderName);
+      
+      if (imageUrls.length === 0) {
+        toast({
+          title: "Помилка",
+          description: "Не вдалося завантажити зображення",
+          variant: "destructive",
+        });
+        return false;
+      }
     }
 
     // Collect image URLs from form data (added as hidden inputs)
@@ -84,7 +93,10 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
     console.log("Creating new car:", newCar);
 
     // Use the regular supabase client for database operations
-    const { data, error } = await supabase.from('cars').insert(newCar).select();
+    const { data, error } = await supabase
+      .from('cars')
+      .insert(newCar)
+      .select();
     
     if (error) {
       console.error('Database error:', error);

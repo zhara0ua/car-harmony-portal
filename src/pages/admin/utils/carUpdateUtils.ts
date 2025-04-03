@@ -19,7 +19,7 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
     const priceString = formData.get('price') as string;
-    const priceNumber = parseInt(priceString);
+    const priceNumber = parseInt(priceString.replace(/\s+/g, '').replace(',', '.'));
     
     if (isNaN(priceNumber)) {
       toast({
@@ -52,6 +52,7 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
     
     // If there are files to upload, upload them
     if (imageFiles.length > 0) {
+      console.log(`Uploading ${imageFiles.length} new images for car ${carId}`);
       const uploadedImageUrls = await uploadMultipleImages(imageFiles, folderName);
       allImageUrls = [...allImageUrls, ...uploadedImageUrls];
     }
