@@ -108,21 +108,33 @@ export const AuctionFileUploader = ({ onUploadSuccess }: AuctionFileUploaderProp
           
           // Delete existing cars if there are any in the import
           if (cars.length > 0) {
+            console.log("Deleting existing auction cars...");
             const { error: deleteError } = await supabase
               .from('auction_cars')
               .delete()
               .neq('id', 0); // Delete all rows
             
-            if (deleteError) throw deleteError;
+            if (deleteError) {
+              console.error("Error deleting existing cars:", deleteError);
+              throw deleteError;
+            }
+            
+            console.log("Successfully deleted existing auction cars");
           }
           
           // Insert new cars
           if (cars.length > 0) {
+            console.log("Inserting new auction cars:", cars.length);
             const { error: insertError } = await supabase
               .from('auction_cars')
               .insert(cars);
             
-            if (insertError) throw insertError;
+            if (insertError) {
+              console.error("Error inserting new cars:", insertError);
+              throw insertError;
+            }
+            
+            console.log("Successfully inserted new auction cars");
           }
           
           toast({

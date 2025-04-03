@@ -41,6 +41,38 @@ export default function Auctions() {
       if (filters.model && filters.model !== "all_models") {
         query = query.eq('model', filters.model);
       }
+      if (filters.fuelType && filters.fuelType !== "all_fuel_types") {
+        query = query.eq('fuel_type', filters.fuelType);
+      }
+      
+      // Handle mileage filtering
+      // Since mileage is stored as a string, we need to handle parsing
+      if (filters.minMileage || filters.maxMileage) {
+        // Get all results first then filter in JS since mileage is a string
+        const { data, error } = await query;
+        
+        if (error) {
+          setErrorMessage(error.message);
+          setIsErrorDialogOpen(true);
+          throw error;
+        }
+        
+        // Now filter by mileage
+        return data.filter((car: AuctionCar) => {
+          // Parse mileage to number, removing non-numeric characters
+          const mileageStr = car.mileage?.toString() || '0';
+          const mileageNum = parseInt(mileageStr.replace(/\D/g, ''));
+          
+          // Apply filters
+          if (filters.minMileage && mileageNum < filters.minMileage) {
+            return false;
+          }
+          if (filters.maxMileage && mileageNum > filters.maxMileage) {
+            return false;
+          }
+          return true;
+        }) as AuctionCar[];
+      }
 
       const { data, error } = await query;
       

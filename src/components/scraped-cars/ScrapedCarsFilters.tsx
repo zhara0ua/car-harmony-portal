@@ -9,6 +9,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { type Filters } from "@/types/scraped-car";
+import { Fuel, Gauge } from "lucide-react";
 
 interface ScrapedCarsFiltersProps {
   onFilterChange: (filters: Partial<Filters>) => void;
@@ -50,7 +51,9 @@ export const ScrapedCarsFilters = ({ onFilterChange }: ScrapedCarsFiltersProps) 
         />
       </div>
       <div className="grid gap-2">
-        <Label>Паливо</Label>
+        <Label className="flex items-center gap-1">
+          <Fuel className="h-4 w-4" /> Паливо
+        </Label>
         <Select onValueChange={(value) => onFilterChange({ fuelType: value === "all" ? undefined : value })}>
           <SelectTrigger>
             <SelectValue placeholder="Всі типи" />
@@ -76,6 +79,24 @@ export const ScrapedCarsFilters = ({ onFilterChange }: ScrapedCarsFiltersProps) 
             <SelectItem value="manual">Механіка</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+      <div className="grid gap-2">
+        <Label className="flex items-center gap-1">
+          <Gauge className="h-4 w-4" /> Пробіг від
+        </Label>
+        <Input 
+          type="number" 
+          placeholder="0"
+          onChange={(e) => onFilterChange({ minMileage: parseInt(e.target.value) || undefined })}
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label>Пробіг до</Label>
+        <Input 
+          type="number" 
+          placeholder="500000"
+          onChange={(e) => onFilterChange({ maxMileage: parseInt(e.target.value) || undefined })}
+        />
       </div>
     </div>
   );

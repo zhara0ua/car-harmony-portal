@@ -39,4 +39,7 @@ export interface AuctionFilters {
   maxPrice?: number;
   make?: string;
   model?: string;
+  fuelType?: string;
+  minMileage?: number;
+  maxMileage?: number;
 }
