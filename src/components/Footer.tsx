@@ -6,19 +6,19 @@ const Footer = () => {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">Kristin Auto</h3>
+              <h3 className="text-xl font-bold mb-4">KRIST IN AUTO</h3>
               <p className="text-gray-300">
-                Twój niezawodny partner w wyborze samochodu klasy premium
+                Twój niezawodny partner w wyborze samochodu
               </p>
             </div>
             
             <div>
               <h4 className="text-lg font-semibold mb-4">Kontakt</h4>
               <div className="space-y-2 text-gray-300">
-                <p>Telefon: +48 123 456 789</p>
-                <p>Email: info@kristinauto.pl</p>
-                <p>Adres: Strzygłowska 15,</p>
-                <p>Wawer 04-872 Warszawa</p>
+                <p>Telefon: +48 732 727 686</p>
+                <p>Email: contact.kristinauto@gmail.com</p>
+                <p>Adres: Strzygłowska 19,</p>
+                <p>04-872 Warszawa</p>
               </div>
             </div>
             
@@ -43,7 +43,7 @@ const Footer = () => {
           </div>
           
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
-            <p>&copy; {new Date().getFullYear()} Kristin Auto. Wszelkie prawa zastrzeżone.</p>
+            <p>&copy; {new Date().getFullYear()} KRIST IN AUTO. Wszelkie prawa zastrzeżone.</p>
           </div>
         </div>
       </footer>

@@ -23,7 +23,7 @@ const Contact = () => {
                     <MapPin className="w-6 h-6 text-navy flex-shrink-0 mt-1" />
                     <div>
                       <h3 className="font-semibold mb-1">Adres</h3>
-                      <p className="text-gray-600">Strzygłowska 15, Wawer 04-872 Warszawa</p>
+                      <p className="text-gray-600">Strzygłowska 19, 04-872 Warszawa</p>
                     </div>
                   </div>
                   
@@ -31,7 +31,7 @@ const Contact = () => {
                     <Phone className="w-6 h-6 text-navy flex-shrink-0 mt-1" />
                     <div>
                       <h3 className="font-semibold mb-1">Telefon</h3>
-                      <p className="text-gray-600">+48 123 456 789</p>
+                      <p className="text-gray-600">+48 732 727 686</p>
                     </div>
                   </div>
                   
@@ -39,7 +39,7 @@ const Contact = () => {
                     <Mail className="w-6 h-6 text-navy flex-shrink-0 mt-1" />
                     <div>
                       <h3 className="font-semibold mb-1">Email</h3>
-                      <p className="text-gray-600">info@kristinauto.pl</p>
+                      <p className="text-gray-600">contact.kristinauto@gmail.com</p>
                     </div>
                   </div>
                   
@@ -60,7 +60,7 @@ const Contact = () => {
               <CardContent className="p-6">
                 <h2 className="text-2xl font-semibold mb-4">O nas</h2>
                 <p className="text-gray-600 mb-4">
-                  Kristin Auto - to zespół profesjonalistów z wieloletnim doświadczeniem w sprzedaży i imporcie samochodów klasy premium. 
+                  Kristin Auto - to zespół profesjonalistów z wieloletnim doświadczeniem w sprzedaży i imporcie samochodów. 
                   Specjalizujemy się w doborze i dostawie samochodów z europejskich aukcji, zapewniając pełną obsługę transakcji i przejrzystość na każdym etapie.
                 </p>
                 <p className="text-gray-600">
@@ -73,7 +73,7 @@ const Contact = () => {
 
           <div className="h-[600px]">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2444.7936919562344!2d21.1558413!3d52.2334567!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNTLCsDEzJzU5LjQiTiAyMcKwMDknMjEuMCJF!5e0!3m2!1sen!2spl!4v1650000000000!5m2!1sen!2spl"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2444.7936919562344!2d21.1536779!3d52.1719171!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNTLCsDEwJzE4LjkiTiAyMcKwMDknMTMuMiJF!5e0!3m2!1sen!2spl!4v1650000000000!5m2!1sen!2spl"
               width="100%"
               height="100%"
               style={{ border: 0, borderRadius: '0.5rem' }}

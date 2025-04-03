@@ -65,7 +65,7 @@ const GalleryFullscreenView = ({
             />
             
             <GalleryNavigationButton 
-              direction="previous" 
+              direction="prev" 
               onClick={handlePrevious}
             />
             

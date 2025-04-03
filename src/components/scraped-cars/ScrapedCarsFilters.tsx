@@ -1,103 +1,83 @@
+import React, { useState, useEffect } from 'react';
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { type Filters } from "@/types/scraped-car";
-import { Fuel, Gauge } from "lucide-react";
-
-interface ScrapedCarsFiltersProps {
-  onFilterChange: (filters: Partial<Filters>) => void;
+interface Filters {
+  make: string;
+  model: string;
+  minYear: number;
+  maxYear: number;
+  minPrice: number;
+  maxPrice: number;
+  minMileage: number;
+  maxMileage: number;
 }
 
-export const ScrapedCarsFilters = ({ onFilterChange }: ScrapedCarsFiltersProps) => {
+interface ScrapedCarsFiltersProps {
+  onFiltersChange: (filters: Filters) => void;
+}
+
+const ScrapedCarsFilters: React.FC<ScrapedCarsFiltersProps> = ({ onFiltersChange }) => {
+  const [filters, setFilters] = useState<Filters>({
+    make: '',
+    model: '',
+    minYear: 0,
+    maxYear: 0,
+    minPrice: 0,
+    maxPrice: 0,
+    minMileage: 0,
+    maxMileage: 0,
+  });
+
+  useEffect(() => {
+    onFiltersChange(filters);
+  }, [filters, onFiltersChange]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (name.startsWith('min') || name.startsWith('max')) {
+      setFilters({ ...filters, [name]: Number(value) || 0 });
+    } else {
+      setFilters({ ...filters, [name]: value });
+    }
+  };
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <div className="grid gap-2">
-        <Label>Рік від</Label>
-        <Input 
-          type="number" 
-          placeholder="2015"
-          onChange={(e) => onFilterChange({ minYear: parseInt(e.target.value) || undefined })}
-        />
+    <div className="flex flex-col gap-4">
+      <div>
+        <Label htmlFor="make">Make:</Label>
+        <Input type="text" id="make" name="make" value={filters.make} onChange={handleInputChange} />
       </div>
-      <div className="grid gap-2">
-        <Label>Рік до</Label>
-        <Input 
-          type="number" 
-          placeholder="2024"
-          onChange={(e) => onFilterChange({ maxYear: parseInt(e.target.value) || undefined })}
-        />
+      <div>
+        <Label htmlFor="model">Model:</Label>
+        <Input type="text" id="model" name="model" value={filters.model} onChange={handleInputChange} />
       </div>
-      <div className="grid gap-2">
-        <Label>Ціна від</Label>
-        <Input 
-          type="number" 
-          placeholder="10000"
-          onChange={(e) => onFilterChange({ minPrice: parseInt(e.target.value) || undefined })}
-        />
+      <div>
+        <Label htmlFor="minYear">Min Year:</Label>
+        <Input type="number" id="minYear" name="minYear" value={filters.minYear} onChange={handleInputChange} />
       </div>
-      <div className="grid gap-2">
-        <Label>Ціна до</Label>
-        <Input 
-          type="number" 
-          placeholder="50000"
-          onChange={(e) => onFilterChange({ maxPrice: parseInt(e.target.value) || undefined })}
-        />
+      <div>
+        <Label htmlFor="maxYear">Max Year:</Label>
+        <Input type="number" id="maxYear" name="maxYear" value={filters.maxYear} onChange={handleInputChange} />
       </div>
-      <div className="grid gap-2">
-        <Label className="flex items-center gap-1">
-          <Fuel className="h-4 w-4" /> Паливо
-        </Label>
-        <Select onValueChange={(value) => onFilterChange({ fuelType: value === "all" ? undefined : value })}>
-          <SelectTrigger>
-            <SelectValue placeholder="Всі типи" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Всі типи</SelectItem>
-            <SelectItem value="petrol">Бензин</SelectItem>
-            <SelectItem value="diesel">Дизель</SelectItem>
-            <SelectItem value="hybrid">Гібрид</SelectItem>
-            <SelectItem value="electric">Електро</SelectItem>
-          </SelectContent>
-        </Select>
+      <div>
+        <Label htmlFor="minPrice">Min Price:</Label>
+        <Input type="number" id="minPrice" name="minPrice" value={filters.minPrice} onChange={handleInputChange} />
       </div>
-      <div className="grid gap-2">
-        <Label>КПП</Label>
-        <Select onValueChange={(value) => onFilterChange({ transmission: value === "all" ? undefined : value })}>
-          <SelectTrigger>
-            <SelectValue placeholder="Всі типи" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Всі типи</SelectItem>
-            <SelectItem value="automatic">Автомат</SelectItem>
-            <SelectItem value="manual">Механіка</SelectItem>
-          </SelectContent>
-        </Select>
+      <div>
+        <Label htmlFor="maxPrice">Max Price:</Label>
+        <Input type="number" id="maxPrice" name="maxPrice" value={filters.maxPrice} onChange={handleInputChange} />
       </div>
-      <div className="grid gap-2">
-        <Label className="flex items-center gap-1">
-          <Gauge className="h-4 w-4" /> Пробіг від
-        </Label>
-        <Input 
-          type="number" 
-          placeholder="0"
-          onChange={(e) => onFilterChange({ minMileage: parseInt(e.target.value) || undefined })}
-        />
+      <div>
+        <Label htmlFor="minMileage">Min Mileage:</Label>
+        <Input type="number" id="minMileage" name="minMileage" value={filters.minMileage} onChange={handleInputChange} />
       </div>
-      <div className="grid gap-2">
-        <Label>Пробіг до</Label>
-        <Input 
-          type="number" 
-          placeholder="500000"
-          onChange={(e) => onFilterChange({ maxMileage: parseInt(e.target.value) || undefined })}
-        />
+      <div>
+        <Label htmlFor="maxMileage">Max Mileage:</Label>
+        <Input type="number" id="maxMileage" name="maxMileage" value={filters.maxMileage} onChange={handleInputChange} />
       </div>
     </div>
   );
 };
+
+export default ScrapedCarsFilters;
