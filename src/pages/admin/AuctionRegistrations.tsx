@@ -2,19 +2,32 @@
 import { useState, useEffect } from "react";
 import { adminSupabase } from "@/integrations/supabase/adminClient";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Download, Search, Phone, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { AuctionRegistration } from "./types/auction-registration";
-import { SearchBar } from "./components/auction-registrations/SearchBar";
-import { ExportButton } from "./components/auction-registrations/ExportButton";
-import { RegistrationsTable } from "./components/auction-registrations/RegistrationsTable";
-import { CallStatusMap } from "./components/auction-registrations/types";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+interface CallStatus {
+  [key: number]: { 
+    status: 'called' | 'not_called' | 'callback';
+    notes: string;
+    callDate?: string;
+    callbackDate?: string;
+  }
+}
 
 export default function AuctionRegistrations() {
   const [registrations, setRegistrations] = useState<AuctionRegistration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [callStatus, setCallStatus] = useState<CallStatusMap>({});
+  const [callStatus, setCallStatus] = useState<CallStatus>({});
   const [notes, setNotes] = useState<{[key: number]: string}>({});
   const [callbackDates, setCallbackDates] = useState<{[key: number]: Date | undefined}>({});
   const { toast } = useToast();
@@ -50,11 +63,11 @@ export default function AuctionRegistrations() {
       const parsedStatus = JSON.parse(savedStatus);
       
       // Convert old format to new format if needed
-      const updatedStatus: CallStatusMap = {};
+      const updatedStatus: CallStatus = {};
       
       Object.entries(parsedStatus).forEach(([id, value]: [string, any]) => {
         updatedStatus[Number(id)] = {
-          status: value.called ? 'called' : (value.status || 'not_called'),
+          status: value.called ? 'called' : 'not_called',
           notes: value.notes || "",
           callDate: value.callDate,
           callbackDate: value.callbackDate
@@ -75,7 +88,7 @@ export default function AuctionRegistrations() {
     }
   };
 
-  const saveCallStatus = (newStatus: CallStatusMap) => {
+  const saveCallStatus = (newStatus: CallStatus) => {
     localStorage.setItem('auctionCallStatus', JSON.stringify(newStatus));
     setCallStatus(newStatus);
   };
@@ -105,8 +118,8 @@ export default function AuctionRegistrations() {
     
     toast({
       title: statusMessages[status],
-      description: status === 'callback' && callbackDates[id] ? 
-        `Zaplanowano ponowny kontakt na ${format(callbackDates[id] as Date, 'dd/MM/yyyy')}` : 
+      description: status === 'callback' ? 
+        `Zaplanowano ponowny kontakt na ${callbackDates[id] ? format(callbackDates[id], 'dd/MM/yyyy') : 'wybraną datę'}` : 
         "Status połączenia został zaktualizowany",
     });
   };
@@ -116,6 +129,18 @@ export default function AuctionRegistrations() {
       ...notes,
       [id]: note
     });
+    
+    // Save note to call status
+    if (callStatus[id]) {
+      const newStatus = {
+        ...callStatus,
+        [id]: {
+          ...callStatus[id],
+          notes: note
+        }
+      };
+      saveCallStatus(newStatus);
+    }
   };
 
   const handleCallbackDateChange = (id: number, date: Date | undefined) => {
@@ -149,35 +174,265 @@ export default function AuctionRegistrations() {
       reg.phone.includes(searchTerm)
   );
 
+  const exportToCSV = () => {
+    // Create CSV content
+    const headers = ['ID', 'Imię i nazwisko', 'Telefon', 'Data rejestracji', 'Status', 'Data przypomnienia', 'Notatki'];
+    const csvRows = [
+      headers.join(','),
+      ...filteredRegistrations.map(reg => {
+        const status = callStatus[reg.id]?.status || 'not_called';
+        const statusText = {
+          'called': 'Zadzwoniono',
+          'not_called': 'Niezadzwoniono',
+          'callback': 'Do oddzwonienia'
+        }[status];
+        
+        return [
+          reg.id,
+          `"${reg.name}"`, // Wrap in quotes to handle commas in names
+          `"${reg.phone}"`,
+          new Date(reg.created_at).toLocaleDateString(),
+          statusText,
+          callStatus[reg.id]?.callbackDate ? `"${new Date(callStatus[reg.id].callbackDate!).toLocaleDateString()}"` : '',
+          `"${callStatus[reg.id]?.notes || ''}"`
+        ].join(',');
+      })
+    ];
+    const csvContent = csvRows.join('\n');
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `auction_registrations_${new Date().toISOString().slice(0,10)}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">CRM Rejestracji z aukcji</h1>
-        <ExportButton 
-          filteredRegistrations={filteredRegistrations} 
-          callStatus={callStatus} 
-        />
+        <Button onClick={exportToCSV} className="flex items-center gap-2">
+          <Download className="h-4 w-4" />
+          Eksport CSV
+        </Button>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="text-xl flex justify-between items-center">
             <span>Lista potencjalnych klientów</span>
-            <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+            <div className="relative w-64">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Szukaj..."
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <RegistrationsTable
-            isLoading={isLoading}
-            filteredRegistrations={filteredRegistrations}
-            callStatus={callStatus}
-            notes={notes}
-            callbackDates={callbackDates}
-            saveCallStatus={saveCallStatus}
-            handleStatusChange={handleStatusChange}
-            handleNoteChange={handleNoteChange}
-            handleCallbackDateChange={handleCallbackDateChange}
-          />
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+            </div>
+          ) : (
+            <div className="border rounded-md overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Imię i nazwisko</TableHead>
+                    <TableHead>Telefon</TableHead>
+                    <TableHead>Data rejestracji</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Data przypomnienia</TableHead>
+                    <TableHead>Notatki</TableHead>
+                    <TableHead>Akcje</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredRegistrations.length > 0 ? (
+                    filteredRegistrations.map((registration) => {
+                      const status = callStatus[registration.id]?.status || 'not_called';
+                      const rowClass = 
+                        status === 'called' ? "bg-green-50" : 
+                        status === 'callback' ? "bg-yellow-50" : "";
+                      
+                      return (
+                        <TableRow key={registration.id} className={rowClass}>
+                          <TableCell>{registration.id}</TableCell>
+                          <TableCell>{registration.name}</TableCell>
+                          <TableCell>
+                            <a 
+                              href={`tel:${registration.phone}`} 
+                              className="flex items-center hover:text-primary"
+                            >
+                              <Phone className="h-4 w-4 mr-1" />
+                              {registration.phone}
+                            </a>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(registration.created_at).toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <Select 
+                              value={status} 
+                              onValueChange={(value: 'called' | 'not_called' | 'callback') => 
+                                handleStatusChange(registration.id, value)
+                              }
+                            >
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue>
+                                  {status === 'called' && (
+                                    <span className="text-green-600 flex items-center">
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Zadzwoniono
+                                    </span>
+                                  )}
+                                  {status === 'not_called' && (
+                                    <span className="text-red-600 flex items-center">
+                                      <XCircle className="h-4 w-4 mr-1" />
+                                      Do wykonania
+                                    </span>
+                                  )}
+                                  {status === 'callback' && (
+                                    <span className="text-yellow-600 flex items-center">
+                                      <Clock className="h-4 w-4 mr-1" />
+                                      Do oddzwonienia
+                                    </span>
+                                  )}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="called">
+                                  <span className="flex items-center">
+                                    <CheckCircle className="h-4 w-4 mr-1 text-green-600" />
+                                    Zadzwoniono
+                                  </span>
+                                </SelectItem>
+                                <SelectItem value="not_called">
+                                  <span className="flex items-center">
+                                    <XCircle className="h-4 w-4 mr-1 text-red-600" />
+                                    Do wykonania
+                                  </span>
+                                </SelectItem>
+                                <SelectItem value="callback">
+                                  <span className="flex items-center">
+                                    <Clock className="h-4 w-4 mr-1 text-yellow-600" />
+                                    Do oddzwonienia
+                                  </span>
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            {status === 'callback' && (
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button 
+                                    variant="outline" 
+                                    className={
+                                      callbackDates[registration.id] 
+                                        ? "text-yellow-600" 
+                                        : "text-muted-foreground"
+                                    }
+                                  >
+                                    <Clock className="mr-2 h-4 w-4" />
+                                    {callbackDates[registration.id] 
+                                      ? format(callbackDates[registration.id]!, 'dd/MM/yyyy') 
+                                      : 'Wybierz datę'
+                                    }
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={callbackDates[registration.id]}
+                                    onSelect={(date) => handleCallbackDateChange(registration.id, date)}
+                                    initialFocus
+                                    className="pointer-events-auto"
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              placeholder="Dodaj notatkę..."
+                              value={notes[registration.id] || callStatus[registration.id]?.notes || ""}
+                              onChange={(e) => handleNoteChange(registration.id, e.target.value)}
+                              onBlur={() => {
+                                if (notes[registration.id]) {
+                                  const newStatus = {
+                                    ...callStatus,
+                                    [registration.id]: {
+                                      ...callStatus[registration.id] || { status: 'not_called' },
+                                      notes: notes[registration.id]
+                                    }
+                                  };
+                                  saveCallStatus(newStatus);
+                                }
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              {status === 'not_called' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => handleStatusChange(registration.id, 'called')}
+                                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Zaznacz jako wykonane
+                                </Button>
+                              )}
+                              {status === 'called' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => handleStatusChange(registration.id, 'not_called')}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <XCircle className="h-4 w-4 mr-1" />
+                                  Zresetuj status
+                                </Button>
+                              )}
+                              {status !== 'callback' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => handleStatusChange(registration.id, 'callback')}
+                                  className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                                >
+                                  <Clock className="h-4 w-4 mr-1" />
+                                  Zadzwonić później
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
+                        Brak zarejestrowanych użytkowników
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -9,16 +9,7 @@ import {
   Phone,
   Gavel,
 } from "lucide-react";
-import { 
-  Sidebar, 
-  SidebarProvider, 
-  SidebarContent, 
-  SidebarGroup, 
-  SidebarGroupContent, 
-  SidebarMenu, 
-  SidebarMenuItem, 
-  SidebarMenuButton 
-} from "@/components/ui/sidebar";
+import { Sidebar, SidebarProvider } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -57,52 +48,48 @@ export default function AdminLayout() {
   ];
 
   return (
-    <div className="flex h-screen">
-      <Sidebar className="h-screen">
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {adminLinks.map((link) => (
-                  <SidebarMenuItem key={link.href}>
-                    <SidebarMenuButton
-                      isActive={location.pathname === link.href}
-                      onClick={() => navigate(link.href)}
-                    >
-                      <link.icon className="mr-2 h-4 w-4" />
-                      <span>{link.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
-      
-      <main className="flex-1 p-4 overflow-auto">
-        <div className="flex justify-end items-center mb-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>AD</AvatarFallback>
-                </Avatar>
+    <SidebarProvider>
+      <div className="flex h-screen">
+        <Sidebar className="h-screen">
+          <div className="py-2">
+            {adminLinks.map((link) => (
+              <Button
+                key={link.href}
+                variant={location.pathname === link.href ? "secondary" : "ghost"}
+                className="w-full justify-start mb-1"
+                onClick={() => navigate(link.href)}
+              >
+                <link.icon className="mr-2 h-4 w-4" />
+                {link.label}
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuItem className="focus:outline-none">
-                <span className="grid place-items-center">Admin</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} className="focus:outline-none">
-                Wyloguj się
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <Outlet />
-      </main>
-    </div>
+            ))}
+          </div>
+        </Sidebar>
+        
+        <main className="flex-1 p-4 overflow-auto">
+          <div className="flex justify-end items-center mb-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback>AD</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuItem className="focus:outline-none">
+                  <span className="grid place-items-center">Admin</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="focus:outline-none">
+                  Wyloguj się
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <Outlet />
+        </main>
+      </div>
+    </SidebarProvider>
   );
 }
