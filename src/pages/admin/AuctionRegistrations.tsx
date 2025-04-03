@@ -6,7 +6,6 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Download, Search, Phone, CheckCircle, XCircle, Clock } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { AuctionRegistration } from "./types/auction-registration";
 import { Calendar } from "@/components/ui/calendar";
@@ -67,7 +66,7 @@ export default function AuctionRegistrations() {
       
       Object.entries(parsedStatus).forEach(([id, value]: [string, any]) => {
         updatedStatus[Number(id)] = {
-          status: value.called ? 'called' : 'not_called',
+          status: value.called ? 'called' : (value.status || 'not_called'),
           notes: value.notes || "",
           callDate: value.callDate,
           callbackDate: value.callbackDate
@@ -247,14 +246,8 @@ export default function AuctionRegistrations() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Imię i nazwisko</TableHead>
-                    <TableHead>Telefon</TableHead>
-                    <TableHead>Data rejestracji</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Data przypomnienia</TableHead>
-                    <TableHead>Notatki</TableHead>
-                    <TableHead>Akcje</TableHead>
+                    <TableHead>Klient</TableHead>
+                    <TableHead>Status i Akcje</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -267,156 +260,165 @@ export default function AuctionRegistrations() {
                       
                       return (
                         <TableRow key={registration.id} className={rowClass}>
-                          <TableCell>{registration.id}</TableCell>
-                          <TableCell>{registration.name}</TableCell>
-                          <TableCell>
-                            <a 
-                              href={`tel:${registration.phone}`} 
-                              className="flex items-center hover:text-primary"
-                            >
-                              <Phone className="h-4 w-4 mr-1" />
-                              {registration.phone}
-                            </a>
+                          {/* First cell: Customer information */}
+                          <TableCell className="py-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <div className="font-medium">{registration.name}</div>
+                                <a 
+                                  href={`tel:${registration.phone}`} 
+                                  className="flex items-center hover:text-primary text-sm"
+                                >
+                                  <Phone className="h-4 w-4 mr-1" />
+                                  {registration.phone}
+                                </a>
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  ID: {registration.id} | Rejestracja: {new Date(registration.created_at).toLocaleString()}
+                                </div>
+                              </div>
+                              <div>
+                                <Input
+                                  placeholder="Dodaj notatkę..."
+                                  value={notes[registration.id] || callStatus[registration.id]?.notes || ""}
+                                  onChange={(e) => handleNoteChange(registration.id, e.target.value)}
+                                  onBlur={() => {
+                                    if (notes[registration.id]) {
+                                      const newStatus = {
+                                        ...callStatus,
+                                        [registration.id]: {
+                                          ...callStatus[registration.id] || { status: 'not_called' },
+                                          notes: notes[registration.id]
+                                        }
+                                      };
+                                      saveCallStatus(newStatus);
+                                    }
+                                  }}
+                                  className="mb-2"
+                                />
+                              </div>
+                            </div>
                           </TableCell>
-                          <TableCell>
-                            {new Date(registration.created_at).toLocaleString()}
-                          </TableCell>
-                          <TableCell>
-                            <Select 
-                              value={status} 
-                              onValueChange={(value: 'called' | 'not_called' | 'callback') => 
-                                handleStatusChange(registration.id, value)
-                              }
-                            >
-                              <SelectTrigger className="w-[180px]">
-                                <SelectValue>
-                                  {status === 'called' && (
-                                    <span className="text-green-600 flex items-center">
-                                      <CheckCircle className="h-4 w-4 mr-1" />
-                                      Zadzwoniono
-                                    </span>
-                                  )}
-                                  {status === 'not_called' && (
-                                    <span className="text-red-600 flex items-center">
-                                      <XCircle className="h-4 w-4 mr-1" />
-                                      Do wykonania
-                                    </span>
-                                  )}
-                                  {status === 'callback' && (
-                                    <span className="text-yellow-600 flex items-center">
-                                      <Clock className="h-4 w-4 mr-1" />
-                                      Do oddzwonienia
-                                    </span>
-                                  )}
-                                </SelectValue>
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="called">
-                                  <span className="flex items-center">
-                                    <CheckCircle className="h-4 w-4 mr-1 text-green-600" />
-                                    Zadzwoniono
-                                  </span>
-                                </SelectItem>
-                                <SelectItem value="not_called">
-                                  <span className="flex items-center">
-                                    <XCircle className="h-4 w-4 mr-1 text-red-600" />
-                                    Do wykonania
-                                  </span>
-                                </SelectItem>
-                                <SelectItem value="callback">
-                                  <span className="flex items-center">
-                                    <Clock className="h-4 w-4 mr-1 text-yellow-600" />
-                                    Do oddzwonienia
-                                  </span>
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                          <TableCell>
-                            {status === 'callback' && (
-                              <Popover>
-                                <PopoverTrigger asChild>
+                          
+                          {/* Second cell: Status and actions */}
+                          <TableCell className="py-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="flex flex-col space-y-2">
+                                <Select 
+                                  value={status} 
+                                  onValueChange={(value: 'called' | 'not_called' | 'callback') => 
+                                    handleStatusChange(registration.id, value)
+                                  }
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue>
+                                      {status === 'called' && (
+                                        <span className="text-green-600 flex items-center">
+                                          <CheckCircle className="h-4 w-4 mr-1" />
+                                          Zadzwoniono
+                                        </span>
+                                      )}
+                                      {status === 'not_called' && (
+                                        <span className="text-red-600 flex items-center">
+                                          <XCircle className="h-4 w-4 mr-1" />
+                                          Do wykonania
+                                        </span>
+                                      )}
+                                      {status === 'callback' && (
+                                        <span className="text-yellow-600 flex items-center">
+                                          <Clock className="h-4 w-4 mr-1" />
+                                          Do oddzwonienia
+                                        </span>
+                                      )}
+                                    </SelectValue>
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="called">
+                                      <span className="flex items-center">
+                                        <CheckCircle className="h-4 w-4 mr-1 text-green-600" />
+                                        Zadzwoniono
+                                      </span>
+                                    </SelectItem>
+                                    <SelectItem value="not_called">
+                                      <span className="flex items-center">
+                                        <XCircle className="h-4 w-4 mr-1 text-red-600" />
+                                        Do wykonania
+                                      </span>
+                                    </SelectItem>
+                                    <SelectItem value="callback">
+                                      <span className="flex items-center">
+                                        <Clock className="h-4 w-4 mr-1 text-yellow-600" />
+                                        Do oddzwonienia
+                                      </span>
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                
+                                {status === 'callback' && (
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <Button 
+                                        variant="outline" 
+                                        className={
+                                          callbackDates[registration.id] 
+                                            ? "text-yellow-600" 
+                                            : "text-muted-foreground"
+                                        }
+                                      >
+                                        <Clock className="mr-2 h-4 w-4" />
+                                        {callbackDates[registration.id] 
+                                          ? format(callbackDates[registration.id]!, 'dd/MM/yyyy') 
+                                          : 'Wybierz datę'
+                                        }
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                      <Calendar
+                                        mode="single"
+                                        selected={callbackDates[registration.id]}
+                                        onSelect={(date) => handleCallbackDateChange(registration.id, date)}
+                                        initialFocus
+                                        className="pointer-events-auto"
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                                )}
+                              </div>
+                              
+                              <div className="flex flex-col space-y-2">
+                                {status === 'not_called' && (
                                   <Button 
+                                    size="sm" 
                                     variant="outline" 
-                                    className={
-                                      callbackDates[registration.id] 
-                                        ? "text-yellow-600" 
-                                        : "text-muted-foreground"
-                                    }
+                                    onClick={() => handleStatusChange(registration.id, 'called')}
+                                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
                                   >
-                                    <Clock className="mr-2 h-4 w-4" />
-                                    {callbackDates[registration.id] 
-                                      ? format(callbackDates[registration.id]!, 'dd/MM/yyyy') 
-                                      : 'Wybierz datę'
-                                    }
+                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    Zaznacz jako wykonane
                                   </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={callbackDates[registration.id]}
-                                    onSelect={(date) => handleCallbackDateChange(registration.id, date)}
-                                    initialFocus
-                                    className="pointer-events-auto"
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              placeholder="Dodaj notatkę..."
-                              value={notes[registration.id] || callStatus[registration.id]?.notes || ""}
-                              onChange={(e) => handleNoteChange(registration.id, e.target.value)}
-                              onBlur={() => {
-                                if (notes[registration.id]) {
-                                  const newStatus = {
-                                    ...callStatus,
-                                    [registration.id]: {
-                                      ...callStatus[registration.id] || { status: 'not_called' },
-                                      notes: notes[registration.id]
-                                    }
-                                  };
-                                  saveCallStatus(newStatus);
-                                }
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              {status === 'not_called' && (
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  onClick={() => handleStatusChange(registration.id, 'called')}
-                                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                                >
-                                  <CheckCircle className="h-4 w-4 mr-1" />
-                                  Zaznacz jako wykonane
-                                </Button>
-                              )}
-                              {status === 'called' && (
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  onClick={() => handleStatusChange(registration.id, 'not_called')}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  <XCircle className="h-4 w-4 mr-1" />
-                                  Zresetuj status
-                                </Button>
-                              )}
-                              {status !== 'callback' && (
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  onClick={() => handleStatusChange(registration.id, 'callback')}
-                                  className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
-                                >
-                                  <Clock className="h-4 w-4 mr-1" />
-                                  Zadzwonić później
-                                </Button>
-                              )}
+                                )}
+                                {status === 'called' && (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    onClick={() => handleStatusChange(registration.id, 'not_called')}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <XCircle className="h-4 w-4 mr-1" />
+                                    Zresetuj status
+                                  </Button>
+                                )}
+                                {status !== 'callback' && (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    onClick={() => handleStatusChange(registration.id, 'callback')}
+                                    className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                                  >
+                                    <Clock className="h-4 w-4 mr-1" />
+                                    Zadzwonić później
+                                  </Button>
+                                )}
+                              </div>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -424,7 +426,7 @@ export default function AuctionRegistrations() {
                     })
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
+                      <TableCell colSpan={2} className="text-center h-24 text-muted-foreground">
                         Brak zarejestrowanych użytkowników
                       </TableCell>
                     </TableRow>
