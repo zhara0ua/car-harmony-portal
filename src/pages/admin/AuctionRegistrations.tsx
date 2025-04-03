@@ -8,6 +8,7 @@ import { SearchBar } from "./components/auction-registrations/SearchBar";
 import { ExportButton } from "./components/auction-registrations/ExportButton";
 import { RegistrationsTable } from "./components/auction-registrations/RegistrationsTable";
 import { CallStatusMap } from "./components/auction-registrations/types";
+import { format } from "date-fns";
 
 export default function AuctionRegistrations() {
   const [registrations, setRegistrations] = useState<AuctionRegistration[]>([]);
@@ -104,8 +105,8 @@ export default function AuctionRegistrations() {
     
     toast({
       title: statusMessages[status],
-      description: status === 'callback' ? 
-        `Zaplanowano ponowny kontakt na ${callbackDates[id] ? format(callbackDates[id], 'dd/MM/yyyy') : 'wybraną datę'}` : 
+      description: status === 'callback' && callbackDates[id] ? 
+        `Zaplanowano ponowny kontakt na ${format(callbackDates[id] as Date, 'dd/MM/yyyy')}` : 
         "Status połączenia został zaktualizowany",
     });
   };
@@ -147,9 +148,6 @@ export default function AuctionRegistrations() {
       reg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       reg.phone.includes(searchTerm)
   );
-
-  // Import format function for toast messages
-  const { format } = require("date-fns");
 
   return (
     <div className="space-y-6">
