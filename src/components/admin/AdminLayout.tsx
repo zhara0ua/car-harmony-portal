@@ -48,10 +48,14 @@ export default function AdminLayout() {
   ];
 
   return (
-    <SidebarProvider>
-      <div className="flex h-screen">
-        <Sidebar className="h-screen">
-          <div className="py-2">
+    <div className="flex h-screen">
+      <aside className="bg-sidebar text-sidebar-foreground border-r w-64 h-full flex-shrink-0">
+        <div className="p-4 flex flex-col h-full">
+          <div className="mb-6">
+            <h2 className="text-xl font-bold">Admin Panel</h2>
+          </div>
+          
+          <div className="space-y-1 flex-1">
             {adminLinks.map((link) => (
               <Button
                 key={link.href}
@@ -64,32 +68,40 @@ export default function AdminLayout() {
               </Button>
             ))}
           </div>
-        </Sidebar>
-        
-        <main className="flex-1 p-4 overflow-auto">
-          <div className="flex justify-end items-center mb-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>AD</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuItem className="focus:outline-none">
-                  <span className="grid place-items-center">Admin</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="focus:outline-none">
-                  Wyloguj się
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <Outlet />
-        </main>
-      </div>
-    </SidebarProvider>
+          
+          <Button 
+            variant="outline" 
+            className="mt-auto flex items-center gap-2" 
+            onClick={handleLogout}
+          >
+            Wyloguj się
+          </Button>
+        </div>
+      </aside>
+      
+      <main className="flex-1 p-4 overflow-auto">
+        <div className="flex justify-end items-center mb-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>AD</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuItem className="focus:outline-none">
+                <span className="grid place-items-center">Admin</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="focus:outline-none">
+                Wyloguj się
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <Outlet />
+      </main>
+    </div>
   );
 }
