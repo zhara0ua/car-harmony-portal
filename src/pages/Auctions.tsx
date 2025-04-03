@@ -21,11 +21,14 @@ export default function Auctions() {
     queryKey: ['auction-cars', filters],
     queryFn: async () => {
       console.log('Fetching auction cars with filters:', filters);
+      
+      // Build the base query
       let query = supabase
         .from('auction_cars')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('end_date', { ascending: true });
       
+      // Apply filters
       if (filters.minYear) {
         query = query.gte('year', filters.minYear);
       }
@@ -48,20 +51,49 @@ export default function Auctions() {
         query = query.eq('fuel_type', filters.fuelType);
       }
       
-      // Handle mileage filtering
-      // Since mileage is stored as a string, we need to handle parsing
-      if (filters.minMileage || filters.maxMileage) {
-        // Get all results first then filter in JS since mileage is a string
-        const { data, error } = await query;
+      // Fetch all matching cars using pagination to bypass 1000 row limit
+      const fetchAllFilteredCars = async () => {
+        const PAGE_SIZE = 1000; // Supabase's max rows per request
+        let allCars: AuctionCar[] = [];
+        let page = 0;
+        let hasMore = true;
         
-        if (error) {
-          setErrorMessage(error.message);
-          setIsErrorDialogOpen(true);
-          throw error;
+        while (hasMore) {
+          const from = page * PAGE_SIZE;
+          const to = from + PAGE_SIZE - 1;
+          
+          console.log(`Fetching page ${page + 1}, rows ${from} to ${to}`);
+          
+          const { data, error, count } = await query.range(from, to);
+          
+          if (error) {
+            setErrorMessage(error.message);
+            setIsErrorDialogOpen(true);
+            throw error;
+          }
+          
+          if (data.length === 0) {
+            hasMore = false;
+          } else {
+            allCars = [...allCars, ...data];
+            page++;
+            
+            // Check if we should continue fetching
+            hasMore = count !== null && allCars.length < count;
+            console.log(`Fetched ${allCars.length} of ${count} total cars`);
+          }
         }
         
+        return allCars;
+      };
+      
+      // Handle mileage filtering separately since it requires JS filtering
+      if (filters.minMileage || filters.maxMileage) {
+        // Get all results first then filter in JS since mileage is a string
+        const allCars = await fetchAllFilteredCars();
+        
         // Now filter by mileage
-        return data.filter((car: AuctionCar) => {
+        return allCars.filter((car: AuctionCar) => {
           // Parse mileage to number, removing non-numeric characters
           const mileageStr = car.mileage?.toString() || '0';
           const mileageNum = parseInt(mileageStr.replace(/\D/g, ''));
@@ -77,16 +109,8 @@ export default function Auctions() {
         }) as AuctionCar[];
       }
 
-      const { data, error } = await query;
-      
-      console.log('Query result:', { data, error });
-      
-      if (error) {
-        setErrorMessage(error.message);
-        setIsErrorDialogOpen(true);
-        throw error;
-      }
-      return data as AuctionCar[];
+      // If no mileage filters, just get all cars
+      return fetchAllFilteredCars();
     }
   });
 

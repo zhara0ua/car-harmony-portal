@@ -30,7 +30,7 @@ export const AuctionCarsTable = ({ cars }: AuctionCarsTableProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Lista samochodów ({cars?.length || 0})</CardTitle>
+        <CardTitle>Lista samochodów ({totalCars})</CardTitle>
       </CardHeader>
       <CardContent>
         {cars?.length ? (
