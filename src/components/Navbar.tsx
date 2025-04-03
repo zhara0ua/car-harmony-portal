@@ -115,7 +115,7 @@ const Navbar = () => {
                   } hover:text-navy transition-colors`}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Samochody
+                  Nasze zapasy
                 </Link>
                 <Link
                   to="/auctions"

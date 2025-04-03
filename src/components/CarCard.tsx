@@ -57,7 +57,7 @@ const CarCard = ({
           className="w-full bg-navy hover:bg-navy/90 text-sm sm:text-base"
           onClick={() => navigate(`/car/${id}`)}
         >
-          Wiecej informacji
+          Zobacz więcej
         </Button>
       </CardFooter>
     </Card>
