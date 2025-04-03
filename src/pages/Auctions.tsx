@@ -7,6 +7,7 @@ import { AuctionSorting } from "@/components/auctions/AuctionSorting";
 import { AuctionsContent } from "@/components/auctions/AuctionsContent";
 import { AuctionErrorDialog } from "@/components/auctions/AuctionErrorDialog";
 import { useAuctionFiltering } from "@/hooks/useAuctionFiltering";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Auctions() {
   const { 
@@ -26,14 +27,16 @@ export default function Auctions() {
     handlePageChange
   } = useAuctionFiltering();
 
+  const isMobile = useIsMobile();
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="space-y-8">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Aukcje samochodów</h1>
+      <main className="flex-grow container mx-auto px-4 py-6 sm:py-8">
+        <div className="space-y-6 sm:space-y-8">
+          <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'flex-row justify-between items-center'}`}>
+            <h1 className="text-2xl sm:text-3xl font-bold">Aukcje samochodów</h1>
             
             <AuctionSorting 
               sortField={sortField}

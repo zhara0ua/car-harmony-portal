@@ -45,7 +45,7 @@ export const FuelMileageFilterSection = ({
           value={fuelType}
           onValueChange={(value) => onFilterChange({ fuelType: value })}
         >
-          <SelectTrigger id="fuel-type">
+          <SelectTrigger id="fuel-type" className="w-full">
             <SelectValue placeholder="Wybierz paliwo" />
           </SelectTrigger>
           <SelectContent>
@@ -78,6 +78,7 @@ export const FuelMileageFilterSection = ({
                 const value = e.target.value ? parseInt(e.target.value) : undefined;
                 onFilterChange({ minMileage: value });
               }}
+              className="w-full"
             />
           </div>
           <div>
@@ -89,6 +90,7 @@ export const FuelMileageFilterSection = ({
                 const value = e.target.value ? parseInt(e.target.value) : undefined;
                 onFilterChange({ maxMileage: value });
               }}
+              className="w-full"
             />
           </div>
         </div>
