@@ -1,0 +1,133 @@
+
+import { useState, useRef, useEffect } from "react";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FileUploadTab } from "./FileUploadTab";
+import { UrlUploadTab } from "./UrlUploadTab";
+import { ImagePreviewGrid } from "./ImagePreviewGrid";
+
+interface ImageUploaderProps {
+  initialImages: string[];
+  onImagesChange: (files: File[], previews: string[], mainImageIndex: number) => void;
+}
+
+export const ImageUploader = ({ initialImages = [], onImagesChange }: ImageUploaderProps) => {
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>(initialImages);
+  const [mainImageIndex, setMainImageIndex] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState<string>("upload");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Initialize with initial images
+    if (initialImages.length > 0) {
+      setImagePreviews(initialImages);
+      // Notify parent component
+      onImagesChange(uploadedFiles, initialImages, mainImageIndex);
+    }
+  }, [initialImages]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files);
+      const newPreviews: string[] = [];
+      
+      // Generate previews for each file
+      newFiles.forEach(file => {
+        const preview = URL.createObjectURL(file);
+        newPreviews.push(preview);
+      });
+      
+      // Update state with new files and previews
+      const updatedFiles = [...uploadedFiles, ...newFiles];
+      const updatedPreviews = [...imagePreviews, ...newPreviews];
+      
+      setUploadedFiles(updatedFiles);
+      setImagePreviews(updatedPreviews);
+      
+      // Notify parent component
+      onImagesChange(updatedFiles, updatedPreviews, mainImageIndex);
+      
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleUrlSubmit = (url: string) => {
+    if (url && url.trim() !== "" && url.startsWith("http")) {
+      // Add URL to previews
+      const updatedPreviews = [...imagePreviews, url];
+      setImagePreviews(updatedPreviews);
+      
+      // Notify parent component
+      onImagesChange(uploadedFiles, updatedPreviews, mainImageIndex);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const updatedPreviews = [...imagePreviews];
+    updatedPreviews.splice(index, 1);
+    
+    // If removing a file, also remove it from uploadedFiles
+    const isFilePreview = index < uploadedFiles.length;
+    let updatedFiles = [...uploadedFiles];
+    
+    if (isFilePreview) {
+      updatedFiles.splice(index, 1);
+    }
+    
+    // Update main image index if necessary
+    let newMainIndex = mainImageIndex;
+    if (index === mainImageIndex) {
+      // If removing the main image, set the first image as main
+      newMainIndex = updatedPreviews.length > 0 ? 0 : -1;
+    } else if (index < mainImageIndex) {
+      // If removing an image before the main image, decrement the index
+      newMainIndex--;
+    }
+    
+    setUploadedFiles(updatedFiles);
+    setImagePreviews(updatedPreviews);
+    setMainImageIndex(newMainIndex < 0 ? 0 : newMainIndex);
+    
+    // Notify parent component
+    onImagesChange(updatedFiles, updatedPreviews, newMainIndex < 0 ? 0 : newMainIndex);
+  };
+
+  const setAsMain = (index: number) => {
+    setMainImageIndex(index);
+    
+    // Notify parent component
+    onImagesChange(uploadedFiles, imagePreviews, index);
+  };
+
+  return (
+    <div className="space-y-4">
+      <Label>Зображення</Label>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="upload">Завантажити файл</TabsTrigger>
+          <TabsTrigger value="url">Додати за посиланням</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="upload" className="py-2">
+          <FileUploadTab onFileChange={handleFileChange} />
+        </TabsContent>
+        
+        <TabsContent value="url" className="py-2">
+          <UrlUploadTab onUrlSubmit={handleUrlSubmit} />
+        </TabsContent>
+      </Tabs>
+      
+      <ImagePreviewGrid 
+        imagePreviews={imagePreviews}
+        mainImageIndex={mainImageIndex}
+        onRemove={removeImage}
+        onSetMain={setAsMain}
+      />
+    </div>
+  );
+};
