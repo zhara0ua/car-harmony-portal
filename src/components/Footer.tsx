@@ -10,7 +10,7 @@ const Footer = () => {
                 <img 
                   src="/lovable-uploads/40b1e27f-66cd-44c0-8312-7503c9315f53.png" 
                   alt="KRIST IN AUTO" 
-                  className="h-16 bg-white p-2 rounded"
+                  className="h-12 w-auto bg-white p-2 rounded"
                 />
               </div>
               <p className="text-gray-300">
