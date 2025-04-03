@@ -15,6 +15,8 @@ import AdminInspections from "@/pages/admin/Inspections";
 import AdminSettings from "@/pages/admin/Settings";
 import AdminStatistics from "@/pages/admin/Statistics";
 import AdminAuctionCars from "@/pages/admin/AuctionCars";
+import AdminLogin from "@/pages/admin/Login";
+import { AdminAuthGuard } from "@/components/admin/AdminAuthGuard";
 import ScrapedCars from "@/pages/ScrapedCars";
 import Imports from "@/pages/Imports";
 import Auctions from "@/pages/Auctions";
@@ -33,14 +35,22 @@ function App() {
         <Route path="/imports" element={<Imports />} />
         <Route path="/scraped-cars" element={<ScrapedCars />} />
         <Route path="/auctions" element={<Auctions />} />
-        <Route path="/admin" element={<AdminDashboard />}>
-          <Route path="cars" element={<AdminCars />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="inspections" element={<AdminInspections />} />
-          <Route path="settings" element={<AdminSettings />} />
-          <Route path="statistics" element={<AdminStatistics />} />
-          <Route path="auction-cars" element={<AdminAuctionCars />} />
+        
+        {/* Admin login route */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        
+        {/* Protected admin routes */}
+        <Route element={<AdminAuthGuard />}>
+          <Route path="/admin" element={<AdminDashboard />}>
+            <Route path="cars" element={<AdminCars />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="inspections" element={<AdminInspections />} />
+            <Route path="settings" element={<AdminSettings />} />
+            <Route path="statistics" element={<AdminStatistics />} />
+            <Route path="auction-cars" element={<AdminAuctionCars />} />
+          </Route>
         </Route>
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />

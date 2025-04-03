@@ -1,5 +1,5 @@
 
-import { Link } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -11,13 +11,23 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Users, Car, ClipboardCheck, BarChart, Settings, Tag } from "lucide-react";
+import { Users, Car, ClipboardCheck, BarChart, Settings, Tag, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
-interface AdminDashboardProps {
-  children?: React.ReactNode;
-}
+const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-const AdminDashboard = ({ children }: AdminDashboardProps) => {
+  const handleLogout = () => {
+    localStorage.removeItem("adminAuthenticated");
+    toast({
+      title: "Успішний вихід",
+      description: "Ви вийшли з панелі адміністратора",
+    });
+    navigate("/admin/login");
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-100">
@@ -82,9 +92,19 @@ const AdminDashboard = ({ children }: AdminDashboardProps) => {
         </Sidebar>
         
         <main className="flex-1 p-6">
-          <SidebarTrigger />
+          <div className="flex justify-between items-center mb-6">
+            <SidebarTrigger />
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Вийти</span>
+            </Button>
+          </div>
           <div className="container mx-auto">
-            {children}
+            <Outlet />
           </div>
         </main>
       </div>
