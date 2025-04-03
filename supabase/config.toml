@@ -1,1 +1,5 @@
+
 project_id = "btkfrowwhgcnzgncjjny"
+
+[functions.scrape-auctions]
+verify_jwt = true

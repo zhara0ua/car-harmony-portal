@@ -43,6 +43,14 @@ const Navbar = () => {
               Samochody
             </Link>
             <Link
+              to="/auctions"
+              className={`${
+                isActive("/auctions") ? "text-navy font-semibold" : "text-gray-700"
+              } hover:text-navy transition-colors`}
+            >
+              Aukcje
+            </Link>
+            <Link
               to="/imports"
               className={`${
                 isActive("/imports") ? "text-navy font-semibold" : "text-gray-700"
@@ -99,6 +107,15 @@ const Navbar = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Samochody
+                </Link>
+                <Link
+                  to="/auctions"
+                  className={`${
+                    isActive("/auctions") ? "text-navy font-semibold" : "text-gray-700"
+                  } hover:text-navy transition-colors`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Aukcje
                 </Link>
                 <Link
                   to="/imports"
