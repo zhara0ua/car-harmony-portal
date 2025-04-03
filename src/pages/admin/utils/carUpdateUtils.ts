@@ -5,9 +5,9 @@ import { uploadMultipleImages } from "./imageUtils";
 
 export const updateCar = async (formData: FormData, carId: number, imageFiles: File[], mainImageIndex: number): Promise<boolean> => {
   try {
-    // Check authentication status
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    // Check admin authentication status from localStorage
+    const isAdminAuthenticated = localStorage.getItem("adminAuthenticated") === "true";
+    if (!isAdminAuthenticated) {
       toast({
         title: "Помилка авторизації",
         description: "Ви не авторизовані. Будь ласка, увійдіть у систему.",

@@ -4,9 +4,9 @@ import { toast } from "@/hooks/use-toast";
 
 export const deleteCar = async (carId: number): Promise<boolean> => {
   try {
-    // Check authentication status
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    // Check admin authentication status from localStorage
+    const isAdminAuthenticated = localStorage.getItem("adminAuthenticated") === "true";
+    if (!isAdminAuthenticated) {
       toast({
         title: "Помилка авторизації",
         description: "Ви не авторизовані. Будь ласка, увійдіть у систему.",
