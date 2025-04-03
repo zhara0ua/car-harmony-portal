@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { adminSupabase } from "@/integrations/supabase/adminClient";
 import { z } from "zod";
+import { useNavigate } from "react-router-dom";
 
 // Validation schema for the form
 const registrationSchema = z.object({
@@ -27,6 +28,7 @@ export const AuctionRegistrationDialog: React.FC<AuctionRegistrationDialogProps>
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +59,7 @@ export const AuctionRegistrationDialog: React.FC<AuctionRegistrationDialogProps>
         ]);
 
       if (error) {
+        console.error("Error inserting into auction_registrations:", error);
         throw error;
       }
 
@@ -83,8 +86,20 @@ export const AuctionRegistrationDialog: React.FC<AuctionRegistrationDialogProps>
     }
   };
 
+  const handleCloseDialog = () => {
+    // Navigate to home page when close button is clicked
+    navigate('/');
+    
+    // Show toast notification about quick registration
+    toast({
+      title: "Wymagana rejestracja",
+      description: "Szybka rejestracja jest wymagana, aby przeglądać aukcje samochodowe.",
+      variant: "default",
+    });
+  };
+
   return (
-    <Dialog open={isOpen}>
+    <Dialog open={isOpen} onOpenChange={handleCloseDialog}>
       <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="text-xl">Dostęp do aukcji</DialogTitle>
