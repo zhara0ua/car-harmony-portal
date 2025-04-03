@@ -1,6 +1,5 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
-import puppeteer from 'https://esm.sh/puppeteer@21.6.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,6 +21,7 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const proxyList = Deno.env.get('PROXY_LIST');
 
     if (!supabaseUrl || !supabaseKey) {
       console.error('Missing required credentials');
@@ -33,112 +33,40 @@ Deno.serve(async (req) => {
     const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
     console.log('Supabase client initialized');
 
-    const browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-    console.log('Browser launched');
+    // Use fetch with custom headers instead of puppeteer
+    console.log('Starting fetch with custom headers...');
     
-    const page = await browser.newPage();
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.5',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache'
+    };
     
-    // Set a user agent to avoid detection
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
+    // Use a proxy if available
+    const fetchOptions = {
+      method: 'GET',
+      headers: headers,
+    };
     
-    // Navigate to the page
-    await page.goto('https://www.openlane.eu/en/findcar', {
-      waitUntil: 'networkidle2',
-      timeout: 60000
-    });
+    console.log('Fetching data from openlane.eu...');
+    const response = await fetch('https://www.openlane.eu/en/findcar', fetchOptions);
     
-    console.log('Page loaded');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+    }
     
-    // Wait for the cars to load
-    await page.waitForSelector('.vehicle-card', { timeout: 60000 });
+    const htmlContent = await response.text();
+    console.log('Received HTML content, length:', htmlContent.length);
     
-    // Extract car data
-    const cars = await page.evaluate(() => {
-      const carElements = document.querySelectorAll('.vehicle-card');
-      
-      return Array.from(carElements).map(carEl => {
-        // Basic info
-        const titleEl = carEl.querySelector('.vehicle-card__title');
-        const title = titleEl ? titleEl.textContent?.trim() : '';
-        
-        // Price
-        const priceEl = carEl.querySelector('.vehicle-card__price');
-        const priceText = priceEl ? priceEl.textContent?.trim() : '0';
-        const priceMatch = priceText?.match(/\d+(?:[.,]\d+)?/);
-        const price = priceMatch ? parseFloat(priceMatch[0].replace(',', '.')) : 0;
-        
-        // Details
-        const detailsElements = carEl.querySelectorAll('.vehicle-card__details-item');
-        let year = 0;
-        let mileage = '';
-        let fuel = '';
-        let transmission = '';
-        
-        detailsElements.forEach(detail => {
-          const text = detail.textContent?.trim() || '';
-          if (/^\d{4}$/.test(text)) {
-            year = parseInt(text);
-          } else if (text.includes('km')) {
-            mileage = text;
-          } else if (['Diesel', 'Petrol', 'Electric', 'Hybrid'].some(f => text.includes(f))) {
-            fuel = text;
-          } else if (['Manual', 'Automatic'].some(t => text.includes(t))) {
-            transmission = text;
-          }
-        });
-        
-        // External ID
-        const idMatch = carEl.id ? carEl.id.match(/\d+/) : null;
-        const externalId = idMatch ? idMatch[0] : '';
-        
-        // Image
-        const imgEl = carEl.querySelector('.vehicle-card__image img');
-        const imageUrl = imgEl ? imgEl.getAttribute('src') : null;
-        
-        // Link
-        const linkEl = carEl.querySelector('a');
-        const externalUrl = linkEl ? 'https://www.openlane.eu' + linkEl.getAttribute('href') : '';
-        
-        // Make and model from title
-        const titleParts = title?.split(' ') || [];
-        const make = titleParts.length > 0 ? titleParts[0] : '';
-        const model = titleParts.length > 1 ? titleParts.slice(1).join(' ') : '';
-        
-        // End date (random date in the next 7 days)
-        const endDate = new Date();
-        endDate.setDate(endDate.getDate() + Math.floor(Math.random() * 7) + 1);
-        
-        return {
-          external_id: externalId || `openlane-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`,
-          title: title || 'Unknown Vehicle', // Provide default title if missing
-          start_price: price,
-          current_price: price,
-          year,
-          make,
-          model,
-          mileage,
-          fuel_type: fuel,
-          transmission,
-          location: 'Openlane EU',
-          image_url: imageUrl,
-          external_url: externalUrl || `https://www.openlane.eu/en/findcar`, // Provide default URL if missing
-          end_date: endDate.toISOString(),
-          status: 'active'
-        };
-      });
-    });
-    
-    console.log(`Extracted ${cars.length} cars`);
-    
-    // Close the browser
-    await browser.close();
-    console.log('Browser closed');
+    // Simple HTML parsing
+    const carData = parseHtmlForCars(htmlContent);
+    console.log(`Extracted ${carData.length} cars using simple parsing`);
     
     // Filter out any cars missing required fields
-    const validCars = cars.filter(car => car.title && car.external_url);
-    const invalidCount = cars.length - validCars.length;
+    const validCars = carData.filter(car => car.title && car.external_url);
+    const invalidCount = carData.length - validCars.length;
     
     if (invalidCount > 0) {
       console.warn(`Filtered out ${invalidCount} cars with missing title or external_url`);
@@ -195,3 +123,101 @@ Deno.serve(async (req) => {
     );
   }
 });
+
+// Simple HTML parser function
+function parseHtmlForCars(htmlContent: string) {
+  const cars = [];
+  const carCardRegex = /<div[^>]*class="vehicle-card"[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/g;
+  
+  let matches;
+  let index = 0;
+  
+  while ((matches = carCardRegex.exec(htmlContent)) !== null && index < 20) {
+    try {
+      const cardHtml = matches[1];
+      
+      // Extract basic info
+      const titleMatch = cardHtml.match(/<div[^>]*class="vehicle-card__title"[^>]*>([\s\S]*?)<\/div>/);
+      const title = titleMatch ? cleanHtml(titleMatch[1]) : 'Unknown Vehicle';
+      
+      // Price
+      const priceMatch = cardHtml.match(/<div[^>]*class="vehicle-card__price"[^>]*>([\s\S]*?)<\/div>/);
+      const priceText = priceMatch ? cleanHtml(priceMatch[1]) : '0';
+      const priceNumMatch = priceText.match(/\d+(?:[.,]\d+)?/);
+      const price = priceNumMatch ? parseFloat(priceNumMatch[0].replace(',', '.')) : 0;
+      
+      // Image URL
+      const imgMatch = cardHtml.match(/<img[^>]*src="([^"]*)"[^>]*>/);
+      const imageUrl = imgMatch ? imgMatch[1] : null;
+      
+      // Link
+      const linkMatch = cardHtml.match(/<a[^>]*href="([^"]*)"[^>]*>/);
+      const externalUrl = linkMatch ? 'https://www.openlane.eu' + linkMatch[1] : 'https://www.openlane.eu/en/findcar';
+      
+      // Extract details
+      const detailsMatch = cardHtml.match(/<div[^>]*class="vehicle-card__details"[^>]*>([\s\S]*?)<\/div>/);
+      const detailsHtml = detailsMatch ? detailsMatch[1] : '';
+      
+      const detailsRegex = /<div[^>]*class="vehicle-card__details-item"[^>]*>([\s\S]*?)<\/div>/g;
+      let detailsMatches;
+      let year = 0;
+      let mileage = '';
+      let fuel = '';
+      let transmission = '';
+      
+      while ((detailsMatches = detailsRegex.exec(detailsHtml)) !== null) {
+        const detailText = cleanHtml(detailsMatches[1]);
+        if (/^\d{4}$/.test(detailText)) {
+          year = parseInt(detailText);
+        } else if (detailText.includes('km')) {
+          mileage = detailText;
+        } else if (['Diesel', 'Petrol', 'Electric', 'Hybrid'].some(f => detailText.includes(f))) {
+          fuel = detailText;
+        } else if (['Manual', 'Automatic'].some(t => detailText.includes(t))) {
+          transmission = detailText;
+        }
+      }
+      
+      // Make and model from title
+      const titleParts = title.split(' ');
+      const make = titleParts.length > 0 ? titleParts[0] : '';
+      const model = titleParts.length > 1 ? titleParts.slice(1).join(' ') : '';
+      
+      // Generate a unique external ID
+      const externalId = `openlane-${Date.now()}-${Math.random().toString(36).substring(2, 6)}-${index}`;
+      
+      // End date (random date in the next 7 days)
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + Math.floor(Math.random() * 7) + 1);
+      
+      cars.push({
+        external_id: externalId,
+        title: title || 'Unknown Vehicle',
+        start_price: price,
+        current_price: price,
+        year,
+        make,
+        model,
+        mileage,
+        fuel_type: fuel,
+        transmission,
+        location: 'Openlane EU',
+        image_url: imageUrl,
+        external_url: externalUrl,
+        end_date: endDate.toISOString(),
+        status: 'active'
+      });
+      
+      index++;
+    } catch (e) {
+      console.error('Error parsing car card:', e);
+    }
+  }
+  
+  return cars;
+}
+
+// Helper function to clean HTML
+function cleanHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '').trim();
+}
