@@ -9,24 +9,30 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
+import { ArrowDown, ArrowUp } from "lucide-react";
+import { SortField, SortOrder } from "@/hooks/useAuctionCars";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export default function Auctions() {
   const [filters, setFilters] = useState<AuctionFiltersType>({});
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortField, setSortField] = useState<SortField>('end_date');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const carsPerPage = 20;
   
   const { data: cars, isLoading } = useQuery({
-    queryKey: ['auction-cars', filters],
+    queryKey: ['auction-cars', filters, sortField, sortOrder],
     queryFn: async () => {
-      console.log('Fetching auction cars with filters:', filters);
+      console.log('Fetching auction cars with filters and sort:', filters, sortField, sortOrder);
       
       // Build the base query
       let query = supabase
         .from('auction_cars')
         .select('*', { count: 'exact' })
-        .order('end_date', { ascending: true });
+        .order(sortField, { ascending: sortOrder === 'asc' });
       
       // Apply filters
       if (filters.minYear) {
@@ -120,6 +126,18 @@ export default function Auctions() {
     setCurrentPage(1); // Reset to first page when filters change
   };
 
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      // Toggle sort order if clicking on the same field
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new field and default to ascending
+      setSortField(field);
+      setSortOrder('asc');
+    }
+    setCurrentPage(1); // Reset to first page when sort changes
+  };
+
   // Calculate pagination
   const totalCars = cars?.length || 0;
   const totalPages = Math.ceil(totalCars / carsPerPage);
@@ -139,6 +157,14 @@ export default function Auctions() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const renderSortIcon = (field: SortField) => {
+    if (field !== sortField) return null;
+    
+    return sortOrder === 'asc' 
+      ? <ArrowUp className="h-4 w-4 ml-1" /> 
+      : <ArrowDown className="h-4 w-4 ml-1" />;
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -147,6 +173,28 @@ export default function Auctions() {
         <div className="space-y-8">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Aukcje samochodów</h1>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="ml-auto">
+                  Sortuj według {renderSortIcon(sortField)}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => handleSort('title')}>
+                  Nazwa {renderSortIcon('title')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleSort('year')}>
+                  Rok {renderSortIcon('year')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleSort('start_price')}>
+                  Cena {renderSortIcon('start_price')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleSort('end_date')}>
+                  Data zakończenia {renderSortIcon('end_date')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <AuctionFilters onFilterChange={handleFilterChange} />
@@ -163,7 +211,7 @@ export default function Auctions() {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {currentCars.map((car) => (
+                {currentCars?.map((car) => (
                   <AuctionCarCard key={car.id} car={car} />
                 ))}
               </div>
@@ -219,7 +267,7 @@ export default function Auctions() {
               )}
               
               <div className="mt-4 text-center text-sm text-muted-foreground">
-                Pokazano {currentCars.length} z {totalCars} aukcji
+                Pokazano {currentCars?.length} z {totalCars} aukcji
               </div>
             </>
           )}

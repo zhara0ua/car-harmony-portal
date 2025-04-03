@@ -3,7 +3,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AuctionCar } from "@/types/auction-car";
 
-export const useAuctionCars = () => {
+export type SortField = 'end_date' | 'start_price' | 'year' | 'title';
+export type SortOrder = 'asc' | 'desc';
+
+export interface SortOptions {
+  field: SortField;
+  order: SortOrder;
+}
+
+export const useAuctionCars = (sortOptions?: SortOptions) => {
   const fetchAllCars = async (): Promise<AuctionCar[]> => {
     const PAGE_SIZE = 1000; // Supabase's max rows per request
     let allCars: AuctionCar[] = [];
@@ -11,6 +19,11 @@ export const useAuctionCars = () => {
     let hasMore = true;
     
     console.log('Starting to fetch all auction cars');
+    console.log('Sorting by:', sortOptions?.field, sortOptions?.order);
+    
+    // Default sort field and order
+    const sortField = sortOptions?.field || 'end_date';
+    const sortOrder = sortOptions?.order || 'asc';
     
     while (hasMore) {
       const from = page * PAGE_SIZE;
@@ -21,7 +34,7 @@ export const useAuctionCars = () => {
       const { data, error, count } = await supabase
         .from('auction_cars')
         .select('*', { count: 'exact' })
-        .order('end_date', { ascending: true })
+        .order(sortField, { ascending: sortOrder === 'asc' })
         .range(from, to);
       
       if (error) {
@@ -56,7 +69,7 @@ export const useAuctionCars = () => {
     isLoading, 
     refetch 
   } = useQuery({
-    queryKey: ['admin-auction-cars'],
+    queryKey: ['admin-auction-cars', sortOptions],
     queryFn: fetchAllCars
   });
 

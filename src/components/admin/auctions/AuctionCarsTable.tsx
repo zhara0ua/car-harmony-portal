@@ -11,12 +11,23 @@ import {
 } from "@/components/ui/table";
 import { AuctionCar } from "@/types/auction-car";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
+import { ArrowDown, ArrowUp } from "lucide-react";
+import { SortField, SortOrder } from "@/hooks/useAuctionCars";
 
 interface AuctionCarsTableProps {
   cars: AuctionCar[] | null;
+  onSort?: (field: SortField, order: SortOrder) => void;
+  currentSortField?: SortField;
+  currentSortOrder?: SortOrder;
 }
 
-export const AuctionCarsTable = ({ cars }: AuctionCarsTableProps) => {
+export const AuctionCarsTable = ({ 
+  cars, 
+  onSort,
+  currentSortField = 'end_date',
+  currentSortOrder = 'asc'
+}: AuctionCarsTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const carsPerPage = 20;
 
@@ -26,6 +37,26 @@ export const AuctionCarsTable = ({ cars }: AuctionCarsTableProps) => {
   const indexOfLastCar = currentPage * carsPerPage;
   const indexOfFirstCar = indexOfLastCar - carsPerPage;
   const currentCars = cars?.slice(indexOfFirstCar, indexOfLastCar) || [];
+
+  const handleSort = (field: SortField) => {
+    if (!onSort) return;
+    
+    // If clicking on the current sort field, toggle direction
+    if (field === currentSortField) {
+      onSort(field, currentSortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Default to ascending for a new field
+      onSort(field, 'asc');
+    }
+  };
+
+  const renderSortIcon = (field: SortField) => {
+    if (field !== currentSortField) return null;
+    
+    return currentSortOrder === 'asc' 
+      ? <ArrowUp className="h-4 w-4 ml-1" /> 
+      : <ArrowDown className="h-4 w-4 ml-1" />;
+  };
 
   return (
     <Card>
@@ -40,10 +71,46 @@ export const AuctionCarsTable = ({ cars }: AuctionCarsTableProps) => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>ID</TableHead>
-                    <TableHead>Nazwa</TableHead>
-                    <TableHead>Rok</TableHead>
-                    <TableHead>Cena</TableHead>
-                    <TableHead>Data zakończenia</TableHead>
+                    <TableHead>
+                      <Button 
+                        variant="ghost" 
+                        className="p-0 font-medium h-auto flex items-center"
+                        onClick={() => handleSort('title')}
+                      >
+                        Nazwa
+                        {renderSortIcon('title')}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button 
+                        variant="ghost" 
+                        className="p-0 font-medium h-auto flex items-center"
+                        onClick={() => handleSort('year')}
+                      >
+                        Rok
+                        {renderSortIcon('year')}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button 
+                        variant="ghost" 
+                        className="p-0 font-medium h-auto flex items-center"
+                        onClick={() => handleSort('start_price')}
+                      >
+                        Cena
+                        {renderSortIcon('start_price')}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button 
+                        variant="ghost" 
+                        className="p-0 font-medium h-auto flex items-center"
+                        onClick={() => handleSort('end_date')}
+                      >
+                        Data zakończenia
+                        {renderSortIcon('end_date')}
+                      </Button>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
