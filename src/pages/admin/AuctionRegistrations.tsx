@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Table,
@@ -18,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { toast } from "@/components/ui/use-toast"
+import { Textarea } from "@/components/ui/textarea"
 
 type AuctionRegistration = {
   id: number;
@@ -80,7 +82,7 @@ const AuctionRegistrations = () => {
     setStatus(newStatus);
   };
 
-  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleNotesChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setNotes(e.target.value);
   };
 
@@ -163,7 +165,7 @@ const AuctionRegistrations = () => {
       
       <div className="mt-2">
         <Label htmlFor="notes">Notes</Label>
-        <Input
+        <Textarea
           id="notes"
           value={notes}
           onChange={handleNotesChange}
