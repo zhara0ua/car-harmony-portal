@@ -41,13 +41,13 @@ const CarCard = ({
           <div className="space-y-2">
             <p className="text-xl sm:text-2xl font-bold text-navy">{price}</p>
             <div className="grid grid-cols-2 gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600">
-              <span>Рік: {year}</span>
-              <span>Пробіг: {mileage}</span>
-              <span>Тип: {category}</span>
-              <span>КПП: {transmission}</span>
-              <span>Паливо: {fuel_type}</span>
-              <span>Об'єм: {engine_size}</span>
-              <span className="col-span-2">Потужність: {engine_power}</span>
+              <span>Rok: {year}</span>
+              <span>Przebieg: {mileage}</span>
+              <span>Typ: {category}</span>
+              <span>Skrzynia: {transmission}</span>
+              <span>Paliwo: {fuel_type}</span>
+              <span>Pojemnosc: {engine_size}</span>
+              <span className="col-span-2">Moc: {engine_power}</span>
             </div>
           </div>
         </div>
@@ -57,7 +57,7 @@ const CarCard = ({
           className="w-full bg-navy hover:bg-navy/90 text-sm sm:text-base"
           onClick={() => navigate(`/car/${id}`)}
         >
-          Дізнатись більше
+          Wiecej informacji
         </Button>
       </CardFooter>
     </Card>
