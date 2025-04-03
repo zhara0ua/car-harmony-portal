@@ -69,12 +69,12 @@ const CarFilters = ({
 }: CarFiltersProps) => {
   const { t } = useTranslation();
   
-  // Default fuel types if none provided from API
-  const defaultFuelTypes = ["Бензин", "Дизель", "Гібрид", "Електро"];
+  // Default fuel types if none provided from API - updated to Polish
+  const defaultFuelTypes = ["Benzyna", "Diesel", "Hybryd", "Elektro"];
   const fuelTypesToDisplay = availableFuelTypes.length > 0 ? availableFuelTypes : defaultFuelTypes;
   
-  // Default transmissions if none provided from API
-  const defaultTransmissions = ["Автомат", "Механіка", "Робот", "Варіатор"];
+  // Default transmissions if none provided from API - updated to Polish
+  const defaultTransmissions = ["Automat", "Manualna", "Robot", "Bezstopniowa"];
   const transmissionsToDisplay = availableTransmissions.length > 0 ? availableTransmissions : defaultTransmissions;
   
   return (
