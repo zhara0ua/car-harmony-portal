@@ -155,7 +155,7 @@ export function AuctionFilters({ onFilterChange }: AuctionFiltersProps) {
                 <SelectValue placeholder="Wybierz markę" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Wszystkie marki</SelectItem>
+                <SelectItem value="all_makes">Wszystkie marki</SelectItem>
                 {makes.map((make) => (
                   <SelectItem key={make} value={make}>
                     {make}
@@ -170,13 +170,13 @@ export function AuctionFilters({ onFilterChange }: AuctionFiltersProps) {
             <Select
               value={filters.model}
               onValueChange={(value) => handleFilterChange('model', value)}
-              disabled={!filters.make}
+              disabled={!filters.make || filters.make === "all_makes"}
             >
               <SelectTrigger id="model">
                 <SelectValue placeholder="Wybierz model" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Wszystkie modele</SelectItem>
+                <SelectItem value="all_models">Wszystkie modele</SelectItem>
                 {models.map((model) => (
                   <SelectItem key={model} value={model}>
                     {model}

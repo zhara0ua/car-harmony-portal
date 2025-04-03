@@ -35,10 +35,10 @@ export default function Auctions() {
       if (filters.maxPrice) {
         query = query.lte('start_price', filters.maxPrice);
       }
-      if (filters.make) {
+      if (filters.make && filters.make !== "all_makes") {
         query = query.eq('make', filters.make);
       }
-      if (filters.model) {
+      if (filters.model && filters.model !== "all_models") {
         query = query.eq('model', filters.model);
       }
 
