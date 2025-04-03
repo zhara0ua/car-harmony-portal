@@ -42,6 +42,7 @@ function App() {
         {/* Protected admin routes */}
         <Route element={<AdminAuthGuard />}>
           <Route path="/admin" element={<AdminDashboard />}>
+            <Route index element={<AdminStatistics />} />
             <Route path="cars" element={<AdminCars />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="inspections" element={<AdminInspections />} />

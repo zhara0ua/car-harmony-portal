@@ -1,6 +1,5 @@
 
 import React from "react";
-import AdminDashboard from "@/pages/admin/Dashboard";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -8,8 +7,8 @@ interface AdminLayoutProps {
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   return (
-    <AdminDashboard>
+    <div className="w-full">
       {children}
-    </AdminDashboard>
+    </div>
   );
 };

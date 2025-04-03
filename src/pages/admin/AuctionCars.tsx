@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AuctionCarsTable } from "@/components/admin/auctions/AuctionCarsTable";
 import { AuctionFileUploader } from "@/components/admin/auctions/AuctionFileUploader";
 import { SortField, SortOrder, useAuctionCars } from "@/hooks/useAuctionCars";
@@ -17,31 +16,29 @@ export default function AuctionCars() {
   };
 
   return (
-    <AdminLayout>
-      <div className="space-y-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Import samochodów aukcyjnych</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AuctionFileUploader onUploadSuccess={refetch} />
-          </CardContent>
-        </Card>
+    <div className="space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Import samochodów aukcyjnych</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AuctionFileUploader onUploadSuccess={refetch} />
+        </CardContent>
+      </Card>
 
-        <div className="relative">
-          {isLoading && (
-            <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-            </div>
-          )}
-          <AuctionCarsTable 
-            cars={cars} 
-            onSort={handleSort}
-            currentSortField={sortField}
-            currentSortOrder={sortOrder}
-          />
-        </div>
+      <div className="relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+          </div>
+        )}
+        <AuctionCarsTable 
+          cars={cars} 
+          onSort={handleSort}
+          currentSortField={sortField}
+          currentSortOrder={sortOrder}
+        />
       </div>
-    </AdminLayout>
+    </div>
   );
 }
