@@ -24,9 +24,17 @@ const CarImageGallery = ({ image, images, name }: CarImageGalleryProps) => {
     closeGallery
   } = useGallery(image, images);
   
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      openGallery();
+    } else {
+      closeGallery();
+    }
+  };
+  
   return (
     <div className="p-4 sm:p-6">
-      <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
+      <Dialog open={isGalleryOpen} onOpenChange={handleOpenChange}>
         {isMobile ? (
           <GalleryFullscreenView
             images={allImages}
