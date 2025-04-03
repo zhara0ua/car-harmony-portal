@@ -33,6 +33,17 @@ export const fetchCars = async () => {
 
 export const createCar = async (formData: FormData, imageFiles: File[], mainImageIndex: number): Promise<boolean> => {
   try {
+    // Check authentication status
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: "Помилка авторизації",
+        description: "Ви не авторизовані. Будь ласка, увійдіть у систему.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
     const priceNumber = parseInt(formData.get('price') as string);
@@ -81,7 +92,23 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
     };
 
     const { error } = await supabase.from('cars').insert(newCar);
-    if (error) throw error;
+    if (error) {
+      console.error('Database error:', error);
+      if (error.message.includes('row-level security')) {
+        toast({
+          title: "Помилка безпеки",
+          description: "Немає прав для додавання автомобіля. Будь ласка, перевірте, чи ви авторизовані.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Помилка бази даних",
+          description: `${error.message}`,
+          variant: "destructive",
+        });
+      }
+      return false;
+    }
 
     toast({
       title: "Успішно",
@@ -93,7 +120,7 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
     console.error('Error adding car:', error);
     toast({
       title: "Помилка",
-      description: "Не вдалося додати автомобіль",
+      description: error instanceof Error ? error.message : "Не вдалося додати автомобіль",
       variant: "destructive",
     });
     return false;
@@ -102,6 +129,17 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
 
 export const updateCar = async (formData: FormData, carId: number, imageFiles: File[], mainImageIndex: number): Promise<boolean> => {
   try {
+    // Check authentication status
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: "Помилка авторизації",
+        description: "Ви не авторизовані. Будь ласка, увійдіть у систему.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
     const make = formData.get('make') as string;
     const model = formData.get('model') as string;
     const priceNumber = parseInt(formData.get('price') as string);
@@ -114,7 +152,10 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
       .eq('id', carId)
       .single();
     
-    if (fetchError) throw fetchError;
+    if (fetchError) {
+      console.error('Error fetching car data:', fetchError);
+      throw fetchError;
+    }
     
     // Create a folder name based on car ID
     const folderName = `car_${carId}`;
@@ -168,7 +209,23 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
       .update(updatedCar)
       .eq('id', carId);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Database error:', error);
+      if (error.message.includes('row-level security')) {
+        toast({
+          title: "Помилка безпеки",
+          description: "Немає прав для оновлення автомобіля. Будь ласка, перевірте, чи ви авторизовані.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Помилка бази даних",
+          description: `${error.message}`,
+          variant: "destructive",
+        });
+      }
+      return false;
+    }
 
     toast({
       title: "Успішно",
@@ -180,7 +237,7 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
     console.error('Error updating car:', error);
     toast({
       title: "Помилка",
-      description: "Не вдалося оновити дані автомобіля",
+      description: error instanceof Error ? error.message : "Не вдалося оновити дані автомобіля",
       variant: "destructive",
     });
     return false;
@@ -189,12 +246,39 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
 
 export const deleteCar = async (carId: number): Promise<boolean> => {
   try {
+    // Check authentication status
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: "Помилка авторизації",
+        description: "Ви не авторизовані. Будь ласка, увійдіть у систему.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
     const { error } = await supabase
       .from('cars')
       .delete()
       .eq('id', carId);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Database error:', error);
+      if (error.message.includes('row-level security')) {
+        toast({
+          title: "Помилка безпеки",
+          description: "Немає прав для видалення автомобіля. Будь ласка, перевірте, чи ви авторизовані.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Помилка бази даних",
+          description: `${error.message}`,
+          variant: "destructive",
+        });
+      }
+      return false;
+    }
 
     toast({
       title: "Успішно",
@@ -206,7 +290,7 @@ export const deleteCar = async (carId: number): Promise<boolean> => {
     console.error('Error deleting car:', error);
     toast({
       title: "Помилка",
-      description: "Не вдалося видалити автомобіль",
+      description: error instanceof Error ? error.message : "Не вдалося видалити автомобіль",
       variant: "destructive",
     });
     return false;

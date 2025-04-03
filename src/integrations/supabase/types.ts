@@ -119,6 +119,7 @@ export type Database = {
           fuel_type: string
           id: number
           image: string
+          images: string[] | null
           make: string
           mileage: string
           model: string
@@ -136,6 +137,7 @@ export type Database = {
           fuel_type: string
           id?: number
           image: string
+          images?: string[] | null
           make: string
           mileage: string
           model: string
@@ -153,6 +155,7 @@ export type Database = {
           fuel_type?: string
           id?: number
           image?: string
+          images?: string[] | null
           make?: string
           mileage?: string
           model?: string
