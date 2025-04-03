@@ -7,16 +7,20 @@ export const uploadImage = async (file: File, folderName: string): Promise<strin
   try {
     const filename = `${folderName}/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
     
-    // Using the admin client for storage operations
+    // Using the admin client for storage operations with explicit content-type
     const { data, error } = await adminSupabase.storage
       .from('cars')
-      .upload(filename, file);
+      .upload(filename, file, {
+        contentType: file.type, // Explicitly set the content type
+        cacheControl: '3600'
+      });
 
     if (error) {
       console.error('Error uploading image:', error);
       throw error;
     }
 
+    // Get the public URL of the uploaded file
     const { data: urlData } = adminSupabase.storage
       .from('cars')
       .getPublicUrl(filename);

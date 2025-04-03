@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { adminSupabase } from "@/integrations/supabase/adminClient";
 import { toast } from "@/hooks/use-toast";
@@ -37,18 +36,21 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
     // Create a folder name based on car ID
     const folderName = `car_${carId}`;
     
-    // Combine existing images with new ones
-    let allImageUrls: string[] = currentCar.images || [];
+    // Handle images array
+    let allImageUrls: string[] = [];
     
-    // If no images array but has image property, initialize with it
-    if (!allImageUrls.length && currentCar.image) {
-      allImageUrls = [currentCar.image];
-    }
-    
-    // Upload new images if any
+    // If there are new files to upload, they should completely replace the existing images
     if (imageFiles.length > 0) {
       const newImageUrls = await uploadMultipleImages(imageFiles, folderName);
-      allImageUrls = [...allImageUrls, ...newImageUrls];
+      allImageUrls = newImageUrls;
+    } else {
+      // If no new images were uploaded, keep the existing ones
+      allImageUrls = currentCar.images || [];
+      
+      // If no images array but has image property, initialize with it
+      if (!allImageUrls.length && currentCar.image) {
+        allImageUrls = [currentCar.image];
+      }
     }
     
     // Make sure we have at least one image
