@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Download, Search, Phone, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AuctionRegistration } from "./types/auction-registration";
@@ -53,11 +54,11 @@ export default function AuctionRegistrations() {
         id: item.id.toString(),
         createdAt: item.created_at,
         name: item.name,
-        email: item.email || '',
+        email: item.email || undefined,
         phone: item.phone,
-        carId: item.car_id?.toString() || '',
-        carBrand: item.car_brand || '',
-        carModel: item.car_model || '',
+        carId: item.car_id?.toString() || undefined,
+        carBrand: item.car_brand || undefined,
+        carModel: item.car_model || undefined,
         callStatus: {
           status: 'not_called',
           notes: ''
@@ -265,7 +266,6 @@ export default function AuctionRegistrations() {
                     <TableHead>Osoba</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Przypomnienie</TableHead>
-                    <TableHead>Notatki</TableHead>
                     <TableHead>Akcje</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -279,7 +279,7 @@ export default function AuctionRegistrations() {
                       
                       return (
                         <>
-                          {/* First row with name, status, reminder, and notes */}
+                          {/* First row with name, status, reminder, and actions */}
                           <TableRow key={`${registration.id}-1`} className={rowClass}>
                             <TableCell className="py-3">
                               <div className="font-medium">{registration.name}</div>
@@ -376,25 +376,6 @@ export default function AuctionRegistrations() {
                               )}
                             </TableCell>
                             <TableCell>
-                              <Input
-                                placeholder="Dodaj notatkę..."
-                                value={notes[registration.id] || callStatus[registration.id]?.notes || ""}
-                                onChange={(e) => handleNoteChange(registration.id, e.target.value)}
-                                onBlur={() => {
-                                  if (notes[registration.id]) {
-                                    const newStatus = {
-                                      ...callStatus,
-                                      [registration.id]: {
-                                        ...callStatus[registration.id] || { status: 'not_called' },
-                                        notes: notes[registration.id]
-                                      }
-                                    };
-                                    saveCallStatus(newStatus);
-                                  }
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell>
                               <div className="flex space-x-2">
                                 {status === 'not_called' && (
                                   <Button 
@@ -435,7 +416,7 @@ export default function AuctionRegistrations() {
                           
                           {/* Second row for additional information */}
                           <TableRow key={`${registration.id}-2`} className={`${rowClass} border-t-0`}>
-                            <TableCell colSpan={5} className="py-2 text-xs text-muted-foreground">
+                            <TableCell colSpan={4} className="py-2 text-xs text-muted-foreground">
                               <div className="flex items-center space-x-4">
                                 <div>
                                   <span className="font-medium">ID:</span> {registration.id}
@@ -451,12 +432,36 @@ export default function AuctionRegistrations() {
                               </div>
                             </TableCell>
                           </TableRow>
+                          
+                          {/* New third row for notes */}
+                          <TableRow key={`${registration.id}-3`} className={`${rowClass} border-t-0`}>
+                            <TableCell colSpan={4} className="py-2">
+                              <Textarea
+                                placeholder="Dodaj notatkę..."
+                                value={notes[registration.id] || callStatus[registration.id]?.notes || ""}
+                                onChange={(e) => handleNoteChange(registration.id, e.target.value)}
+                                onBlur={() => {
+                                  if (notes[registration.id]) {
+                                    const newStatus = {
+                                      ...callStatus,
+                                      [registration.id]: {
+                                        ...callStatus[registration.id] || { status: 'not_called' },
+                                        notes: notes[registration.id]
+                                      }
+                                    };
+                                    saveCallStatus(newStatus);
+                                  }
+                                }}
+                                className="min-h-[80px] w-full"
+                              />
+                            </TableCell>
+                          </TableRow>
                         </>
                       );
                     })
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                      <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
                         Brak zarejestrowanych użytkowników
                       </TableCell>
                     </TableRow>
