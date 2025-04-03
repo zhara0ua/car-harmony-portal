@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,12 +60,9 @@ export const useAuctionFiltering = () => {
       }
       
       if (filters.transmission && filters.transmission !== "all_transmissions") {
-        console.log(`Applying transmission filter: ${filters.transmission}`);
-        
-        // Always ensure we're using lowercase for transmission values to match the database
-        // DB schema has 'manual' and 'automatic' in lowercase
+        console.log(`Applying transmission filter, raw value: "${filters.transmission}"`);
         const transmissionValue = filters.transmission.toLowerCase();
-        console.log(`Converted transmission value to lowercase: ${transmissionValue}`);
+        console.log(`Converted transmission value to lowercase: "${transmissionValue}"`);
         
         query = query.eq('transmission', transmissionValue);
       }

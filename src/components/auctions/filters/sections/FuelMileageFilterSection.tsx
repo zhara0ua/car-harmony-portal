@@ -1,10 +1,10 @@
 
 import React from "react";
-import { AuctionFilters } from "@/types/auction-car";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TransmissionFilterComponent } from "./TransmissionFilterComponent";
-import { FuelTypeFilterComponent } from "./FuelTypeFilterComponent";
+import { Input } from "@/components/ui/input";
+import { FuelTypeFilterComponent } from "@/components/auctions/filters/sections/FuelTypeFilterComponent";
+import { TransmissionFilterComponent } from "@/components/auctions/filters/sections/TransmissionFilterComponent";
+import { AuctionFilters } from "@/types/auction-car";
 
 interface FuelMileageFilterSectionProps {
   fuelType?: string;
@@ -19,7 +19,7 @@ export const FuelMileageFilterSection = ({
   minMileage,
   maxMileage,
   transmission,
-  onFilterChange,
+  onFilterChange
 }: FuelMileageFilterSectionProps) => {
   return (
     <div className="space-y-4">
@@ -36,7 +36,7 @@ export const FuelMileageFilterSection = ({
       <TransmissionFilterComponent
         value={transmission}
         onChange={(value) => {
-          console.log(`Setting transmission filter: ${value}`);
+          console.log(`FuelMileageFilterSection: setting transmission to "${value}"`);
           onFilterChange({ transmission: value });
         }}
       />

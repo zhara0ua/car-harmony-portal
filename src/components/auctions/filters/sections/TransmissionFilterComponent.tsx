@@ -37,32 +37,27 @@ export const TransmissionFilterComponent = ({
 
   // Map display names back to backend values
   const getBackendValue = (displayName: string) => {
+    // Special cases for the dropdown options
     if (displayName === "Wszystkie skrzynie biegów") {
       return "all_transmissions";
     }
     
-    // Special case for "Manual" directly entered display name
-    if (displayName === "Manual") {
-      console.log("Direct match for Manual, returning 'manual'");
-      return "manual";
-    }
-
-    // Special case for "Automat" directly entered display name
-    if (displayName === "Automat") {
-      console.log("Direct match for Automat, returning 'automatic'");
-      return "automatic";
+    // Find backend value by display name
+    for (const [backend, display] of Object.entries(transmissionMap)) {
+      if (display === displayName) {
+        console.log(`Found exact match for "${displayName}" -> "${backend}"`);
+        return backend;
+      }
     }
     
-    // Find backend value by display name
-    const entry = Object.entries(transmissionMap).find(([_, display]) => display === displayName);
-    console.log(`Finding backend value for "${displayName}". Result:`, entry);
-    return entry ? entry[0] : displayName.toLowerCase(); // Ensure we return lowercase for direct backend values
+    // If we get here, it's either a direct input of a backend value or unknown
+    console.log(`No mapping found for "${displayName}", returning lowercase value`);
+    return displayName.toLowerCase();
   };
 
   const handleTransmissionChange = (selectedValue: string) => {
     const backendValue = getBackendValue(selectedValue);
-    console.log(`Transmission selected: ${selectedValue} -> backend value: ${backendValue}`);
-    console.log(`Setting transmission filter: ${backendValue}`);
+    console.log(`TransmissionFilterComponent: selected "${selectedValue}" -> backend value: "${backendValue}"`);
     onChange(backendValue);
   };
 
