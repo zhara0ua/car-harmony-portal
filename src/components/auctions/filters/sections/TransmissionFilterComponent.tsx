@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Label } from "@/components/ui/label";
 import {
@@ -21,7 +20,7 @@ export const TransmissionFilterComponent = ({
 }: TransmissionFilterComponentProps) => {
   const { transmissions, isLoading } = useFilterData();
   
-  // Transmission mapping - backend values to display names
+  // Simplified transmission mapping that preserves case exactly
   const transmissionMap: Record<string, string> = {
     "Automatic": "Automatic",
     "Manual": "Manual"
@@ -35,32 +34,24 @@ export const TransmissionFilterComponent = ({
     return transmissionMap[backendValue] || backendValue;
   };
 
-  // Map display names back to backend values
+  // Map display names back to backend values - preserving case
   const getBackendValue = (displayName: string) => {
     // Special case for "Wszystkie skrzynie biegów"
     if (displayName === "Wszystkie skrzynie biegów") {
       return "all_transmissions";
     }
     
-    // Special case for "Manual"
+    // Keep exact case for Manual and Automatic
     if (displayName === "Manual") {
       return "Manual";
     }
     
-    // Special case for "Automat"
-    if (displayName === "Automat") {
-      return "automatic";
+    if (displayName === "Automatic") {
+      return "Automatic";
     }
     
-    // For other values, check the mapping or return as is (lowercase)
-    for (const [backend, display] of Object.entries(transmissionMap)) {
-      if (display === displayName) {
-        return backend;
-      }
-    }
-    
-    // Return lowercase for any other value
-    return displayName.toLowerCase();
+    // For other values, return the transmission as-is without converting case
+    return displayName;
   };
 
   const handleTransmissionChange = (selectedValue: string) => {
@@ -88,8 +79,8 @@ export const TransmissionFilterComponent = ({
           {transmissions
             .filter(t => t.toLowerCase() !== "manual" && t.toLowerCase() !== "automatic")
             .map((transmission) => (
-              <SelectItem key={transmission} value={getDisplayName(transmission)}>
-                {getDisplayName(transmission)}
+              <SelectItem key={transmission} value={transmission}>
+                {transmission}
               </SelectItem>
             ))}
         </SelectContent>

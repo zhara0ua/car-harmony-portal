@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,22 +63,10 @@ export const useAuctionFiltering = () => {
       if (filters.transmission && filters.transmission !== "all_transmissions") {
         console.log(`Applying transmission filter: "${filters.transmission}"`);
         
-        let transmissionValue: string;
-        
-        // Exact matches for our special cases
-        if (filters.transmission === "manual") {
-          transmissionValue = "manual";
-          console.log(`Using exact transmission value: "manual"`);
-        } else if (filters.transmission === "automatic") {
-          transmissionValue = "automatic";
-          console.log(`Using exact transmission value: "automatic"`);
-        } else {
-          // For any other value, use it as-is but lowercase
-          transmissionValue = filters.transmission.toLowerCase();
-          console.log(`Using transmission value as lowercase: "${transmissionValue}"`);
-        }
-        
-        query = query.eq('transmission', transmissionValue);
+        // IMPORTANT: Use the exact transmission value without converting to lowercase
+        // This ensures "Manual" stays as "Manual" and not "manual"
+        query = query.eq('transmission', filters.transmission);
+        console.log(`Using exact transmission value: "${filters.transmission}"`);
       }
       
       // Fetch all matching cars using pagination to bypass 1000 row limit
