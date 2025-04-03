@@ -37,6 +37,9 @@ interface CarFiltersProps {
   setSortBy: (value: string) => void;
   uniqueMakes: string[];
   uniqueModels: string[];
+  availableFuelTypes?: string[];
+  availableTransmissions?: string[];
+  isFilterDataLoading?: boolean;
 }
 
 const CarFilters = ({
@@ -60,8 +63,19 @@ const CarFilters = ({
   setSortBy,
   uniqueMakes,
   uniqueModels,
+  availableFuelTypes = [],
+  availableTransmissions = [],
+  isFilterDataLoading = false,
 }: CarFiltersProps) => {
   const { t } = useTranslation();
+  
+  // Default fuel types if none provided from API
+  const defaultFuelTypes = ["Бензин", "Дизель", "Гібрид", "Електро"];
+  const fuelTypesToDisplay = availableFuelTypes.length > 0 ? availableFuelTypes : defaultFuelTypes;
+  
+  // Default transmissions if none provided from API
+  const defaultTransmissions = ["Автомат", "Механіка", "Робот", "Варіатор"];
+  const transmissionsToDisplay = availableTransmissions.length > 0 ? availableTransmissions : defaultTransmissions;
   
   return (
     <div className="mb-8">
@@ -144,30 +158,30 @@ const CarFilters = ({
 
             <div className="space-y-2">
               <Label>{t("cars.filters.transmission")}</Label>
-              <Select value={transmission} onValueChange={setTransmission}>
+              <Select value={transmission} onValueChange={setTransmission} disabled={isFilterDataLoading}>
                 <SelectTrigger>
                   <SelectValue placeholder={t("cars.filters.transmissionType")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("cars.filters.all")}</SelectItem>
-                  <SelectItem value="Автомат">Automatyczna</SelectItem>
-                  <SelectItem value="Механіка">Manualna</SelectItem>
+                  {transmissionsToDisplay.map((item) => (
+                    <SelectItem key={item} value={item}>{item}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <Label>{t("cars.filters.fuelType")}</Label>
-              <Select value={fuelType} onValueChange={setFuelType}>
+              <Select value={fuelType} onValueChange={setFuelType} disabled={isFilterDataLoading}>
                 <SelectTrigger>
                   <SelectValue placeholder={t("cars.filters.fuelTypePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("cars.filters.all")}</SelectItem>
-                  <SelectItem value="Бензин">Benzyna</SelectItem>
-                  <SelectItem value="Дизель">Diesel</SelectItem>
-                  <SelectItem value="Гібрид">Hybryda</SelectItem>
-                  <SelectItem value="Електро">Elektryczny</SelectItem>
+                  {fuelTypesToDisplay.map((item) => (
+                    <SelectItem key={item} value={item}>{item}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

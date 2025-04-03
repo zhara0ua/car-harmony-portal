@@ -6,6 +6,7 @@ import CarFilters from "@/components/inventory/CarFilters";
 import CarGrid from "@/components/inventory/CarGrid";
 import { useCars } from "@/hooks/useCars";
 import { useTranslation } from "react-i18next";
+import { useFilterData } from "@/components/auctions/filters/useFilterData";
 
 const Inventory = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,6 +20,7 @@ const Inventory = () => {
   const [sortBy, setSortBy] = useState<string>("default");
   const [visibleCars, setVisibleCars] = useState(9);
   const { t } = useTranslation();
+  const { fuelTypes, transmissions, isLoading: isFilterDataLoading } = useFilterData();
 
   const { cars } = useCars({
     category,
@@ -71,6 +73,9 @@ const Inventory = () => {
           setSortBy={setSortBy}
           uniqueMakes={uniqueMakes}
           uniqueModels={uniqueModels}
+          availableFuelTypes={fuelTypes}
+          availableTransmissions={transmissions}
+          isFilterDataLoading={isFilterDataLoading}
         />
         
         <CarGrid

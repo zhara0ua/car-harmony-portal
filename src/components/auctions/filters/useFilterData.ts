@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const useFilterData = () => {
   const [makes, setMakes] = useState<string[]>([]);
   const [fuelTypes, setFuelTypes] = useState<string[]>([]);
+  const [transmissions, setTransmissions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -45,6 +46,23 @@ export const useFilterData = () => {
         ).sort() as string[];
         
         setFuelTypes(uniqueFuelTypes);
+
+        // Fetch transmissions
+        const { data: transmissionData, error: transmissionError } = await supabase
+          .from('auction_cars')
+          .select('transmission')
+          .not('transmission', 'is', null);
+        
+        if (transmissionError) {
+          throw transmissionError;
+        }
+        
+        // Extract unique transmissions
+        const uniqueTransmissions = Array.from(
+          new Set(transmissionData.map(item => item.transmission).filter(Boolean))
+        ).sort() as string[];
+        
+        setTransmissions(uniqueTransmissions);
       } catch (err) {
         console.error('Error fetching filter data:', err);
         setError(err instanceof Error ? err.message : 'Unexpected error occurred');
@@ -56,5 +74,5 @@ export const useFilterData = () => {
     fetchFilterData();
   }, []);
   
-  return { makes, fuelTypes, isLoading, error };
+  return { makes, fuelTypes, transmissions, isLoading, error };
 };
