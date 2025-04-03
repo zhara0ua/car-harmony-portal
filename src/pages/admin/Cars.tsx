@@ -13,7 +13,10 @@ import { useState, useEffect } from "react";
 import { Car } from "./types/car";
 import { CarForm } from "./components/CarForm";
 import { CarsTable } from "./components/CarsTable";
-import { fetchCars, createCar, updateCar, deleteCar } from "./utils/carUtils";
+import { fetchCars } from "./utils/carFetchUtils";
+import { createCar } from "./utils/carCreateUtils";
+import { updateCar } from "./utils/carUpdateUtils";
+import { deleteCar } from "./utils/carDeleteUtils";
 import { toast } from "@/hooks/use-toast";
 
 const Cars = () => {
@@ -43,6 +46,7 @@ const Cars = () => {
     setIsLoading(true);
     try {
       const data = await fetchCars();
+      console.log("Loaded cars data:", data);
       setCars(data);
     } catch (error) {
       console.error("Error loading cars:", error);
@@ -60,6 +64,9 @@ const Cars = () => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     console.log("Adding car with formData:", Object.fromEntries(formData));
+    console.log("Image files:", imageFiles.map(f => f.name));
+    console.log("Main image index:", mainImageIndex);
+    
     const success = await createCar(formData, imageFiles, mainImageIndex);
     if (success) {
       setIsAddDialogOpen(false);
@@ -82,6 +89,9 @@ const Cars = () => {
 
     const formData = new FormData(e.target as HTMLFormElement);
     console.log("Saving car with ID:", editingCar.id, "FormData:", Object.fromEntries(formData));
+    console.log("Image files:", imageFiles.map(f => f.name));
+    console.log("Main image index:", mainImageIndex);
+    
     const success = await updateCar(formData, editingCar.id, imageFiles, mainImageIndex);
     if (success) {
       setEditingCar(null);
@@ -96,6 +106,22 @@ const Cars = () => {
       loadCars();
     }
   };
+
+  // Check if authenticated status is present
+  const isAuthenticated = localStorage.getItem("adminAuthenticated") === "true";
+  if (!isAuthenticated) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center py-4">
+              Ви не авторизовані. Перейдіть на сторінку <a href="/admin/login" className="text-blue-500 underline">авторизації</a>.
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -11,6 +11,11 @@ export const fetchCars = async () => {
     
     if (!isAdminAuthenticated) {
       console.warn("User is not authenticated as admin");
+      toast({
+        title: "Помилка авторизації",
+        description: "Ви не авторизовані як адміністратор",
+        variant: "destructive",
+      });
       return [];
     }
     

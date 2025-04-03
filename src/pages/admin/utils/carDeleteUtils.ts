@@ -6,7 +6,7 @@ export const deleteCar = async (carId: number): Promise<boolean> => {
   try {
     // Check admin authentication status from localStorage
     const isAdminAuthenticated = localStorage.getItem("adminAuthenticated") === "true";
-    console.log("Admin authentication status:", isAdminAuthenticated);
+    console.log("Admin authentication status when deleting car:", isAdminAuthenticated);
     
     if (!isAdminAuthenticated) {
       toast({
@@ -26,7 +26,7 @@ export const deleteCar = async (carId: number): Promise<boolean> => {
       .eq('id', carId);
 
     if (error) {
-      console.error('Database error:', error);
+      console.error('Database error when deleting car:', error);
       toast({
         title: "Помилка бази даних",
         description: `${error.message}`,
