@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import CarCard from "@/components/CarCard";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 interface Car {
   id: number;
@@ -19,6 +20,7 @@ interface Car {
 
 const FeaturedCars = () => {
   const [cars, setCars] = useState<Car[]>([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchCars = async () => {
@@ -39,7 +41,7 @@ const FeaturedCars = () => {
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-6">
-        <h2 className="text-3xl font-bold text-navy mb-8">Nasze Zapasy</h2>
+        <h2 className="text-3xl font-bold text-navy mb-8">{t("cars.title")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {cars.map((car) => (
             <CarCard key={car.id} {...car} />

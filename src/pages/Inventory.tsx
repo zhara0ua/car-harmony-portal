@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import CarFilters from "@/components/inventory/CarFilters";
 import CarGrid from "@/components/inventory/CarGrid";
 import { useCars } from "@/hooks/useCars";
+import { useTranslation } from "react-i18next";
 
 const Inventory = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +18,7 @@ const Inventory = () => {
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("default");
   const [visibleCars, setVisibleCars] = useState(9);
+  const { t } = useTranslation();
 
   const { cars } = useCars({
     category,
@@ -46,7 +48,7 @@ const Inventory = () => {
       <Navbar />
       
       <div className="container mx-auto px-6 py-16">
-        <h1 className="text-4xl font-bold text-navy mb-8">Nasze Samochody</h1>
+        <h1 className="text-4xl font-bold text-navy mb-8">{t("cars.title")}</h1>
         
         <CarFilters
           isOpen={isOpen}

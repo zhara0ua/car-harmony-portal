@@ -2,6 +2,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   Select,
   SelectContent,
@@ -60,11 +61,13 @@ const CarFilters = ({
   uniqueMakes,
   uniqueModels,
 }: CarFiltersProps) => {
+  const { t } = useTranslation();
+  
   return (
     <div className="mb-8">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger className="flex items-center gap-2 text-navy hover:text-navy/80 transition-colors mb-4">
-          <span className="font-medium">Фільтри</span>
+          <span className="font-medium">{t("cars.filters.filters")}</span>
           {isOpen ? (
             <ChevronUp className="h-5 w-5" />
           ) : (
@@ -74,13 +77,13 @@ const CarFilters = ({
         <CollapsibleContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label>Марка</Label>
+              <Label>{t("cars.filters.make")}</Label>
               <Select value={make} onValueChange={setMake}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Виберіть марку" />
+                  <SelectValue placeholder={t("cars.filters.selectMake")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Всі марки</SelectItem>
+                  <SelectItem value="all">{t("cars.filters.all")}</SelectItem>
                   {uniqueMakes.map((make) => (
                     <SelectItem key={make} value={make}>{make}</SelectItem>
                   ))}
@@ -89,13 +92,13 @@ const CarFilters = ({
             </div>
 
             <div className="space-y-2">
-              <Label>Модель</Label>
+              <Label>{t("cars.filters.model")}</Label>
               <Select value={model} onValueChange={setModel}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Виберіть модель" />
+                  <SelectValue placeholder={t("cars.filters.selectModel")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Всі моделі</SelectItem>
+                  <SelectItem value="all">{t("cars.filters.all")}</SelectItem>
                   {uniqueModels.map((model) => (
                     <SelectItem key={model} value={model}>{model}</SelectItem>
                   ))}
@@ -104,83 +107,83 @@ const CarFilters = ({
             </div>
 
             <div className="space-y-2">
-              <Label>Ціна від</Label>
+              <Label>{t("cars.filters.minPrice")}</Label>
               <Input
                 type="number"
-                placeholder="Мінімальна ціна"
+                placeholder={t("cars.filters.minPricePlaceholder")}
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Ціна до</Label>
+              <Label>{t("cars.filters.maxPrice")}</Label>
               <Input
                 type="number"
-                placeholder="Максимальна ціна"
+                placeholder={t("cars.filters.maxPricePlaceholder")}
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Тип кузова</Label>
+              <Label>{t("cars.filters.category")}</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Тип кузова" />
+                  <SelectValue placeholder={t("cars.filters.bodyType")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Всі типи</SelectItem>
-                  <SelectItem value="Седан">Седан</SelectItem>
+                  <SelectItem value="all">{t("cars.filters.all")}</SelectItem>
+                  <SelectItem value="Седан">Sedan</SelectItem>
                   <SelectItem value="SUV">SUV</SelectItem>
-                  <SelectItem value="Купе">Купе</SelectItem>
-                  <SelectItem value="Універсал">Універсал</SelectItem>
+                  <SelectItem value="Купе">Coupe</SelectItem>
+                  <SelectItem value="Універсал">Kombi</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Коробка передач</Label>
+              <Label>{t("cars.filters.transmission")}</Label>
               <Select value={transmission} onValueChange={setTransmission}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Коробка передач" />
+                  <SelectValue placeholder={t("cars.filters.transmissionType")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Всі типи</SelectItem>
-                  <SelectItem value="Автомат">Автомат</SelectItem>
-                  <SelectItem value="Механіка">Механіка</SelectItem>
+                  <SelectItem value="all">{t("cars.filters.all")}</SelectItem>
+                  <SelectItem value="Автомат">Automatyczna</SelectItem>
+                  <SelectItem value="Механіка">Manualna</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Тип палива</Label>
+              <Label>{t("cars.filters.fuelType")}</Label>
               <Select value={fuelType} onValueChange={setFuelType}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Тип палива" />
+                  <SelectValue placeholder={t("cars.filters.fuelTypePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Всі типи</SelectItem>
-                  <SelectItem value="Бензин">Бензин</SelectItem>
-                  <SelectItem value="Дизель">Дизель</SelectItem>
-                  <SelectItem value="Гібрид">Гібрид</SelectItem>
-                  <SelectItem value="Електро">Електро</SelectItem>
+                  <SelectItem value="all">{t("cars.filters.all")}</SelectItem>
+                  <SelectItem value="Бензин">Benzyna</SelectItem>
+                  <SelectItem value="Дизель">Diesel</SelectItem>
+                  <SelectItem value="Гібрид">Hybryda</SelectItem>
+                  <SelectItem value="Електро">Elektryczny</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Сортування</Label>
+              <Label>{t("cars.filters.sortBy")}</Label>
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Сортувати за" />
+                  <SelectValue placeholder={t("cars.filters.sortByPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="default">За замовчуванням</SelectItem>
-                  <SelectItem value="price-asc">Ціна (від низької до високої)</SelectItem>
-                  <SelectItem value="price-desc">Ціна (від високої до низької)</SelectItem>
-                  <SelectItem value="year-desc">Рік (новіші спочатку)</SelectItem>
-                  <SelectItem value="year-asc">Рік (старіші спочатку)</SelectItem>
+                  <SelectItem value="default">{t("cars.filters.default")}</SelectItem>
+                  <SelectItem value="price-asc">{t("cars.filters.priceLowToHigh")}</SelectItem>
+                  <SelectItem value="price-desc">{t("cars.filters.priceHighToLow")}</SelectItem>
+                  <SelectItem value="year-desc">{t("cars.filters.yearNewestFirst")}</SelectItem>
+                  <SelectItem value="year-asc">{t("cars.filters.yearOldestFirst")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
