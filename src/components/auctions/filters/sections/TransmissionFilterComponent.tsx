@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Label } from "@/components/ui/label";
 import {
@@ -20,7 +21,7 @@ export const TransmissionFilterComponent = ({
 }: TransmissionFilterComponentProps) => {
   const { transmissions, isLoading } = useFilterData();
   
-  // Simplified transmission mapping that preserves case exactly
+  // Transmission mapping - backend values to display names
   const transmissionMap: Record<string, string> = {
     "Automatic": "Automatic",
     "Manual": "Manual"
@@ -34,24 +35,32 @@ export const TransmissionFilterComponent = ({
     return transmissionMap[backendValue] || backendValue;
   };
 
-  // Map display names back to backend values - preserving case
+  // Map display names back to backend values
   const getBackendValue = (displayName: string) => {
     // Special case for "Wszystkie skrzynie biegów"
     if (displayName === "Wszystkie skrzynie biegów") {
       return "all_transmissions";
     }
     
-    // Keep exact case for Manual and Automatic
+    // Special case for "Manual"
     if (displayName === "Manual") {
       return "Manual";
     }
     
-    if (displayName === "Automatic") {
-      return "Automatic";
+    // Special case for "Automat"
+    if (displayName === "Automat") {
+      return "automatic";
     }
     
-    // For other values, return the transmission as-is without converting case
-    return displayName;
+    // For other values, check the mapping or return as is (lowercase)
+    for (const [backend, display] of Object.entries(transmissionMap)) {
+      if (display === displayName) {
+        return backend;
+      }
+    }
+    
+    // Return lowercase for any other value
+    return displayName.toLowerCase();
   };
 
   const handleTransmissionChange = (selectedValue: string) => {
@@ -77,10 +86,10 @@ export const TransmissionFilterComponent = ({
           <SelectItem value="Manual">Manual</SelectItem>
           <SelectItem value="Automatic">Automatic</SelectItem>
           {transmissions
-            .filter(t => t.toLowerCase() !== "Manual" && t.toLowerCase() !== "Automatic")
+            .filter(t => t.toLowerCase() !== "manual" && t.toLowerCase() !== "automatic")
             .map((transmission) => (
-              <SelectItem key={transmission} value={transmission}>
-                {transmission}
+              <SelectItem key={transmission} value={getDisplayName(transmission)}>
+                {getDisplayName(transmission)}
               </SelectItem>
             ))}
         </SelectContent>
