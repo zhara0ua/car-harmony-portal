@@ -13,15 +13,38 @@ interface CarFormProps {
 
 export const CarForm = ({ car, onSubmit }: CarFormProps) => {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [mainImageIndex, setMainImageIndex] = useState<number>(0);
 
-  const handleImagesChange = (files: File[], _previews: string[], mainIndex: number) => {
+  const handleImagesChange = (files: File[], previews: string[], mainIndex: number) => {
     setImageFiles(files);
+    setImagePreviews(previews);
     setMainImageIndex(mainIndex);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Add image URLs from previews that are not from uploaded files
+    // These will be added to the form data
+    imagePreviews.forEach((preview, index) => {
+      // If this is not a blob URL (not from a file input) and starts with http
+      if (!preview.startsWith('blob:') && preview.startsWith('http')) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = `image_url_${index}`;
+        input.value = preview;
+        e.currentTarget.appendChild(input);
+      }
+    });
+    
+    // Add main image index
+    const mainIndexInput = document.createElement('input');
+    mainIndexInput.type = 'hidden';
+    mainIndexInput.name = 'mainImageIndex';
+    mainIndexInput.value = mainImageIndex.toString();
+    e.currentTarget.appendChild(mainIndexInput);
+    
     await onSubmit(e, imageFiles, mainImageIndex);
   };
 

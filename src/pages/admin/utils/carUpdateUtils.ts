@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { adminSupabase } from "@/integrations/supabase/adminClient";
 import { toast } from "@/hooks/use-toast";
@@ -36,15 +37,24 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
     // Create a folder name based on car ID
     const folderName = `car_${carId}`;
     
-    // Handle images array
+    // Collect all image sources
     let allImageUrls: string[] = [];
     
-    // If there are new files to upload, they should completely replace the existing images
+    // If there are files to upload, upload them
     if (imageFiles.length > 0) {
-      const newImageUrls = await uploadMultipleImages(imageFiles, folderName);
-      allImageUrls = newImageUrls;
-    } else {
-      // If no new images were uploaded, keep the existing ones
+      const uploadedImageUrls = await uploadMultipleImages(imageFiles, folderName);
+      allImageUrls = [...allImageUrls, ...uploadedImageUrls];
+    }
+    
+    // Collect URL images from form data
+    for (const [key, value] of formData.entries()) {
+      if (key.startsWith('image_url_') && typeof value === 'string' && value.startsWith('http')) {
+        allImageUrls.push(value);
+      }
+    }
+    
+    // Make sure we have at least one image
+    if (allImageUrls.length === 0) {
       allImageUrls = currentCar.images || [];
       
       // If no images array but has image property, initialize with it
@@ -63,8 +73,11 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
       return false;
     }
     
+    // Verify mainImageIndex is within bounds
+    const validMainIndex = Math.min(mainImageIndex, allImageUrls.length - 1);
+    
     // Set the main image (for backward compatibility)
-    const mainImage = allImageUrls[mainImageIndex] || allImageUrls[0];
+    const mainImage = allImageUrls[validMainIndex] || allImageUrls[0];
 
     const updatedCar = {
       name: `${make} ${model}`,

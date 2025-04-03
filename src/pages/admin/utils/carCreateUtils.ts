@@ -25,12 +25,16 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
     // Generate a unique ID for the car folder
     const folderName = `car_${Date.now()}`;
     
-    // Upload all images
+    // Upload all image files
     let imageUrls: string[] = [];
     if (imageFiles.length > 0) {
       imageUrls = await uploadMultipleImages(imageFiles, folderName);
-      if (imageUrls.length === 0) {
-        return false;
+    }
+
+    // Collect image URLs from form data (added as hidden inputs)
+    for (const [key, value] of formData.entries()) {
+      if (key.startsWith('image_url_') && typeof value === 'string' && value.startsWith('http')) {
+        imageUrls.push(value);
       }
     }
 
@@ -44,8 +48,11 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
       return false;
     }
 
+    // Verify mainImageIndex is within bounds
+    const validMainIndex = Math.min(mainImageIndex, imageUrls.length - 1);
+    
     // Set the main image (for backward compatibility)
-    const mainImage = imageUrls[mainImageIndex] || imageUrls[0];
+    const mainImage = imageUrls[validMainIndex] || imageUrls[0];
 
     const newCar = {
       name: `${make} ${model}`,
