@@ -2,6 +2,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
+import { Separator } from "@/components/ui/separator";
 
 const Regulations = () => {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ const Regulations = () => {
               <h2 className="text-2xl font-semibold mb-4">{t("regulations.general.title")}</h2>
               <p className="mb-4">{t("regulations.general.description")}</p>
               <p className="mb-4">{t("regulations.general.scope")}</p>
+              <Separator className="my-6" />
             </section>
             
             <section className="mb-8">
@@ -27,6 +29,7 @@ const Regulations = () => {
               <p className="mb-4">{t("regulations.personalData.purpose")}</p>
               <p className="mb-4">{t("regulations.personalData.processing")}</p>
               <p className="mb-4">{t("regulations.personalData.rights")}</p>
+              <Separator className="my-6" />
             </section>
             
             <section className="mb-8">
@@ -34,6 +37,7 @@ const Regulations = () => {
               <p className="mb-4">{t("regulations.cookies.description")}</p>
               <p className="mb-4">{t("regulations.cookies.types")}</p>
               <p className="mb-4">{t("regulations.cookies.management")}</p>
+              <Separator className="my-6" />
             </section>
             
             <section className="mb-8">
@@ -41,6 +45,7 @@ const Regulations = () => {
               <p className="mb-4">{t("regulations.terms.usage")}</p>
               <p className="mb-4">{t("regulations.terms.liability")}</p>
               <p className="mb-4">{t("regulations.terms.changes")}</p>
+              <Separator className="my-6" />
             </section>
             
             <section className="mb-8">

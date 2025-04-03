@@ -1,7 +1,10 @@
 
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
+  const { t } = useTranslation();
+  
   return (
     <div className="w-full min-w-full bg-navy">
       <footer className="w-full text-white py-12">
