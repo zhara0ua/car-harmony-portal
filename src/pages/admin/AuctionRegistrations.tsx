@@ -6,13 +6,14 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Download, Search, Phone, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Download, Search, Phone, CheckCircle, XCircle, Clock, Calendar as CalendarIcon, Clock as ClockIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { AuctionRegistration } from "./types/auction-registration";
+import { AuctionRegistration, AuctionRegistrationDBResponse } from "./types/auction-registration";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CallStatusMap {
   [key: string]: { 
@@ -20,6 +21,7 @@ interface CallStatusMap {
     notes: string;
     callDate?: string;
     callbackDate?: string;
+    callbackTime?: string;
   }
 }
 
@@ -30,7 +32,15 @@ export default function AuctionRegistrations() {
   const [callStatus, setCallStatus] = useState<CallStatusMap>({});
   const [notes, setNotes] = useState<{[key: string]: string}>({});
   const [callbackDates, setCallbackDates] = useState<{[key: string]: Date | undefined}>({});
+  const [callbackTimes, setCallbackTimes] = useState<{[key: string]: string}>({});
   const { toast } = useToast();
+
+  // Generate time slots for the select component (every 30 minutes)
+  const timeSlots = Array.from({ length: 24 * 2 }, (_, i) => {
+    const hour = Math.floor(i / 2);
+    const minute = (i % 2) * 30;
+    return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+  });
 
   useEffect(() => {
     fetchRegistrations();
@@ -50,7 +60,7 @@ export default function AuctionRegistrations() {
       }
 
       // Transform the database data to match our AuctionRegistration type
-      const transformedData: AuctionRegistration[] = (data || []).map(item => ({
+      const transformedData: AuctionRegistration[] = (data || []).map((item: AuctionRegistrationDBResponse) => ({
         id: item.id.toString(),
         createdAt: item.created_at,
         name: item.name,
@@ -86,7 +96,8 @@ export default function AuctionRegistrations() {
           status: value.called ? 'called' : (value.status || 'not_called'),
           notes: value.notes || "",
           callDate: value.callDate,
-          callbackDate: value.callbackDate
+          callbackDate: value.callbackDate,
+          callbackTime: value.callbackTime
         };
       });
       
@@ -94,13 +105,19 @@ export default function AuctionRegistrations() {
       
       // Load callback dates if they exist
       const callbackDatesObj: {[key: string]: Date | undefined} = {};
+      const callbackTimesObj: {[key: string]: string} = {};
+      
       Object.entries(updatedStatus).forEach(([id, value]) => {
         if (value.callbackDate) {
           callbackDatesObj[id] = new Date(value.callbackDate);
         }
+        if (value.callbackTime) {
+          callbackTimesObj[id] = value.callbackTime;
+        }
       });
       
       setCallbackDates(callbackDatesObj);
+      setCallbackTimes(callbackTimesObj);
     }
   };
 
@@ -120,8 +137,13 @@ export default function AuctionRegistrations() {
       } 
     };
     
-    if (status === 'callback' && callbackDates[id]) {
-      newStatus[id].callbackDate = callbackDates[id]?.toISOString();
+    if (status === 'callback') {
+      if (callbackDates[id]) {
+        newStatus[id].callbackDate = callbackDates[id]?.toISOString();
+      }
+      if (callbackTimes[id]) {
+        newStatus[id].callbackTime = callbackTimes[id];
+      }
     }
     
     saveCallStatus(newStatus);
@@ -135,7 +157,9 @@ export default function AuctionRegistrations() {
     toast({
       title: statusMessages[status],
       description: status === 'callback' ? 
-        `Zaplanowano ponowny kontakt na ${callbackDates[id] ? format(callbackDates[id], 'dd/MM/yyyy') : 'wybraną datę'}` : 
+        `Zaplanowano ponowny kontakt na ${callbackDates[id] ? format(callbackDates[id], 'dd/MM/yyyy') : 'wybraną datę'}${
+          callbackTimes[id] ? ` o ${callbackTimes[id]}` : ''
+        }` : 
         "Status połączenia został zaktualizowany",
     });
   };
@@ -176,9 +200,35 @@ export default function AuctionRegistrations() {
       saveCallStatus(newStatus);
       
       if (callStatus[id].status === 'callback') {
+        const timeInfo = callbackTimes[id] ? ` o ${callbackTimes[id]}` : '';
         toast({
           title: "Data kontaktu zaktualizowana",
-          description: `Zaplanowano ponowny kontakt na ${format(date, 'dd/MM/yyyy')}`,
+          description: `Zaplanowano ponowny kontakt na ${format(date, 'dd/MM/yyyy')}${timeInfo}`,
+        });
+      }
+    }
+  };
+
+  const handleCallbackTimeChange = (id: string, time: string) => {
+    setCallbackTimes({
+      ...callbackTimes,
+      [id]: time
+    });
+    
+    if (time && callStatus[id]) {
+      const newStatus = {
+        ...callStatus,
+        [id]: {
+          ...callStatus[id],
+          callbackTime: time
+        }
+      };
+      saveCallStatus(newStatus);
+      
+      if (callStatus[id].status === 'callback' && callbackDates[id]) {
+        toast({
+          title: "Czas kontaktu zaktualizowany",
+          description: `Zaplanowano ponowny kontakt na ${format(callbackDates[id]!, 'dd/MM/yyyy')} o ${time}`,
         });
       }
     }
@@ -192,7 +242,7 @@ export default function AuctionRegistrations() {
 
   const exportToCSV = () => {
     // Create CSV content
-    const headers = ['ID', 'Imię i nazwisko', 'Telefon', 'Data rejestracji', 'Status', 'Data przypomnienia', 'Notatki'];
+    const headers = ['ID', 'Imię i nazwisko', 'Telefon', 'Data rejestracji', 'Status', 'Data przypomnienia', 'Czas przypomnienia', 'Notatki'];
     const csvRows = [
       headers.join(','),
       ...filteredRegistrations.map(reg => {
@@ -210,6 +260,7 @@ export default function AuctionRegistrations() {
           new Date(reg.createdAt).toLocaleDateString(),
           statusText,
           callStatus[reg.id]?.callbackDate ? `"${new Date(callStatus[reg.id].callbackDate!).toLocaleDateString()}"` : '',
+          callStatus[reg.id]?.callbackTime || '',
           `"${callStatus[reg.id]?.notes || ''}"`
         ].join(',');
       })
@@ -278,9 +329,9 @@ export default function AuctionRegistrations() {
                         status === 'callback' ? "bg-yellow-50" : "";
                       
                       return (
-                        <>
+                        <div key={registration.id} className="border-b border-gray-200 last:border-b-0">
                           {/* First row with name, status, reminder, and actions */}
-                          <TableRow key={`${registration.id}-1`} className={rowClass}>
+                          <TableRow className={`${rowClass} border-t`}>
                             <TableCell className="py-3">
                               <div className="font-medium">{registration.name}</div>
                               <div className="text-sm text-muted-foreground">
@@ -346,33 +397,81 @@ export default function AuctionRegistrations() {
                             </TableCell>
                             <TableCell>
                               {status === 'callback' && (
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <Button 
-                                      variant="outline" 
-                                      className={
-                                        callbackDates[registration.id] 
-                                          ? "text-yellow-600" 
-                                          : "text-muted-foreground"
-                                      }
-                                    >
-                                      <Clock className="mr-2 h-4 w-4" />
-                                      {callbackDates[registration.id] 
-                                        ? format(callbackDates[registration.id]!, 'dd/MM/yyyy') 
-                                        : 'Wybierz datę'
-                                      }
-                                    </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                      mode="single"
-                                      selected={callbackDates[registration.id]}
-                                      onSelect={(date) => handleCallbackDateChange(registration.id, date)}
-                                      initialFocus
-                                      className="pointer-events-auto"
-                                    />
-                                  </PopoverContent>
-                                </Popover>
+                                <div className="flex space-x-2">
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Popover>
+                                          <PopoverTrigger asChild>
+                                            <Button 
+                                              variant="outline" 
+                                              className={
+                                                callbackDates[registration.id] 
+                                                  ? "text-yellow-600" 
+                                                  : "text-muted-foreground"
+                                              }
+                                            >
+                                              <CalendarIcon className="mr-2 h-4 w-4" />
+                                              {callbackDates[registration.id] 
+                                                ? format(callbackDates[registration.id]!, 'dd/MM/yyyy') 
+                                                : 'Data'
+                                              }
+                                            </Button>
+                                          </PopoverTrigger>
+                                          <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                              mode="single"
+                                              selected={callbackDates[registration.id]}
+                                              onSelect={(date) => handleCallbackDateChange(registration.id, date)}
+                                              initialFocus
+                                              className="pointer-events-auto"
+                                            />
+                                          </PopoverContent>
+                                        </Popover>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Wybierz datę kontaktu</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Select
+                                          value={callbackTimes[registration.id] || ""}
+                                          onValueChange={(value) => handleCallbackTimeChange(registration.id, value)}
+                                        >
+                                          <SelectTrigger className="w-[100px]">
+                                            <SelectValue placeholder="Czas">
+                                              {callbackTimes[registration.id] ? (
+                                                <span className="flex items-center">
+                                                  <ClockIcon className="h-4 w-4 mr-1 text-yellow-600" />
+                                                  {callbackTimes[registration.id]}
+                                                </span>
+                                              ) : (
+                                                <span className="flex items-center text-muted-foreground">
+                                                  <ClockIcon className="h-4 w-4 mr-1" />
+                                                  Czas
+                                                </span>
+                                              )}
+                                            </SelectValue>
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {timeSlots.map(time => (
+                                              <SelectItem key={time} value={time}>
+                                                {time}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Wybierz czas kontaktu</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </div>
                               )}
                             </TableCell>
                             <TableCell>
@@ -415,7 +514,7 @@ export default function AuctionRegistrations() {
                           </TableRow>
                           
                           {/* Second row for additional information */}
-                          <TableRow key={`${registration.id}-2`} className={`${rowClass} border-t-0`}>
+                          <TableRow className={`${rowClass} border-t-0`}>
                             <TableCell colSpan={4} className="py-2 text-xs text-muted-foreground">
                               <div className="flex items-center space-x-4">
                                 <div>
@@ -434,14 +533,15 @@ export default function AuctionRegistrations() {
                           </TableRow>
                           
                           {/* New third row for notes */}
-                          <TableRow key={`${registration.id}-3`} className={`${rowClass} border-t-0`}>
+                          <TableRow className={`${rowClass} border-t-0 border-b`}>
                             <TableCell colSpan={4} className="py-2">
+                              <div className="font-medium mb-1 text-sm">Notatki:</div>
                               <Textarea
                                 placeholder="Dodaj notatkę..."
                                 value={notes[registration.id] || callStatus[registration.id]?.notes || ""}
                                 onChange={(e) => handleNoteChange(registration.id, e.target.value)}
                                 onBlur={() => {
-                                  if (notes[registration.id]) {
+                                  if (notes[registration.id] || notes[registration.id] === "") {
                                     const newStatus = {
                                       ...callStatus,
                                       [registration.id]: {
@@ -456,7 +556,7 @@ export default function AuctionRegistrations() {
                               />
                             </TableCell>
                           </TableRow>
-                        </>
+                        </div>
                       );
                     })
                   ) : (
