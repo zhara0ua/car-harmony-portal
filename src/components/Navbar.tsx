@@ -43,7 +43,7 @@ const Navbar = () => {
                 isActive("/inventory") ? "text-navy font-semibold" : "text-gray-700"
               } hover:text-navy transition-colors`}
             >
-              Samochody
+              Nasze zapasy
             </Link>
             <Link
               to="/auctions"
