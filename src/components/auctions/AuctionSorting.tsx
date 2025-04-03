@@ -29,11 +29,21 @@ export const AuctionSorting = ({
       : <ArrowDown className="h-4 w-4 ml-1" />;
   };
 
+  const getSortLabel = (field: SortField) => {
+    switch (field) {
+      case 'title': return 'Nazwa';
+      case 'year': return 'Rok';
+      case 'start_price': return 'Cena';
+      case 'end_date': return 'Data zakończenia';
+      default: return 'Nazwa';
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="ml-auto">
-          Sortuj według {renderSortIcon(sortField)}
+          Sortuj według {getSortLabel(sortField)} {renderSortIcon(sortField)}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
