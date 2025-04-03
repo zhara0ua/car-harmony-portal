@@ -40,10 +40,11 @@ export const AuctionCarCard = ({ car }: AuctionCarCardProps) => {
         <h3 className="font-semibold text-lg mb-2">{car.title}</h3>
         <div className="space-y-1 text-sm text-muted-foreground">
           <p>Rok: {car.year}</p>
-          {car.mileage && <p>Przebieg: {car.mileage}</p>}
+          {car.mileage && <p>Przebieg: {car.mileageFormatted || car.mileage}</p>}
           {car.fuel_type && <p>Paliwo: {car.fuel_type}</p>}
           {car.transmission && <p>Skrzynia biegów: {car.transmission}</p>}
           {car.location && <p>Lokalizacja: {car.location}</p>}
+          {car.power && <p>Moc: {car.power}</p>}
           
           <div className="flex items-center gap-1 text-sm mt-2">
             <Clock className="w-4 h-4" />
@@ -53,7 +54,7 @@ export const AuctionCarCard = ({ car }: AuctionCarCardProps) => {
       </CardContent>
       <CardFooter className="p-4 pt-0 flex justify-between items-center">
         <div className="font-semibold text-xl">
-          {formatPrice(car.start_price)}
+          {car.priceFormatted || formatPrice(car.start_price)}
         </div>
         <a 
           href={car.external_url} 

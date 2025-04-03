@@ -1,14 +1,14 @@
 
 export interface AuctionCar {
-  id: number;
-  external_id: string;
+  id?: number;
+  external_id?: string;
   title: string;
-  start_price: number;
-  current_price?: number;
-  year: number;
   make?: string;
   model?: string;
-  mileage?: string;
+  start_price: number;
+  current_price?: number;
+  year: number | string;
+  mileage?: string | number;
   fuel_type?: string;
   transmission?: string;
   location?: string;
@@ -17,6 +17,19 @@ export interface AuctionCar {
   end_date: string;
   created_at?: string;
   status?: string;
+  // Additional fields from the JSON structure
+  priceFormatted?: string;
+  mileageFormatted?: string;
+  power?: string;
+  bodyType?: string;
+  vatStatus?: string;
+  country?: string;
+  emissions?: string;
+  timestamp?: string;
+  auctionType?: string;
+  premiumOffers?: string[];
+  endTime?: string | null;
+  photoCount?: number;
 }
 
 export interface AuctionFilters {

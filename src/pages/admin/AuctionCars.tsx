@@ -54,34 +54,54 @@ export default function AuctionCars() {
       reader.onload = async (e) => {
         try {
           const content = e.target?.result as string;
-          const cars = JSON.parse(content) as AuctionCar[];
+          const jsonData = JSON.parse(content);
           
-          // Validate the JSON structure
-          if (!Array.isArray(cars)) {
-            throw new Error("JSON file must contain an array of cars");
-          }
+          // Handle both array and single object formats
+          const rawCars = Array.isArray(jsonData) ? jsonData : [jsonData];
           
-          // Check if cars have the required properties
+          // Transform the JSON data to match our database structure
+          const cars = rawCars.map(car => ({
+            external_id: car.auctionId || `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`,
+            title: car.title,
+            start_price: car.price || 0,
+            year: parseInt(car.year) || new Date().getFullYear(),
+            make: car.make,
+            model: car.model,
+            mileage: car.mileageFormatted || car.mileage?.toString(),
+            fuel_type: car.fuel,
+            transmission: car.transmission,
+            location: car.country,
+            image_url: car.imageSrc,
+            external_url: car.detailUrl || "#",
+            end_date: car.endTime || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Default 7 days from now
+            status: "active"
+          }));
+          
+          // Validate each car
           for (const car of cars) {
-            if (!car.external_id || !car.title || !car.start_price || !car.external_url || !car.end_date) {
-              throw new Error("Each car must have external_id, title, start_price, external_url, and end_date");
+            if (!car.title || !car.external_url || car.start_price === undefined || !car.end_date) {
+              throw new Error("Each car must have title, start_price, external_url, and end_date");
             }
           }
           
-          // Delete existing cars
-          const { error: deleteError } = await supabase
-            .from('auction_cars')
-            .delete()
-            .neq('id', 0); // Delete all rows
-          
-          if (deleteError) throw deleteError;
+          // Delete existing cars if there are any in the import
+          if (cars.length > 0) {
+            const { error: deleteError } = await supabase
+              .from('auction_cars')
+              .delete()
+              .neq('id', 0); // Delete all rows
+            
+            if (deleteError) throw deleteError;
+          }
           
           // Insert new cars
-          const { error: insertError } = await supabase
-            .from('auction_cars')
-            .insert(cars);
-          
-          if (insertError) throw insertError;
+          if (cars.length > 0) {
+            const { error: insertError } = await supabase
+              .from('auction_cars')
+              .insert(cars);
+            
+            if (insertError) throw insertError;
+          }
           
           toast({
             title: "Sukces",
@@ -130,34 +150,40 @@ export default function AuctionCars() {
             <SheetHeader>
               <SheetTitle>Format pliku JSON</SheetTitle>
               <SheetDescription>
-                Plik JSON powinien zawierać tablicę samochodów z następującymi polami:
+                Plik JSON powinien zawierać pojedynczy samochód lub tablicę samochodów z następującymi polami:
               </SheetDescription>
             </SheetHeader>
             <div className="py-4">
               <pre className="bg-muted p-4 rounded-md text-xs overflow-auto">
-{`[
-  {
-    "external_id": "string", // Identyfikator zewnętrzny
-    "title": "string", // Nazwa pojazdu
-    "start_price": 10000, // Cena początkowa
-    "current_price": 12000, // Aktualna cena (opcjonalne)
-    "year": 2020, // Rok produkcji
-    "make": "string", // Marka (opcjonalne)
-    "model": "string", // Model (opcjonalne)
-    "mileage": "string", // Przebieg (opcjonalne)
-    "fuel_type": "string", // Typ paliwa (opcjonalne)
-    "transmission": "string", // Skrzynia biegów (opcjonalne)
-    "location": "string", // Lokalizacja (opcjonalne)
-    "image_url": "string", // URL obrazu (opcjonalne)
-    "external_url": "string", // URL zewnętrzny
-    "end_date": "2023-12-31T23:59:59Z" // Data zakończenia
-  }
-]`}
+{`{
+  "title": "Mercedes-Benz A 180d AMG Line",
+  "make": "Mercedes-Benz",
+  "model": "A 180d AMG Line",
+  "price": 20000,
+  "priceFormatted": "€20,000",
+  "fuel": "Diesel",
+  "transmission": "Automatic",
+  "mileage": 55439,
+  "mileageFormatted": "55.439 km",
+  "imageSrc": "https://example.com/image.jpg",
+  "detailUrl": "https://example.com/car/123",
+  "year": "2020",
+  "power": "85 kW (116 hp)",
+  "bodyType": "Saloon",
+  "vatStatus": "VAT excluded",
+  "country": "Poland",
+  "emissions": "119 g/km (EU6)",
+  "timestamp": "2025-03-18T15:53:25.815Z",
+  "auctionType": "Buy now",
+  "premiumOffers": ["Best description"],
+  "endTime": "2025-04-10T15:53:25.815Z",
+  "photoCount": 144
+}`}
               </pre>
             </div>
             <SheetFooter>
               <p className="text-xs text-muted-foreground">
-                Pola wymagane: external_id, title, start_price, external_url, end_date, year
+                Pola wymagane: title, price, year, detailUrl
               </p>
             </SheetFooter>
           </SheetContent>
