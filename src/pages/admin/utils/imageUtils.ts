@@ -1,13 +1,14 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { adminSupabase } from "@/integrations/supabase/adminClient";
 import { toast } from "@/hooks/use-toast";
 
 export const uploadImage = async (file: File, folderName: string): Promise<string | null> => {
   try {
     const filename = `${folderName}/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
     
-    // Using the 'cars' bucket that we properly set up with RLS policies
-    const { data, error } = await supabase.storage
+    // Using the admin client for storage operations
+    const { data, error } = await adminSupabase.storage
       .from('cars')
       .upload(filename, file);
 
@@ -16,7 +17,7 @@ export const uploadImage = async (file: File, folderName: string): Promise<strin
       throw error;
     }
 
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = adminSupabase.storage
       .from('cars')
       .getPublicUrl(filename);
 

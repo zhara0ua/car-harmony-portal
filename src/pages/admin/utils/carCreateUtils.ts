@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { adminSupabase } from "@/integrations/supabase/adminClient";
 import { toast } from "@/hooks/use-toast";
 import { uploadMultipleImages } from "./imageUtils";
 
@@ -63,7 +64,8 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
       images: imageUrls,
     };
 
-    const { error } = await supabase.from('cars').insert(newCar);
+    // Use the admin client for database operations when authenticated as admin
+    const { error } = await adminSupabase.from('cars').insert(newCar);
     if (error) {
       console.error('Database error:', error);
       if (error.message.includes('row-level security')) {

@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { adminSupabase } from "@/integrations/supabase/adminClient";
 import { toast } from "@/hooks/use-toast";
 import { uploadMultipleImages } from "./imageUtils";
 
@@ -22,7 +23,7 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
     const mileage = `${formData.get('mileage')}`;
     
     // Get current car data to access existing images
-    const { data: currentCar, error: fetchError } = await supabase
+    const { data: currentCar, error: fetchError } = await adminSupabase
       .from('cars')
       .select('*')
       .eq('id', carId)
@@ -80,7 +81,8 @@ export const updateCar = async (formData: FormData, carId: number, imageFiles: F
       images: allImageUrls,
     };
 
-    const { error } = await supabase
+    // Use the admin client for database operations
+    const { error } = await adminSupabase
       .from('cars')
       .update(updatedCar)
       .eq('id', carId);
