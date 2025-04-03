@@ -41,10 +41,22 @@ export const TransmissionFilterComponent = ({
       return "all_transmissions";
     }
     
+    // Special case for "Manual" directly entered display name
+    if (displayName === "Manual") {
+      console.log("Direct match for Manual, returning 'manual'");
+      return "manual";
+    }
+
+    // Special case for "Automat" directly entered display name
+    if (displayName === "Automat") {
+      console.log("Direct match for Automat, returning 'automatic'");
+      return "automatic";
+    }
+    
     // Find backend value by display name
     const entry = Object.entries(transmissionMap).find(([_, display]) => display === displayName);
     console.log(`Finding backend value for "${displayName}". Result:`, entry);
-    return entry ? entry[0] : displayName;
+    return entry ? entry[0] : displayName.toLowerCase(); // Ensure we return lowercase for direct backend values
   };
 
   const handleTransmissionChange = (selectedValue: string) => {

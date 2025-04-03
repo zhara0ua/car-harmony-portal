@@ -62,8 +62,12 @@ export const useAuctionFiltering = () => {
       
       if (filters.transmission && filters.transmission !== "all_transmissions") {
         console.log(`Applying transmission filter: ${filters.transmission}`);
-        // Ensure we're using lowercase 'manual' or 'automatic' to match the database
+        
+        // Always ensure we're using lowercase for transmission values to match the database
+        // DB schema has 'manual' and 'automatic' in lowercase
         const transmissionValue = filters.transmission.toLowerCase();
+        console.log(`Converted transmission value to lowercase: ${transmissionValue}`);
+        
         query = query.eq('transmission', transmissionValue);
       }
       
