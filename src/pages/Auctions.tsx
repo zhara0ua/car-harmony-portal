@@ -34,7 +34,7 @@ export default function Auctions() {
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-6 sm:py-8">
-        <div className="space-y-6 sm:space-y-8">
+        <div className="space-y-6">
           <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'flex-row justify-between items-center'}`}>
             <h1 className="text-2xl sm:text-3xl font-bold">Aukcje samochodów</h1>
             

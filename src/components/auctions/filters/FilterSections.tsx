@@ -13,31 +13,40 @@ interface FilterSectionsProps {
 
 export const FilterSections = ({ filters, onFilterChange }: FilterSectionsProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-      <PriceFilterSection
-        minPrice={filters.minPrice}
-        maxPrice={filters.maxPrice}
-        onFilterChange={onFilterChange}
-      />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div className="space-y-4">
+        <PriceFilterSection
+          minPrice={filters.minPrice}
+          maxPrice={filters.maxPrice}
+          onFilterChange={onFilterChange}
+        />
+      </div>
       
-      <YearFilterSection
-        minYear={filters.minYear}
-        maxYear={filters.maxYear}
-        onFilterChange={onFilterChange}
-      />
+      <div className="space-y-4">
+        <YearFilterSection
+          minYear={filters.minYear}
+          maxYear={filters.maxYear}
+          onFilterChange={onFilterChange}
+        />
+      </div>
       
-      <MakeModelFilterSection
-        make={filters.make}
-        model={filters.model}
-        onFilterChange={onFilterChange}
-      />
+      <div className="space-y-4">
+        <MakeModelFilterSection
+          make={filters.make}
+          model={filters.model}
+          onFilterChange={onFilterChange}
+        />
+      </div>
       
-      <FuelMileageFilterSection
-        fuelType={filters.fuelType}
-        minMileage={filters.minMileage}
-        maxMileage={filters.maxMileage}
-        onFilterChange={onFilterChange}
-      />
+      <div className="space-y-4">
+        <FuelMileageFilterSection
+          fuelType={filters.fuelType}
+          minMileage={filters.minMileage}
+          maxMileage={filters.maxMileage}
+          transmission={filters.transmission}
+          onFilterChange={onFilterChange}
+        />
+      </div>
     </div>
   );
 };

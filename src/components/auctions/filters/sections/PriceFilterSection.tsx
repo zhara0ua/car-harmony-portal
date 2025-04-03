@@ -17,7 +17,7 @@ export const PriceFilterSection = ({
 }: PriceFilterSectionProps) => {
   return (
     <>
-      <div className="space-y-2">
+      <div className="space-y-2 mb-4">
         <Label htmlFor="minPrice">Cena od</Label>
         <Input
           id="minPrice"

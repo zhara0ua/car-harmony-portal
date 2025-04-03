@@ -42,14 +42,14 @@ export const AuctionsContent = ({
   }
   
   return (
-    <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {currentCars.map((car) => (
           <AuctionCarCard key={car.id} car={car} />
         ))}
       </div>
       
-      <div className="mt-8">
+      <div className="mt-6">
         <AuctionPagination 
           currentPage={currentPage}
           totalPages={totalPages}
@@ -57,9 +57,9 @@ export const AuctionsContent = ({
         />
       </div>
       
-      <div className="mt-4 text-center text-sm text-muted-foreground">
+      <div className="text-center text-sm text-muted-foreground">
         Pokazano {currentCars.length} z {totalCars} aukcji
       </div>
-    </>
+    </div>
   );
 };

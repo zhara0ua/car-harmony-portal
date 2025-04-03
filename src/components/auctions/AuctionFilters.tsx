@@ -69,13 +69,15 @@ export function AuctionFilters({ onFilterChange }: AuctionFiltersProps) {
   
   // On desktop, display filters normally
   return (
-    <AuctionFilterCard
-      filters={filters}
-      onFilterChange={(partialFilters) => {
-        setFilters(prev => ({ ...prev, ...partialFilters }));
-      }}
-      handleApplyFilters={handleApplyFilters}
-      handleClearFilters={handleClearFilters}
-    />
+    <div className="mb-6">
+      <AuctionFilterCard
+        filters={filters}
+        onFilterChange={(partialFilters) => {
+          setFilters(prev => ({ ...prev, ...partialFilters }));
+        }}
+        handleApplyFilters={handleApplyFilters}
+        handleClearFilters={handleClearFilters}
+      />
+    </div>
   );
 }

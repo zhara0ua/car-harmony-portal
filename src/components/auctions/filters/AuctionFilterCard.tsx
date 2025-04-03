@@ -19,7 +19,7 @@ export const AuctionFilterCard = ({
   handleApplyFilters
 }: AuctionFilterCardProps) => {
   return (
-    <Card>
+    <Card className="shadow-md">
       <CardContent className="pt-6">
         <FilterSections 
           filters={filters} 

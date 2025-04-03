@@ -30,16 +30,20 @@ export const MakeModelFilterSection = ({
   
   return (
     <>
-      <MakeFilterComponent 
-        value={make} 
-        onChange={handleMakeChange} 
-      />
+      <div className="space-y-2 mb-4">
+        <MakeFilterComponent 
+          value={make} 
+          onChange={handleMakeChange} 
+        />
+      </div>
       
-      <ModelFilterComponent 
-        makeValue={make}
-        modelValue={model}
-        onChange={handleModelChange}
-      />
+      <div className="space-y-2">
+        <ModelFilterComponent 
+          makeValue={make}
+          modelValue={model}
+          onChange={handleModelChange}
+        />
+      </div>
     </>
   );
 };

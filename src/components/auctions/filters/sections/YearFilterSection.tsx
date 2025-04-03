@@ -17,7 +17,7 @@ export const YearFilterSection = ({
 }: YearFilterSectionProps) => {
   return (
     <>
-      <div className="space-y-2">
+      <div className="space-y-2 mb-4">
         <Label htmlFor="minYear">Rok od</Label>
         <Input
           id="minYear"
