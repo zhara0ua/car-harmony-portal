@@ -9,14 +9,14 @@ import { useTranslation } from "react-i18next";
 const Imports = () => {
   const { t } = useTranslation();
 
-  const benefitIcons = {
-    "Широкий вибір автомобілів": <Car className="w-8 h-8 mb-4 text-navy" />,
-    "Перевірена історія": <ShieldCheck className="w-8 h-8 mb-4 text-navy" />,
-    "Краща ціна": <Euro className="w-8 h-8 mb-4 text-navy" />,
-    "Повний супровід": <Truck className="w-8 h-8 mb-4 text-navy" />,
-    "Легальність": <FileCheck className="w-8 h-8 mb-4 text-navy" />,
-    "Технічний стан": <Settings className="w-8 h-8 mb-4 text-navy" />
-  };
+  const benefitIcons = [
+    <Car className="w-8 h-8 mb-4 text-navy" />,
+    <ShieldCheck className="w-8 h-8 mb-4 text-navy" />,
+    <Settings className="w-8 h-8 mb-4 text-navy" />,
+    <Euro className="w-8 h-8 mb-4 text-navy" />,
+    <Car className="w-8 h-8 mb-4 text-navy" />,
+    <Truck className="w-8 h-8 mb-4 text-navy" />
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-silver to-white">
@@ -50,11 +50,9 @@ const Imports = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <ul className="space-y-4">
-                  {t('import.whyEurope.benefits', { returnObjects: true }).slice(0, 3).map((benefit, index) => (
+                  {t<string[]>('import.whyEurope.benefits', { returnObjects: true }).slice(0, 3).map((benefit, index) => (
                     <li key={index} className="flex items-start">
-                      {index === 0 && <ShieldCheck className="w-6 h-6 text-navy mr-2 flex-shrink-0" />}
-                      {index === 1 && <FileCheck className="w-6 h-6 text-navy mr-2 flex-shrink-0" />}
-                      {index === 2 && <Settings className="w-6 h-6 text-navy mr-2 flex-shrink-0" />}
+                      <ShieldCheck className="w-6 h-6 text-navy mr-2 flex-shrink-0" />
                       <span>{benefit}</span>
                     </li>
                   ))}
@@ -62,11 +60,9 @@ const Imports = () => {
               </div>
               <div>
                 <ul className="space-y-4">
-                  {t('import.whyEurope.benefits', { returnObjects: true }).slice(3, 6).map((benefit, index) => (
+                  {t<string[]>('import.whyEurope.benefits', { returnObjects: true }).slice(3, 6).map((benefit, index) => (
                     <li key={index + 3} className="flex items-start">
-                      {index === 0 && <Euro className="w-6 h-6 text-navy mr-2 flex-shrink-0" />}
-                      {index === 1 && <Car className="w-6 h-6 text-navy mr-2 flex-shrink-0" />}
-                      {index === 2 && <Truck className="w-6 h-6 text-navy mr-2 flex-shrink-0" />}
+                      <Euro className="w-6 h-6 text-navy mr-2 flex-shrink-0" />
                       <span>{benefit}</span>
                     </li>
                   ))}
@@ -78,20 +74,17 @@ const Imports = () => {
 
         <h2 className="text-2xl font-semibold mb-6 text-center">{t('import.services.title')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {t('import.services.items', { returnObjects: true }).map((service, index) => {
-            const iconKey = Object.keys(benefitIcons)[index];
-            return (
-              <Card key={index} className="text-center p-6 hover:shadow-lg transition-shadow">
-                <CardContent className="flex flex-col items-center">
-                  <div className="flex justify-center">
-                    {benefitIcons[iconKey as keyof typeof benefitIcons]}
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">{service.title}</h3>
-                  <p className="text-gray-600">{service.description}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
+          {t<Array<{title: string, description: string}>>('import.services.items', { returnObjects: true }).map((service, index) => (
+            <Card key={index} className="text-center p-6 hover:shadow-lg transition-shadow">
+              <CardContent className="flex flex-col items-center">
+                <div className="flex justify-center">
+                  {benefitIcons[index]}
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{service.title}</h3>
+                <p className="text-gray-600">{service.description}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         <div className="bg-navy text-white rounded-lg p-8 text-center">

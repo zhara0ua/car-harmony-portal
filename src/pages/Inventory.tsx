@@ -5,8 +5,10 @@ import Footer from "@/components/Footer";
 import CarFilters from "@/components/inventory/CarFilters";
 import CarGrid from "@/components/inventory/CarGrid";
 import { useCars } from "@/hooks/useCars";
+import { useTranslation } from "react-i18next";
 
 const Inventory = () => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [category, setCategory] = useState<string>("all");
   const [transmission, setTransmission] = useState<string>("all");
@@ -46,7 +48,7 @@ const Inventory = () => {
       <Navbar />
       
       <div className="container mx-auto px-6 py-16">
-        <h1 className="text-4xl font-bold text-navy mb-8">Наші Автомобілі</h1>
+        <h1 className="text-4xl font-bold text-navy mb-8">{t('cars.title')}</h1>
         
         <CarFilters
           isOpen={isOpen}

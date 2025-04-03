@@ -13,6 +13,15 @@
     "viewCars": "Zobacz Samochody",
     "orderInspection": "Zamów Inspekcję"
   },
+  "services": {
+    "title": "Nasze Usługi",
+    "luxury": "Luksusowe Samochody",
+    "luxuryDesc": "Przeglądaj naszą wyselekcjonowaną kolekcję luksusowych pojazdów.",
+    "import": "Usługi Importowe",
+    "importDesc": "Sprowadzamy samochody z rynków międzynarodowych.",
+    "inspection": "Profesjonalna Inspekcja",
+    "inspectionDesc": "Kompleksowe przeglądy pojazdów przez certyfikowanych techników."
+  },
   "inspection": {
     "title": "Profesjonalny Dobór Samochodu",
     "subtitle": "Zostaw swoje dane kontaktowe, a my skontaktujemy się z Tobą, aby omówić szczegóły",
@@ -74,6 +83,52 @@
     "cta": {
       "title": "Gotowy zaimportować swój idealny samochód?",
       "subtitle": "Skontaktuj się z nami, aby uzyskać konsultację i kalkulację kosztów"
+    }
+  },
+  "cars": {
+    "title": "Nasze Samochody",
+    "filters": {
+      "category": "Typ nadwozia",
+      "transmission": "Skrzynia biegów",
+      "fuelType": "Rodzaj paliwa",
+      "make": "Marka",
+      "model": "Model",
+      "priceRange": "Zakres cenowy",
+      "minPrice": "Min. cena",
+      "maxPrice": "Maks. cena",
+      "sortBy": "Sortuj wg",
+      "all": "Wszystkie",
+      "applyFilters": "Zastosuj filtry",
+      "resetFilters": "Resetuj filtry"
+    },
+    "loadMore": "Załaduj więcej"
+  },
+  "carDetails": {
+    "year": "Rok produkcji",
+    "mileage": "Przebieg",
+    "bodyType": "Typ nadwozia",
+    "transmission": "Skrzynia biegów",
+    "fuelType": "Paliwo",
+    "engine": "Silnik",
+    "make": "Marka",
+    "model": "Model",
+    "notFound": "Nie znaleziono samochodu",
+    "notFoundDesc": "Niestety, informacje o tym samochodzie nie są dostępne."
+  },
+  "contact": {
+    "title": "Kontakt",
+    "subtitle": "Masz pytania? Chętnie na nie odpowiemy.",
+    "form": {
+      "name": "Twoje imię",
+      "email": "Adres e-mail",
+      "message": "Wiadomość",
+      "submit": "Wyślij wiadomość"
+    },
+    "info": {
+      "title": "Informacje kontaktowe",
+      "address": "ul. Samochodowa 123, Warszawa, Polska",
+      "phone": "+48 123 456 789",
+      "email": "info@kristinauto.com"
     }
   }
 }

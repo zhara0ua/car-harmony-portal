@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import CarImageGallery from "@/components/car/CarImageGallery";
 import CarDetailsInfo from "@/components/car/CarDetailsInfo";
+import { useTranslation } from "react-i18next";
 
 interface Car {
   id: number;
@@ -27,6 +28,7 @@ interface Car {
 }
 
 const CarDetails = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const [car, setCar] = useState<Car | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,8 +51,8 @@ const CarDetails = () => {
       } catch (error) {
         console.error('Error fetching car:', error);
         toast({
-          title: "Помилка",
-          description: "Не вдалося завантажити інформацію про автомобіль",
+          title: t('carDetails.notFound'),
+          description: t('carDetails.notFoundDesc'),
           variant: "destructive",
         });
       } finally {
@@ -61,7 +63,7 @@ const CarDetails = () => {
     if (id) {
       fetchCar();
     }
-  }, [id, toast]);
+  }, [id, toast, t]);
 
   if (isLoading) {
     return (
@@ -89,8 +91,8 @@ const CarDetails = () => {
         <Navbar />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-navy mb-4">Автомобіль не знайдено</h1>
-            <p className="text-gray-600">На жаль, інформація про цей автомобіль відсутня.</p>
+            <h1 className="text-2xl font-bold text-navy mb-4">{t('carDetails.notFound')}</h1>
+            <p className="text-gray-600">{t('carDetails.notFoundDesc')}</p>
           </div>
         </div>
         <Footer />

@@ -13,6 +13,15 @@
     "viewCars": "View Cars",
     "orderInspection": "Order Inspection"
   },
+  "services": {
+    "title": "Our Services",
+    "luxury": "Luxury Cars",
+    "luxuryDesc": "Browse our curated collection of luxury vehicles.",
+    "import": "Import Services",
+    "importDesc": "We import cars from international markets.",
+    "inspection": "Professional Inspection",
+    "inspectionDesc": "Comprehensive vehicle inspections by certified technicians."
+  },
   "inspection": {
     "title": "Professional Car Selection",
     "subtitle": "Leave your contact details and we will contact you to discuss the details",
@@ -74,6 +83,52 @@
     "cta": {
       "title": "Ready to import your perfect car?",
       "subtitle": "Contact us for consultation and cost calculation"
+    }
+  },
+  "cars": {
+    "title": "Our Cars",
+    "filters": {
+      "category": "Body Type",
+      "transmission": "Transmission",
+      "fuelType": "Fuel Type",
+      "make": "Make",
+      "model": "Model",
+      "priceRange": "Price Range",
+      "minPrice": "Min Price",
+      "maxPrice": "Max Price",
+      "sortBy": "Sort By",
+      "all": "All",
+      "applyFilters": "Apply Filters",
+      "resetFilters": "Reset Filters"
+    },
+    "loadMore": "Load More"
+  },
+  "carDetails": {
+    "year": "Year",
+    "mileage": "Mileage",
+    "bodyType": "Body Type",
+    "transmission": "Transmission",
+    "fuelType": "Fuel Type",
+    "engine": "Engine",
+    "make": "Make",
+    "model": "Model",
+    "notFound": "Car not found",
+    "notFoundDesc": "Unfortunately, information about this car is not available."
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Have questions? We'd love to hear from you.",
+    "form": {
+      "name": "Your Name",
+      "email": "Email Address",
+      "message": "Message",
+      "submit": "Send Message"
+    },
+    "info": {
+      "title": "Contact Information",
+      "address": "123 Car Street, Warsaw, Poland",
+      "phone": "+48 123 456 789",
+      "email": "info@kristinauto.com"
     }
   }
 }

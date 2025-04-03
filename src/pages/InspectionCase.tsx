@@ -1,11 +1,14 @@
+
 import { useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const InspectionCase = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -54,7 +57,7 @@ const InspectionCase = () => {
           onClick={() => navigate('/inspection')}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Назад до всіх інспекцій
+          {t('inspection.cases.title')}
         </Button>
 
         <div className="max-w-4xl mx-auto">
@@ -69,7 +72,7 @@ const InspectionCase = () => {
           </h1>
           
           <div className="bg-white rounded-lg p-6 shadow-lg mb-8">
-            <h2 className="text-xl font-semibold mb-4">Результат інспекції</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('inspection.title')}</h2>
             <p className="text-lg font-medium text-navy mb-4">{currentCase.result}</p>
             <p className="text-gray-700 leading-relaxed">{currentCase.description}</p>
           </div>
