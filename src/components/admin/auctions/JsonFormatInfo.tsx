@@ -56,9 +56,17 @@ export const JsonFormatInfo = () => {
 }`}
           </pre>
         </div>
+        <div className="py-2">
+          <p className="text-sm font-medium">Obsługiwane formaty daty zakończenia (endTime):</p>
+          <ul className="text-xs space-y-1 mt-2 list-disc pl-4">
+            <li>Standardowy format ISO: "2025-04-10T15:53:25.815Z"</li>
+            <li>Obiekt z datą: {"{ fullDate: '20/03/2025 11:00' }"}</li>
+            <li>Jeśli pole jest puste, aukcja będzie aktywna przez 7 dni od importu</li>
+          </ul>
+        </div>
         <SheetFooter>
           <p className="text-xs text-muted-foreground">
-            Pola wymagane: title, price, year, detailUrl
+            Pola wymagane: title, price, detailUrl
           </p>
         </SheetFooter>
       </SheetContent>

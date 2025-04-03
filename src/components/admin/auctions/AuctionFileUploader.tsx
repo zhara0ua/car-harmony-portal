@@ -33,27 +33,62 @@ export const AuctionFileUploader = ({ onUploadSuccess }: AuctionFileUploaderProp
           const rawCars = Array.isArray(jsonData) ? jsonData : [jsonData];
           
           // Transform the JSON data to match our database structure
-          const cars = rawCars.map(car => ({
-            external_id: car.auctionId || `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`,
-            title: car.title,
-            start_price: car.price || 0,
-            year: parseInt(car.year) || new Date().getFullYear(),
-            make: car.make,
-            model: car.model,
-            mileage: car.mileageFormatted || car.mileage?.toString(),
-            fuel_type: car.fuel,
-            transmission: car.transmission,
-            location: car.country,
-            image_url: car.imageSrc,
-            external_url: car.detailUrl || "#",
-            end_date: car.endTime || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Default 7 days from now
-            status: "active"
-          }));
+          const cars = rawCars.map(car => {
+            // Parse endTime correctly, handling different formats
+            let endDate;
+            try {
+              if (!car.endTime) {
+                // Default to 7 days from now if not provided
+                endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+              } else if (typeof car.endTime === 'object') {
+                // Handle case where endTime is a complex object with a fullDate property
+                if (car.endTime.fullDate) {
+                  // Parse from a string like "20/03/2025 11:00"
+                  const [datePart, timePart] = car.endTime.fullDate.split(' ');
+                  const [day, month, year] = datePart.split('/');
+                  const [hour, minute] = timePart.split(':');
+                  endDate = new Date(
+                    parseInt(year), 
+                    parseInt(month) - 1, 
+                    parseInt(day),
+                    parseInt(hour),
+                    parseInt(minute)
+                  ).toISOString();
+                } else {
+                  endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+                }
+              } else {
+                // Assume it's a string that can be parsed directly
+                endDate = new Date(car.endTime).toISOString();
+              }
+            } catch (error) {
+              console.error("Error parsing endTime:", error);
+              // Default fallback
+              endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+            }
+            
+            return {
+              external_id: car.auctionId || `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`,
+              title: car.title,
+              start_price: car.price || 0,
+              year: parseInt(car.year) || new Date().getFullYear(),
+              make: car.make,
+              model: car.model,
+              mileage: car.mileageFormatted || car.mileage?.toString(),
+              fuel_type: car.fuel,
+              transmission: car.transmission,
+              location: car.country,
+              image_url: car.imageSrc,
+              external_url: car.detailUrl || "#",
+              end_date: endDate,
+              status: "active"
+            };
+          });
           
           // Validate each car
           for (const car of cars) {
-            if (!car.title || !car.external_url || car.start_price === undefined || !car.end_date) {
-              throw new Error("Each car must have title, start_price, external_url, and end_date");
+            if (!car.title || !car.external_url || car.start_price === undefined) {
+              throw new Error("Each car must have title, start_price, and external_url");
             }
           }
           
