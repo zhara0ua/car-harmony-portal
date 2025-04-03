@@ -8,11 +8,14 @@ import { type AuctionFilters as AuctionFiltersType, type AuctionCar } from "@/ty
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 export default function Auctions() {
   const [filters, setFilters] = useState<AuctionFiltersType>({});
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const carsPerPage = 20;
   
   const { data: cars, isLoading } = useQuery({
     queryKey: ['auction-cars', filters],
@@ -90,6 +93,26 @@ export default function Auctions() {
   const handleFilterChange = (newFilters: AuctionFiltersType) => {
     console.log('Applying new filters:', newFilters);
     setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  // Calculate pagination
+  const totalCars = cars?.length || 0;
+  const totalPages = Math.ceil(totalCars / carsPerPage);
+  const indexOfLastCar = currentPage * carsPerPage;
+  const indexOfFirstCar = indexOfLastCar - carsPerPage;
+  const currentCars = cars?.slice(indexOfFirstCar, indexOfLastCar);
+
+  // Generate page numbers for pagination
+  const pageNumbers = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  // Handle page changes
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -114,11 +137,67 @@ export default function Auctions() {
               Brak dostępnych aukcji
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {cars.map((car) => (
-                <AuctionCarCard key={car.id} car={car} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {currentCars.map((car) => (
+                  <AuctionCarCard key={car.id} car={car} />
+                ))}
+              </div>
+              
+              {totalPages > 1 && (
+                <div className="mt-8">
+                  <Pagination>
+                    <PaginationContent>
+                      {currentPage > 1 && (
+                        <PaginationItem>
+                          <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} />
+                        </PaginationItem>
+                      )}
+                      
+                      {pageNumbers.map(number => {
+                        // Show current page, first, last, and 1 page before and after current page
+                        if (
+                          number === 1 || 
+                          number === totalPages || 
+                          (number >= currentPage - 1 && number <= currentPage + 1)
+                        ) {
+                          return (
+                            <PaginationItem key={number}>
+                              <PaginationLink 
+                                isActive={number === currentPage}
+                                onClick={() => handlePageChange(number)}
+                              >
+                                {number}
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        } else if (
+                          (number === 2 && currentPage > 3) || 
+                          (number === totalPages - 1 && currentPage < totalPages - 2)
+                        ) {
+                          return (
+                            <PaginationItem key={number}>
+                              <span className="flex h-9 w-9 items-center justify-center">...</span>
+                            </PaginationItem>
+                          );
+                        }
+                        return null;
+                      })}
+                      
+                      {currentPage < totalPages && (
+                        <PaginationItem>
+                          <PaginationNext onClick={() => handlePageChange(currentPage + 1)} />
+                        </PaginationItem>
+                      )}
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+              
+              <div className="mt-4 text-center text-sm text-muted-foreground">
+                Pokazano {currentCars.length} z {totalCars} aukcji
+              </div>
+            </>
           )}
         </div>
       </main>
