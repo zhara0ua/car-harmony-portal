@@ -42,6 +42,18 @@ export const TransmissionFilterComponent = ({
       return "all_transmissions";
     }
     
+    // Special case for "Manual" in any case
+    if (displayName.toLowerCase() === "manual") {
+      console.log(`Detected Manual transmission, returning "manual"`);
+      return "manual";
+    }
+    
+    // Special case for "Automat" in any case
+    if (displayName === "Automat") {
+      console.log(`Detected Automat transmission, returning "automatic"`);
+      return "automatic";
+    }
+    
     // Find backend value by display name
     for (const [backend, display] of Object.entries(transmissionMap)) {
       if (display === displayName) {
@@ -75,11 +87,15 @@ export const TransmissionFilterComponent = ({
           <SelectItem value="Wszystkie skrzynie biegów">
             Wszystkie skrzynie biegów
           </SelectItem>
-          {transmissions.map((transmission) => (
-            <SelectItem key={transmission} value={getDisplayName(transmission)}>
-              {getDisplayName(transmission)}
-            </SelectItem>
-          ))}
+          <SelectItem value="Manual">Manual</SelectItem>
+          <SelectItem value="Automat">Automat</SelectItem>
+          {transmissions
+            .filter(t => t.toLowerCase() !== "manual" && t.toLowerCase() !== "automatic")
+            .map((transmission) => (
+              <SelectItem key={transmission} value={getDisplayName(transmission)}>
+                {getDisplayName(transmission)}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
     </div>

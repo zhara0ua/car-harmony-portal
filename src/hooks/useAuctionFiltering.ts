@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,10 +60,23 @@ export const useAuctionFiltering = () => {
         query = query.eq('fuel_type', backendFuelType);
       }
       
+      // Special handling for transmission
       if (filters.transmission && filters.transmission !== "all_transmissions") {
         console.log(`Applying transmission filter, raw value: "${filters.transmission}"`);
-        const transmissionValue = filters.transmission.toLowerCase();
-        console.log(`Converted transmission value to lowercase: "${transmissionValue}"`);
+        
+        // Handle manual/automatic case specially
+        let transmissionValue: string;
+        
+        if (filters.transmission.toLowerCase() === "manual") {
+          transmissionValue = "manual";
+          console.log(`Setting transmission filter to lowercase "manual"`);
+        } else if (filters.transmission.toLowerCase() === "automatic") {
+          transmissionValue = "automatic";
+          console.log(`Setting transmission filter to lowercase "automatic"`);
+        } else {
+          transmissionValue = filters.transmission.toLowerCase();
+          console.log(`Converted transmission value to lowercase: "${transmissionValue}"`);
+        }
         
         query = query.eq('transmission', transmissionValue);
       }
