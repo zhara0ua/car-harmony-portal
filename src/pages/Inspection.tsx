@@ -14,64 +14,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Wrench, CheckCircle, Car } from "lucide-react";
-import InspectionCaseCard from "@/components/InspectionCaseCard";
-
-const inspectionCases = [
-  {
-    id: 1,
-    image: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80",
-    name: "Mercedes-Benz S-Class",
-    year: "2020",
-    result: "Pomyślnie zakupiony",
-    description: "Szczegółowa kontrola wykazała doskonały stan samochodu..."
-  },
-  {
-    id: 2,
-    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80",
-    name: "BMW 7 Series",
-    year: "2021",
-    result: "Wykryto ukryte wady",
-    description: "Podczas inspekcji wykryto poważne problemy..."
-  },
-  {
-    id: 3,
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80",
-    name: "Audi A8",
-    year: "2022",
-    result: "Pomyślnie zakupiony",
-    description: "Samochód przeszedł pełną diagnostykę techniczną..."
-  },
-  {
-    id: 4,
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80",
-    name: "Porsche Panamera",
-    year: "2021",
-    result: "Pomyślnie zakupiony",
-    description: "Pełna weryfikacja potwierdziła doskonały stan..."
-  },
-  {
-    id: 5,
-    image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?auto=format&fit=crop&q=80",
-    name: "Range Rover Sport",
-    year: "2022",
-    result: "Wykryto ukryte wady",
-    description: "Inspekcja wykazała problemy z zawieszeniem..."
-  },
-  {
-    id: 6,
-    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80",
-    name: "Maserati Ghibli",
-    year: "2021",
-    result: "Pomyślnie zakupiony",
-    description: "Stan techniczny potwierdzony jako doskonały..."
-  }
-];
 
 const Inspection = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [description, setDescription] = useState("");
-  const [visibleCases, setVisibleCases] = useState(3);
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -86,10 +33,6 @@ const Inspection = () => {
     setName("");
     setPhone("");
     setDescription("");
-  };
-
-  const loadMore = () => {
-    setVisibleCases(prev => Math.min(prev + 3, inspectionCases.length));
   };
 
   return (
@@ -181,28 +124,6 @@ const Inspection = () => {
               </form>
             </CardContent>
           </Card>
-
-          <section>
-            <h2 className="text-2xl font-bold text-navy mb-6">Nasze Udane Dobory</h2>
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              {inspectionCases.slice(0, visibleCases).map((inspectionCase) => (
-                <InspectionCaseCard 
-                  key={inspectionCase.id} 
-                  inspectionCase={inspectionCase}
-                />
-              ))}
-            </div>
-            {visibleCases < inspectionCases.length && (
-              <div className="text-center">
-                <Button 
-                  onClick={loadMore}
-                  className="bg-navy hover:bg-navy/90"
-                >
-                  Pokaż więcej
-                </Button>
-              </div>
-            )}
-          </section>
         </div>
       </main>
 

@@ -70,7 +70,7 @@ const Imports = () => {
                   Specjalizujemy się w imporcie premium samochodów z najlepszych europejskich aukcji. Nasz zespół ekspertów zapewnia pełne wsparcie transakcji i gwarantuje przejrzystość na każdym etapie.
                 </p>
                 <Badge variant="secondary" className="text-base sm:text-lg py-1.5 sm:py-2 px-3 sm:px-4">
-                  +48 123 456 789
+                  +48 732 727 686
                 </Badge>
               </div>
             </div>
@@ -124,7 +124,7 @@ const Imports = () => {
           <h2 className="text-2xl font-bold mb-4">Gotowy zaimportować swój idealny samochód?</h2>
           <p className="mb-6">Skontaktuj się z nami, aby uzyskać konsultację i kalkulację kosztów</p>
           <Badge variant="secondary" className="text-lg py-2 px-4">
-            +48 123 456 789
+            +48 732 727 686
           </Badge>
         </div>
       </main>
