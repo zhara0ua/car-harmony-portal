@@ -62,10 +62,10 @@ const CarFilters = ({
   const fuelTypesToDisplay = availableFuelTypes.length > 0 ? availableFuelTypes : defaultFuelTypes;
   
   // Default transmissions if none provided from API - updated to Polish
-  // Removed "Manualna" from the defaults
-  const defaultTransmissions = ["Automat", "Robot", "Bezstopniowa"];
+  // Added "Manual" to the list of default transmissions
+  const defaultTransmissions = ["Manual", "Automat", "Robot", "Bezstopniowa"];
   const transmissionsToDisplay = availableTransmissions.length > 0 
-    ? availableTransmissions.filter(t => t.toLowerCase() !== "manual")
+    ? availableTransmissions 
     : defaultTransmissions;
   
   return (
