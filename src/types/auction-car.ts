@@ -17,3 +17,15 @@ export interface AuctionCar {
   end_date: string;
   status?: string;
 }
+
+export interface AuctionFilters {
+  minYear?: number;
+  maxYear?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  make?: string;
+  model?: string;
+  minMileage?: number;
+  maxMileage?: number;
+  fuelType?: string;
+}

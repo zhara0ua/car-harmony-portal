@@ -17,7 +17,15 @@ export const useAuctionCars = () => {
         .order('end_date', { ascending: true });
       
       if (error) throw error;
-      return data as AuctionCar[];
+      
+      // Convert numeric prices to numbers for consistent handling in the UI
+      const formattedData = data.map(car => ({
+        ...car,
+        start_price: Number(car.start_price),
+        current_price: car.current_price ? Number(car.current_price) : undefined
+      }));
+      
+      return formattedData as AuctionCar[];
     }
   });
 

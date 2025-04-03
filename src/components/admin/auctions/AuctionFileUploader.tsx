@@ -58,16 +58,20 @@ export const AuctionFileUploader = ({ onUploadSuccess }: AuctionFileUploaderProp
           
           // Transform the JSON data to match our database structure
           const cars = rawCars.map(car => {
-            // Handle price conversion - convert to number and multiply by 1000 if less than 100
-            // This handles cases where price might be in thousands (e.g., 11.8 for €11,800)
+            // Handle price conversion with improved parsing
             let price = car.price || 0;
+            
+            // If price is a string, clean it and convert to number
             if (typeof price === 'string') {
-              // Try to parse string price to number
-              price = parseFloat(price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+              // Remove all non-numeric characters except decimal points and commas
+              price = price.replace(/[^\d.,]/g, '').replace(',', '.');
+              // Try to parse as float first
+              price = parseFloat(price) || 0;
             }
             
+            // If price is already a number but very small (likely in thousands notation)
             if (typeof price === 'number' && price < 100) {
-              price = Math.round(price * 1000);
+              price = price * 1000;
             }
             
             // Parse endTime correctly, handling different formats
