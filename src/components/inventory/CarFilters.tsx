@@ -1,20 +1,8 @@
 
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import FilterContainer from "./filters/FilterContainer";
+import SelectFilter from "./filters/SelectFilter";
+import PriceFilter from "./filters/PriceFilter";
 
 interface CarFiltersProps {
   isOpen: boolean;
@@ -78,133 +66,92 @@ const CarFilters = ({
   const transmissionsToDisplay = availableTransmissions.length > 0 ? availableTransmissions : defaultTransmissions;
   
   return (
-    <div className="mb-8">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger className="flex items-center gap-2 text-navy hover:text-navy/80 transition-colors mb-4">
-          <span className="font-medium">{t("cars.filters.filters")}</span>
-          {isOpen ? (
-            <ChevronUp className="h-5 w-5" />
-          ) : (
-            <ChevronDown className="h-5 w-5" />
-          )}
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label>{t("cars.filters.make")}</Label>
-              <Select value={make} onValueChange={setMake}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("cars.filters.selectMake")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("cars.filters.all")}</SelectItem>
-                  {uniqueMakes.map((make) => (
-                    <SelectItem key={make} value={make}>{make}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+    <FilterContainer 
+      isOpen={isOpen}
+      setIsOpen={setIsOpen}
+      filterLabel={t("cars.filters.filters")}
+    >
+      <SelectFilter
+        label={t("cars.filters.make")}
+        value={make}
+        onValueChange={setMake}
+        placeholder={t("cars.filters.selectMake")}
+        options={uniqueMakes}
+        allOptionLabel={t("cars.filters.all")}
+      />
 
-            <div className="space-y-2">
-              <Label>{t("cars.filters.model")}</Label>
-              <Select value={model} onValueChange={setModel}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("cars.filters.selectModel")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("cars.filters.all")}</SelectItem>
-                  {uniqueModels.map((model) => (
-                    <SelectItem key={model} value={model}>{model}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      <SelectFilter
+        label={t("cars.filters.model")}
+        value={model}
+        onValueChange={setModel}
+        placeholder={t("cars.filters.selectModel")}
+        options={uniqueModels}
+        allOptionLabel={t("cars.filters.all")}
+      />
 
-            <div className="space-y-2">
-              <Label>{t("cars.filters.minPrice")}</Label>
-              <Input
-                type="number"
-                placeholder={t("cars.filters.minPricePlaceholder")}
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-              />
-            </div>
+      <PriceFilter
+        label={t("cars.filters.minPrice")}
+        value={minPrice}
+        onValueChange={setMinPrice}
+        placeholder={t("cars.filters.minPricePlaceholder")}
+      />
 
-            <div className="space-y-2">
-              <Label>{t("cars.filters.maxPrice")}</Label>
-              <Input
-                type="number"
-                placeholder={t("cars.filters.maxPricePlaceholder")}
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-              />
-            </div>
+      <PriceFilter
+        label={t("cars.filters.maxPrice")}
+        value={maxPrice}
+        onValueChange={setMaxPrice}
+        placeholder={t("cars.filters.maxPricePlaceholder")}
+      />
 
-            <div className="space-y-2">
-              <Label>{t("cars.filters.category")}</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("cars.filters.bodyType")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("cars.filters.all")}</SelectItem>
-                  <SelectItem value="Седан">Sedan</SelectItem>
-                  <SelectItem value="SUV">SUV</SelectItem>
-                  <SelectItem value="Купе">Coupe</SelectItem>
-                  <SelectItem value="Універсал">Kombi</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      <SelectFilter
+        label={t("cars.filters.category")}
+        value={category}
+        onValueChange={setCategory}
+        placeholder={t("cars.filters.bodyType")}
+        options={[
+          { value: "Седан", label: "Sedan" },
+          { value: "SUV", label: "SUV" },
+          { value: "Купе", label: "Coupe" },
+          { value: "Універсал", label: "Kombi" }
+        ]}
+        allOptionLabel={t("cars.filters.all")}
+      />
 
-            <div className="space-y-2">
-              <Label>{t("cars.filters.transmission")}</Label>
-              <Select value={transmission} onValueChange={setTransmission} disabled={isFilterDataLoading}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("cars.filters.transmissionType")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("cars.filters.all")}</SelectItem>
-                  {transmissionsToDisplay.map((item) => (
-                    <SelectItem key={item} value={item}>{item}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      <SelectFilter
+        label={t("cars.filters.transmission")}
+        value={transmission}
+        onValueChange={setTransmission}
+        placeholder={t("cars.filters.transmissionType")}
+        options={transmissionsToDisplay}
+        allOptionLabel={t("cars.filters.all")}
+        disabled={isFilterDataLoading}
+      />
 
-            <div className="space-y-2">
-              <Label>{t("cars.filters.fuelType")}</Label>
-              <Select value={fuelType} onValueChange={setFuelType} disabled={isFilterDataLoading}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("cars.filters.fuelTypePlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("cars.filters.all")}</SelectItem>
-                  {fuelTypesToDisplay.map((item) => (
-                    <SelectItem key={item} value={item}>{item}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      <SelectFilter
+        label={t("cars.filters.fuelType")}
+        value={fuelType}
+        onValueChange={setFuelType}
+        placeholder={t("cars.filters.fuelTypePlaceholder")}
+        options={fuelTypesToDisplay}
+        allOptionLabel={t("cars.filters.all")}
+        disabled={isFilterDataLoading}
+      />
 
-            <div className="space-y-2">
-              <Label>{t("cars.filters.sortBy")}</Label>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("cars.filters.sortByPlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="default">{t("cars.filters.default")}</SelectItem>
-                  <SelectItem value="price-asc">{t("cars.filters.priceLowToHigh")}</SelectItem>
-                  <SelectItem value="price-desc">{t("cars.filters.priceHighToLow")}</SelectItem>
-                  <SelectItem value="year-desc">{t("cars.filters.yearNewestFirst")}</SelectItem>
-                  <SelectItem value="year-asc">{t("cars.filters.yearOldestFirst")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-    </div>
+      <SelectFilter
+        label={t("cars.filters.sortBy")}
+        value={sortBy}
+        onValueChange={setSortBy}
+        placeholder={t("cars.filters.sortByPlaceholder")}
+        options={[
+          { value: "default", label: t("cars.filters.default") },
+          { value: "price-asc", label: t("cars.filters.priceLowToHigh") },
+          { value: "price-desc", label: t("cars.filters.priceHighToLow") },
+          { value: "year-desc", label: t("cars.filters.yearNewestFirst") },
+          { value: "year-asc", label: t("cars.filters.yearOldestFirst") }
+        ]}
+        allOptionLabel=""
+      />
+    </FilterContainer>
   );
 };
 
