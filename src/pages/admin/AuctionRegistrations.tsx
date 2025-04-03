@@ -35,7 +35,7 @@ export default function AuctionRegistrations() {
         throw error;
       }
 
-      setRegistrations(data || []);
+      setRegistrations(data as AuctionRegistration[] || []);
     } catch (error) {
       console.error('Error fetching registrations:', error);
     } finally {

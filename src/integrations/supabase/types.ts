@@ -69,6 +69,27 @@ export type Database = {
         }
         Relationships: []
       }
+      auction_registrations: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name: string
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
       auctions: {
         Row: {
           car_id: number | null
