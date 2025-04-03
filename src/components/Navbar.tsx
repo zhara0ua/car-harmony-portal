@@ -24,8 +24,12 @@ const Navbar = () => {
     <nav className="bg-white shadow-md relative">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-navy">
-            Kristin Auto
+          <Link to="/" className="flex items-center">
+            <img 
+              src="/lovable-uploads/c8f9be96-d35e-4886-8360-b609f3786200.png" 
+              alt="KRIST IN AUTO" 
+              className="h-8 md:h-10"
+            />
           </Link>
 
           <div className="hidden md:flex space-x-8">

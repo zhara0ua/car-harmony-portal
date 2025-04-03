@@ -6,7 +6,13 @@ const Footer = () => {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">KRIST IN AUTO</h3>
+              <div className="mb-4">
+                <img 
+                  src="/lovable-uploads/c8f9be96-d35e-4886-8360-b609f3786200.png" 
+                  alt="KRIST IN AUTO" 
+                  className="h-10 bg-white p-1 rounded"
+                />
+              </div>
               <p className="text-gray-300">
                 Twój niezawodny partner w wyborze samochodu
               </p>
