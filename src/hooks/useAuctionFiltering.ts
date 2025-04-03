@@ -44,11 +44,25 @@ export const useAuctionFiltering = () => {
       if (filters.model && filters.model !== "all_models") {
         query = query.eq('model', filters.model);
       }
+      
+      // Fuel type mapping from display to backend values
+      const fuelTypeBackendMap: Record<string, string> = {
+        "Benzyna": "petrol",
+        "Diesel": "diesel",
+        "Elektryczny": "electric",
+        "Hybryda": "hybrid",
+        "LPG": "lpg"
+      };
+      
       if (filters.fuelType && filters.fuelType !== "all_fuel_types") {
-        console.log(`Applying fuel type filter: ${filters.fuelType}`);
-        query = query.eq('fuel_type', filters.fuelType);
+        // Check if the fuel type is a display name and map it to backend value if needed
+        const backendFuelType = fuelTypeBackendMap[filters.fuelType] || filters.fuelType;
+        console.log(`Applying fuel type filter: ${filters.fuelType} -> ${backendFuelType}`);
+        query = query.eq('fuel_type', backendFuelType);
       }
+      
       if (filters.transmission && filters.transmission !== "all_transmissions") {
+        // No need to map since we're already using backend values from the component
         console.log(`Applying transmission filter: ${filters.transmission}`);
         query = query.eq('transmission', filters.transmission);
       }
