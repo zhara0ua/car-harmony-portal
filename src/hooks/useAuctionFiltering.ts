@@ -126,12 +126,22 @@ export const useAuctionFiltering = () => {
 
   const handleSort = (field: SortField) => {
     if (field === sortField) {
-      // Toggle sort order if clicking on the same field
+      // Toggle sort order if same field is selected
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
-      // Set new field and default to ascending
+      // Set new field with default order based on the field type
       setSortField(field);
-      setSortOrder('asc');
+      
+      // Set appropriate default order for each field type
+      if (field === 'title') {
+        setSortOrder('asc'); // A-Z is more natural for names
+      } else if (field === 'year') {
+        setSortOrder('desc'); // Newest first is more natural for years
+      } else if (field === 'start_price') {
+        setSortOrder('asc'); // Lowest first is more natural for prices
+      } else if (field === 'end_date') {
+        setSortOrder('asc'); // Earliest first is more natural for end dates
+      }
     }
     setCurrentPage(1); // Reset to first page when sort changes
   };
