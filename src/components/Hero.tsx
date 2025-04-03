@@ -16,14 +16,14 @@ const Hero = () => {
             Odkryj Swój Wymarzony Samochód
           </h1>
           <p className="text-xl mb-8">
-            Luksusowe pojazdy, profesjonalny import i dokładne inspekcje dla wymagających kierowców.
+            Sprawdzone pojazdy, profesjonalny import i dokładne inspekcje dla wymagających kierowców.
           </p>
           <div className="space-x-4">
             <Button 
               className="bg-gold text-navy hover:bg-gold/90"
-              onClick={() => navigate('/inventory')}
+              onClick={() => navigate('/auctions')}
             >
-              Zobacz Samochody
+              Zobacz Aukcje
             </Button>
             <Button 
               variant="outline" 
