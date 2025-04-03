@@ -10,26 +10,29 @@ import {
 } from "@/components/ui/select";
 import { useFilterData } from "@/components/auctions/filters/useFilterData";
 
-interface TransmissionFilterComponentProps {
+interface FuelTypeFilterComponentProps {
   value?: string;
   onChange: (value: string) => void;
 }
 
-export const TransmissionFilterComponent = ({
+export const FuelTypeFilterComponent = ({
   value,
   onChange,
-}: TransmissionFilterComponentProps) => {
-  const { transmissions, isLoading } = useFilterData();
+}: FuelTypeFilterComponentProps) => {
+  const { fuelTypes, isLoading } = useFilterData();
   
-  // Transmission mapping - backend values to display names
-  const transmissionMap = {
-    "automatic": "Automat",
-    "manual": "Manual"
+  // Fuel type mapping - backend values to display names
+  const fuelTypeMap = {
+    "petrol": "Benzyna",
+    "diesel": "Diesel",
+    "electric": "Elektryczny",
+    "hybrid": "Hybryda",
+    "lpg": "LPG"
   };
 
   // Map display names back to backend values
   const getBackendValue = (displayValue: string) => {
-    for (const [backendValue, displayName] of Object.entries(transmissionMap)) {
+    for (const [backendValue, displayName] of Object.entries(fuelTypeMap)) {
       if (displayName === displayValue) {
         return backendValue;
       }
@@ -39,22 +42,22 @@ export const TransmissionFilterComponent = ({
 
   // Map backend values to display names
   const getDisplayName = (value: string) => {
-    return transmissionMap[value as keyof typeof transmissionMap] || value;
+    return fuelTypeMap[value as keyof typeof fuelTypeMap] || value;
   };
 
-  const handleTransmissionChange = (selectedValue: string) => {
-    if (selectedValue === "all_transmissions") {
+  const handleFuelTypeChange = (selectedValue: string) => {
+    if (selectedValue === "all_fuel_types") {
       onChange(selectedValue);
     } else {
       // Convert display name to backend value before sending to parent
       const backendValue = getBackendValue(selectedValue);
-      console.log(`Transmission selected: ${selectedValue} -> backend value: ${backendValue}`);
+      console.log(`Fuel type selected: ${selectedValue} -> backend value: ${backendValue}`);
       onChange(backendValue);
     }
   };
 
   // Determine what to display in the select
-  const displayValue = value === "all_transmissions" 
+  const displayValue = value === "all_fuel_types" 
     ? value 
     : value 
       ? getDisplayName(value) 
@@ -62,19 +65,17 @@ export const TransmissionFilterComponent = ({
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="transmission">Skrzynia biegów</Label>
+      <Label htmlFor="fuel-type">Rodzaj paliwa</Label>
       <Select 
         value={displayValue} 
-        onValueChange={handleTransmissionChange}
+        onValueChange={handleFuelTypeChange}
       >
-        <SelectTrigger id="transmission" className="w-full">
-          <SelectValue placeholder="Wybierz skrzynię biegów" />
+        <SelectTrigger id="fuel-type" className="w-full">
+          <SelectValue placeholder="Wybierz paliwo" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all_transmissions">
-            Wszystkie skrzynie biegów
-          </SelectItem>
-          {transmissions.map((item) => (
+          <SelectItem value="all_fuel_types">Wszystkie paliwa</SelectItem>
+          {fuelTypes.map((item) => (
             <SelectItem key={item} value={getDisplayName(item)}>
               {getDisplayName(item)}
             </SelectItem>

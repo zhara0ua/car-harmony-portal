@@ -45,9 +45,11 @@ export const useAuctionFiltering = () => {
         query = query.eq('model', filters.model);
       }
       if (filters.fuelType && filters.fuelType !== "all_fuel_types") {
+        console.log(`Applying fuel type filter: ${filters.fuelType}`);
         query = query.eq('fuel_type', filters.fuelType);
       }
       if (filters.transmission && filters.transmission !== "all_transmissions") {
+        console.log(`Applying transmission filter: ${filters.transmission}`);
         query = query.eq('transmission', filters.transmission);
       }
       

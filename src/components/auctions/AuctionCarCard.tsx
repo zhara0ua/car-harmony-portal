@@ -22,7 +22,7 @@ export const AuctionCarCard = ({ car }: AuctionCarCardProps) => {
     locale: pl 
   });
 
-  // Fuel type mapping
+  // Fuel type mapping - backend values to display names
   const fuelTypeMap = {
     "petrol": "Benzyna",
     "diesel": "Diesel",
@@ -31,7 +31,7 @@ export const AuctionCarCard = ({ car }: AuctionCarCardProps) => {
     "lpg": "LPG"
   };
 
-  // Transmission mapping
+  // Transmission mapping - backend values to display names
   const transmissionMap = {
     "automatic": "Automat",
     "manual": "Manual"
