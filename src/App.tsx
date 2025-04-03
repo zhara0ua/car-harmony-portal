@@ -23,6 +23,7 @@ import AdminLayout from './components/admin/AdminLayout';
 import AuctionRegistrations from './pages/admin/AuctionRegistrations';
 import { Toaster } from "@/components/ui/toaster";
 import { AdminAuthGuard } from './components/admin/AdminAuthGuard';
+import { ThemeProvider } from "./components/theme-provider";
 
 function App() {
   const [isMounted, setIsMounted] = useState(false);
@@ -32,40 +33,42 @@ function App() {
   }, []);
 
   return (
-    <div className="app">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auctions" element={<Auctions />} />
-          <Route path="/car/:id" element={<CarDetails />} />
-          <Route path="/inventory" element={<Inventory />} />
-          <Route path="/imports" element={<Imports />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/inspection" element={<Inspection />} />
-          <Route path="/inspection-case/:id" element={<InspectionCase />} />
-          <Route path="/scraped-cars" element={<ScrapedCars />} />
-          
-          {/* Admin routes */}
-          <Route path="/admin" element={<AdminAuthGuard />}>
-            <Route element={<AdminLayout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="cars" element={<Cars />} />
-              <Route path="users" element={<Users />} />
-              <Route path="auction-cars" element={<AuctionCars />} />
-              <Route path="auction-registrations" element={<AuctionRegistrations />} />
-              <Route path="inspections" element={<Inspections />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="statistics" element={<Statistics />} />
+    <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
+      <div className="app">
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auctions" element={<Auctions />} />
+            <Route path="/car/:id" element={<CarDetails />} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route path="/imports" element={<Imports />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/inspection" element={<Inspection />} />
+            <Route path="/inspection-case/:id" element={<InspectionCase />} />
+            <Route path="/scraped-cars" element={<ScrapedCars />} />
+            
+            {/* Admin routes */}
+            <Route path="/admin" element={<AdminAuthGuard />}>
+              <Route element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="cars" element={<Cars />} />
+                <Route path="users" element={<Users />} />
+                <Route path="auction-cars" element={<AuctionCars />} />
+                <Route path="auction-registrations" element={<AuctionRegistrations />} />
+                <Route path="inspections" element={<Inspections />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="statistics" element={<Statistics />} />
+              </Route>
             </Route>
-          </Route>
-          
-          <Route path="/admin/login" element={<Login />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-      <Toaster />
-    </div>
+            
+            <Route path="/admin/login" element={<Login />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+        <Toaster />
+      </div>
+    </ThemeProvider>
   );
 }
 
