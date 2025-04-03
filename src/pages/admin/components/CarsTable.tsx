@@ -34,7 +34,7 @@ interface CarsTableProps {
   cars: Car[];
   onEdit: (car: Car) => void;
   onDelete: (carId: number) => Promise<void>;
-  onSave: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  onSave: (e: React.FormEvent<HTMLFormElement>, imageFile: File | null) => Promise<void>;
   editingCar: Car | null;
 }
 
