@@ -29,9 +29,9 @@ const Cars = () => {
     loadCars();
   }, []);
 
-  const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAdd = async (e: React.FormEvent<HTMLFormElement>, imageFile: File | null) => {
     e.preventDefault();
-    const success = await createCar(new FormData(e.target as HTMLFormElement));
+    const success = await createCar(new FormData(e.target as HTMLFormElement), imageFile);
     if (success) {
       setIsAddDialogOpen(false);
       loadCars();
@@ -43,11 +43,11 @@ const Cars = () => {
     setEditingCar(car);
   };
 
-  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSave = async (e: React.FormEvent<HTMLFormElement>, imageFile: File | null) => {
     e.preventDefault();
     if (!editingCar) return;
 
-    const success = await updateCar(new FormData(e.target as HTMLFormElement), editingCar.id);
+    const success = await updateCar(new FormData(e.target as HTMLFormElement), editingCar.id, imageFile);
     if (success) {
       setEditingCar(null);
       loadCars();

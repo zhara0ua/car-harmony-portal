@@ -10,21 +10,40 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Car } from "../types/car";
+import { useState } from "react";
+import { Upload, Image as ImageIcon } from "lucide-react";
 
 interface CarFormProps {
   car?: Car;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>, imageFile?: File | null) => Promise<void>;
 }
 
 export const CarForm = ({ car, onSubmit }: CarFormProps) => {
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(car?.image || null);
+
   // Extract numeric price value from formatted price string
   const getNumericPrice = () => {
     if (!car?.price) return '';
     return car.price_number;
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const objectUrl = URL.createObjectURL(file);
+      setImagePreview(objectUrl);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    await onSubmit(e, imageFile);
+  };
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="make">Марка</Label>
@@ -113,8 +132,49 @@ export const CarForm = ({ car, onSubmit }: CarFormProps) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="image">URL зображення</Label>
-        <Input id="image" name="image" defaultValue={car?.image} required />
+        <Label htmlFor="image">Фото автомобіля</Label>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Input 
+              id="image_upload" 
+              name="image_upload" 
+              type="file" 
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <Label 
+              htmlFor="image_upload" 
+              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-md cursor-pointer hover:bg-muted transition-colors"
+            >
+              <Upload className="mb-2" />
+              <span className="text-sm">Натисніть для вибору файлу</span>
+            </Label>
+            {!imagePreview && (
+              <Input 
+                id="image" 
+                name="image" 
+                placeholder="або вставте URL зображення" 
+                defaultValue={car?.image}
+                className="mt-2" 
+              />
+            )}
+          </div>
+          <div className="flex items-center justify-center h-32 bg-muted rounded-md overflow-hidden">
+            {imagePreview ? (
+              <img 
+                src={imagePreview} 
+                alt="Попередній перегляд" 
+                className="max-h-full max-w-full object-contain" 
+              />
+            ) : (
+              <div className="flex flex-col items-center text-muted-foreground">
+                <ImageIcon className="h-8 w-8 mb-2" />
+                <span className="text-sm">Попередній перегляд</span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <Button type="submit">{car ? "Зберегти" : "Додати"}</Button>
