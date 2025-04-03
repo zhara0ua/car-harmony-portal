@@ -33,11 +33,16 @@ export const fetchCars = async () => {
 const uploadImage = async (file: File, folderName: string): Promise<string | null> => {
   try {
     const filename = `${folderName}/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+    
+    // Using the 'cars' bucket that we properly set up with RLS policies
     const { data, error } = await supabase.storage
       .from('cars')
       .upload(filename, file);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    }
 
     const { data: urlData } = supabase.storage
       .from('cars')
@@ -56,9 +61,29 @@ const uploadImage = async (file: File, folderName: string): Promise<string | nul
 };
 
 const uploadMultipleImages = async (files: File[], carId: string): Promise<string[]> => {
-  const uploadPromises = files.map(file => uploadImage(file, carId));
-  const results = await Promise.all(uploadPromises);
-  return results.filter((url): url is string => url !== null);
+  try {
+    const uploadPromises = files.map(file => uploadImage(file, carId));
+    const results = await Promise.all(uploadPromises);
+    const validUrls = results.filter((url): url is string => url !== null);
+    
+    if (validUrls.length === 0 && files.length > 0) {
+      toast({
+        title: "Помилка",
+        description: "Не вдалося завантажити жодне зображення",
+        variant: "destructive",
+      });
+    }
+    
+    return validUrls;
+  } catch (error) {
+    console.error('Error uploading multiple images:', error);
+    toast({
+      title: "Помилка",
+      description: "Не вдалося завантажити зображення",
+      variant: "destructive",
+    });
+    return [];
+  }
 };
 
 export const createCar = async (formData: FormData, imageFiles: File[], mainImageIndex: number): Promise<boolean> => {
@@ -76,11 +101,6 @@ export const createCar = async (formData: FormData, imageFiles: File[], mainImag
     if (imageFiles.length > 0) {
       imageUrls = await uploadMultipleImages(imageFiles, folderName);
       if (imageUrls.length === 0) {
-        toast({
-          title: "Увага",
-          description: "Не вдалося завантажити жодне зображення",
-          variant: "destructive",
-        });
         return false;
       }
     }
