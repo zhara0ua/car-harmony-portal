@@ -23,8 +23,8 @@ export const TransmissionFilterComponent = ({
   
   // Transmission mapping - backend values to display names
   const transmissionMap: Record<string, string> = {
-    "Automatic": "Automatic",
-    "Manual": "Manual"
+    "Manual": "Manual",
+    "Automatic": "Automatic"
   };
 
   // Map backend values to display names
@@ -35,32 +35,32 @@ export const TransmissionFilterComponent = ({
     return transmissionMap[backendValue] || backendValue;
   };
 
-  // Map display names back to backend values
+  // Map display names back to backend values - preserving exact case
   const getBackendValue = (displayName: string) => {
     // Special case for "Wszystkie skrzynie biegów"
     if (displayName === "Wszystkie skrzynie biegów") {
       return "all_transmissions";
     }
     
-    // Special case for "Manual"
+    // Special case for "Manual" - preserve exact case
     if (displayName === "Manual") {
       return "Manual";
     }
     
-    // Special case for "Automat"
-    if (displayName === "Automat") {
-      return "automatic";
+    // Special case for "Automatic" - preserve exact case
+    if (displayName === "Automatic") {
+      return "Automatic";
     }
     
-    // For other values, check the mapping or return as is (lowercase)
+    // For other values, check the mapping or return as is with preserved case
     for (const [backend, display] of Object.entries(transmissionMap)) {
       if (display === displayName) {
-        return backend;
+        return backend; // Return with exact case preserved
       }
     }
     
-    // Return lowercase for any other value
-    return displayName.toLowerCase();
+    // Return as is for any other value
+    return displayName;
   };
 
   const handleTransmissionChange = (selectedValue: string) => {
