@@ -39,7 +39,7 @@ const AdminLogin = () => {
 
     // Simple hardcoded admin credentials
     // In a real app, this would use proper authentication from a backend
-    if (username === "admin" && password === "admin123") {
+    if (username === "admin" && password === "ProdamGaraz19") {
       // Store auth status in localStorage
       localStorage.setItem("adminAuthenticated", "true");
       console.log("Login successful, authentication status set to true");

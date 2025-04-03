@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Shield } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
@@ -16,9 +16,6 @@ const Navbar = () => {
   const isActive = (path: string) => {
     return location.pathname === path;
   };
-
-  const isAdmin = localStorage.getItem("adminAuthenticated") === "true";
-  const adminPath = isAdmin ? "/admin" : "/admin/login";
 
   return (
     <nav className="bg-white shadow-md relative">
@@ -83,13 +80,7 @@ const Navbar = () => {
             </Link>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Link to={adminPath}>
-              <Button variant="outline" size="sm" className="hidden md:flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                <span>Admin</span>
-              </Button>
-            </Link>
+          <div className="flex items-center">
             <Button
               variant="ghost"
               size="icon"
@@ -156,14 +147,6 @@ const Navbar = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Kontakt
-                </Link>
-                <Link
-                  to={adminPath}
-                  className="text-gray-700 hover:text-navy transition-colors flex items-center gap-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <Shield className="h-4 w-4" />
-                  <span>Admin</span>
                 </Link>
               </div>
             </div>
