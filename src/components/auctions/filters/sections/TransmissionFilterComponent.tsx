@@ -77,7 +77,7 @@ export const TransmissionFilterComponent = ({
           <SelectItem value="Manual">Manual</SelectItem>
           <SelectItem value="Automatic">Automatic</SelectItem>
           {transmissions
-            .filter(t => t.toLowerCase() !== "manual" && t.toLowerCase() !== "automatic")
+            .filter(t => t.toLowerCase() !== "Manual" && t.toLowerCase() !== "Automatic")
             .map((transmission) => (
               <SelectItem key={transmission} value={transmission}>
                 {transmission}
