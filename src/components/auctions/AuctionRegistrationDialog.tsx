@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 interface AuctionRegistrationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onRegistrationComplete?: () => void;
 }
 
 const LOCAL_STORAGE_KEY = "auction_registration_completed";
@@ -26,6 +27,7 @@ const LOCAL_STORAGE_KEY = "auction_registration_completed";
 export function AuctionRegistrationDialog({
   open,
   onOpenChange,
+  onRegistrationComplete,
 }: AuctionRegistrationDialogProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -74,6 +76,10 @@ export function AuctionRegistrationDialog({
       
       // Close dialog
       onOpenChange(false);
+      
+      if (onRegistrationComplete) {
+        onRegistrationComplete();
+      }
       
       toast({
         title: "Rejestracja udana",

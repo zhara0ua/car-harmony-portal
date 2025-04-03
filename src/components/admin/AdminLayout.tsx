@@ -1,3 +1,4 @@
+
 import {
   Home,
   Car,
@@ -6,10 +7,9 @@ import {
   BarChart,
   CheckSquare,
   Phone,
+  Gavel,
 } from "lucide-react";
-import { GavelIcon } from "@radix-ui/react-icons";
 import { Sidebar } from "@/components/ui/sidebar";
-import { useSession, signOut } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -19,17 +19,27 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { usePathname, useRouter } from "next/navigation";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminLayout() {
-  const { data: session } = useSession();
-  const pathname = usePathname();
-  const router = useRouter();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+
+  const handleLogout = () => {
+    localStorage.removeItem("adminAuthenticated");
+    toast({
+      title: "Успішний вихід",
+      description: "Ви вийшли з панелі адміністратора",
+    });
+    navigate("/admin/login");
+  };
 
   const adminLinks = [
     { href: "/admin/dashboard", label: "Dashboard", icon: Home },
     { href: "/admin/cars", label: "Samochody", icon: Car },
-    { href: "/admin/auction-cars", label: "Aukcje", icon: GavelIcon },
+    { href: "/admin/auction-cars", label: "Aukcje", icon: Gavel },
     { href: "/admin/auction-registrations", label: "CRM Aukcji", icon: Phone },
     { href: "/admin/inspections", label: "Przeglądy", icon: CheckSquare },
     { href: "/admin/users", label: "Użytkownicy", icon: Users },
@@ -39,42 +49,44 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen">
-      <Sidebar links={adminLinks} />
-      <main className="flex-1 p-4">
+      <Sidebar className="h-screen">
+        <div className="py-2">
+          {adminLinks.map((link) => (
+            <Button
+              key={link.href}
+              variant={location.pathname === link.href ? "secondary" : "ghost"}
+              className="w-full justify-start mb-1"
+              onClick={() => navigate(link.href)}
+            >
+              <link.icon className="mr-2 h-4 w-4" />
+              {link.label}
+            </Button>
+          ))}
+        </div>
+      </Sidebar>
+      
+      <main className="flex-1 p-4 overflow-auto">
         <div className="flex justify-end items-center mb-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={session?.user?.image || ""} alt={session?.user?.name || "Admin"} />
-                  <AvatarFallback>
-                    {session?.user?.name?.slice(0, 2).toUpperCase() || "AD"}
-                  </AvatarFallback>
+                  <AvatarFallback>AD</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuItem className="focus:outline-none">
-                <span className="grid place-items-center">
-                  {session?.user?.name}
-                </span>
+                <span className="grid place-items-center">Admin</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut()} className="focus:outline-none">
+              <DropdownMenuItem onClick={handleLogout} className="focus:outline-none">
                 Wyloguj się
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        {/* Render content based on current path */}
-        {adminLinks.map((link) => {
-          if (link.href === pathname) {
-            return null;
-          }
-          return null;
-        })}
-        {/* Outlet */}
-        {/* <Outlet /> */}
+        <Outlet />
       </main>
     </div>
   );

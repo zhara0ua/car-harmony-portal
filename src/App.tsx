@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Index from './pages/Index';
 import Auctions from './pages/Auctions';
 import CarDetails from './pages/CarDetails';
@@ -19,31 +20,9 @@ import Settings from './pages/admin/Settings';
 import Statistics from './pages/admin/Statistics';
 import NotFound from './pages/NotFound';
 import AdminLayout from './components/admin/AdminLayout';
-import { useUser } from '@supabase/auth-helpers-react';
-import { Session } from '@supabase/supabase-js';
-import { AuctionRegistrations } from './pages/admin/AuctionRegistrations';
-import { Toaster } from "@/components/ui/toaster"
-import { ThemeProvider } from "@/components/theme-provider"
-
-function AdminAuthGuard({ children }: { children: React.ReactNode }) {
-  const user = useUser();
-  const [session, setSession] = useState<Session | null>(null)
-
-  useEffect(() => {
-    async function getActiveSession() {
-      const session = await useUser().getSession()
-      setSession(session)
-    }
-
-    getActiveSession()
-  }, [])
-
-  if (!user || !session) {
-    return <Navigate to="/admin/login" />;
-  }
-
-  return <>{children}</>;
-}
+import AuctionRegistrations from './pages/admin/AuctionRegistrations';
+import { Toaster } from "@/components/ui/toaster";
+import { AdminAuthGuard } from './components/admin/AdminAuthGuard';
 
 function App() {
   const [isMounted, setIsMounted] = useState(false);
@@ -53,10 +32,7 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider
-      defaultTheme="system"
-      storageKey="vite-react-theme"
-    >
+    <div className="app">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
@@ -70,16 +46,18 @@ function App() {
           <Route path="/scraped-cars" element={<ScrapedCars />} />
           
           {/* Admin routes */}
-          <Route path="/admin" element={<AdminAuthGuard><AdminLayout /></AdminAuthGuard>}>
-            <Route index element={<Dashboard />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="cars" element={<Cars />} />
-            <Route path="users" element={<Users />} />
-            <Route path="auction-cars" element={<AuctionCars />} />
-            <Route path="auction-registrations" element={<AuctionRegistrations />} />
-            <Route path="inspections" element={<Inspections />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="statistics" element={<Statistics />} />
+          <Route path="/admin" element={<AdminAuthGuard />}>
+            <Route element={<AdminLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="cars" element={<Cars />} />
+              <Route path="users" element={<Users />} />
+              <Route path="auction-cars" element={<AuctionCars />} />
+              <Route path="auction-registrations" element={<AuctionRegistrations />} />
+              <Route path="inspections" element={<Inspections />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="statistics" element={<Statistics />} />
+            </Route>
           </Route>
           
           <Route path="/admin/login" element={<Login />} />
@@ -87,7 +65,7 @@ function App() {
         </Routes>
       </BrowserRouter>
       <Toaster />
-    </ThemeProvider>
+    </div>
   );
 }
 
