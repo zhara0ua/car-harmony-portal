@@ -5,16 +5,21 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Download, Search, Phone, CheckCircle, XCircle } from "lucide-react";
+import { Download, Search, Phone, CheckCircle, XCircle, Clock } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { AuctionRegistration } from "./types/auction-registration";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface CallStatus {
   [key: number]: { 
-    called: boolean;
+    status: 'called' | 'not_called' | 'callback';
     notes: string;
     callDate?: string;
+    callbackDate?: string;
   }
 }
 
@@ -24,6 +29,7 @@ export default function AuctionRegistrations() {
   const [searchTerm, setSearchTerm] = useState("");
   const [callStatus, setCallStatus] = useState<CallStatus>({});
   const [notes, setNotes] = useState<{[key: number]: string}>({});
+  const [callbackDates, setCallbackDates] = useState<{[key: number]: Date | undefined}>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -54,7 +60,31 @@ export default function AuctionRegistrations() {
   const loadCallStatus = () => {
     const savedStatus = localStorage.getItem('auctionCallStatus');
     if (savedStatus) {
-      setCallStatus(JSON.parse(savedStatus));
+      const parsedStatus = JSON.parse(savedStatus);
+      
+      // Convert old format to new format if needed
+      const updatedStatus: CallStatus = {};
+      
+      Object.entries(parsedStatus).forEach(([id, value]: [string, any]) => {
+        updatedStatus[Number(id)] = {
+          status: value.called ? 'called' : 'not_called',
+          notes: value.notes || "",
+          callDate: value.callDate,
+          callbackDate: value.callbackDate
+        };
+      });
+      
+      setCallStatus(updatedStatus);
+      
+      // Load callback dates if they exist
+      const callbackDatesObj: {[key: number]: Date | undefined} = {};
+      Object.entries(updatedStatus).forEach(([id, value]) => {
+        if (value.callbackDate) {
+          callbackDatesObj[Number(id)] = new Date(value.callbackDate);
+        }
+      });
+      
+      setCallbackDates(callbackDatesObj);
     }
   };
 
@@ -63,19 +93,34 @@ export default function AuctionRegistrations() {
     setCallStatus(newStatus);
   };
 
-  const handleMarkAsCalled = (id: number) => {
+  const handleStatusChange = (id: number, status: 'called' | 'not_called' | 'callback') => {
     const newStatus = { 
-      ...callStatus, 
+      ...callStatus,
       [id]: { 
-        called: true, 
+        ...callStatus[id] || { notes: "" },
+        status: status,
         notes: notes[id] || callStatus[id]?.notes || "",
-        callDate: new Date().toISOString()
+        callDate: status === 'called' ? new Date().toISOString() : callStatus[id]?.callDate
       } 
     };
+    
+    if (status === 'callback' && callbackDates[id]) {
+      newStatus[id].callbackDate = callbackDates[id]?.toISOString();
+    }
+    
     saveCallStatus(newStatus);
+    
+    const statusMessages = {
+      'called': "Zaznaczono jako wykonane",
+      'not_called': "Status połączenia zresetowany",
+      'callback': "Ustawiono przypomnienie kontaktu"
+    };
+    
     toast({
-      title: "Zaznaczono jako wykonane",
-      description: "Status połączenia został zaktualizowany",
+      title: statusMessages[status],
+      description: status === 'callback' ? 
+        `Zaplanowano ponowny kontakt na ${callbackDates[id] ? format(callbackDates[id], 'dd/MM/yyyy') : 'wybraną datę'}` : 
+        "Status połączenia został zaktualizowany",
     });
   };
 
@@ -98,16 +143,29 @@ export default function AuctionRegistrations() {
     }
   };
 
-  const handleResetCall = (id: number) => {
-    const newStatus = { 
-      ...callStatus
-    };
-    delete newStatus[id];
-    saveCallStatus(newStatus);
-    toast({
-      title: "Status połączenia zresetowany",
-      description: "Ten kontakt można ponownie zadzwonić",
+  const handleCallbackDateChange = (id: number, date: Date | undefined) => {
+    setCallbackDates({
+      ...callbackDates,
+      [id]: date
     });
+    
+    if (date && callStatus[id]) {
+      const newStatus = {
+        ...callStatus,
+        [id]: {
+          ...callStatus[id],
+          callbackDate: date.toISOString()
+        }
+      };
+      saveCallStatus(newStatus);
+      
+      if (callStatus[id].status === 'callback') {
+        toast({
+          title: "Data kontaktu zaktualizowana",
+          description: `Zaplanowano ponowny kontakt na ${format(date, 'dd/MM/yyyy')}`,
+        });
+      }
+    }
   };
 
   const filteredRegistrations = registrations.filter(
@@ -118,17 +176,27 @@ export default function AuctionRegistrations() {
 
   const exportToCSV = () => {
     // Create CSV content
-    const headers = ['ID', 'Imię i nazwisko', 'Telefon', 'Data rejestracji', 'Status połączenia', 'Notatki'];
+    const headers = ['ID', 'Imię i nazwisko', 'Telefon', 'Data rejestracji', 'Status', 'Data przypomnienia', 'Notatki'];
     const csvRows = [
       headers.join(','),
-      ...filteredRegistrations.map(reg => [
-        reg.id,
-        `"${reg.name}"`, // Wrap in quotes to handle commas in names
-        `"${reg.phone}"`,
-        new Date(reg.created_at).toLocaleDateString(),
-        callStatus[reg.id]?.called ? 'Zadzwoniono' : 'Niezadzwoniono',
-        `"${callStatus[reg.id]?.notes || ''}"`
-      ].join(','))
+      ...filteredRegistrations.map(reg => {
+        const status = callStatus[reg.id]?.status || 'not_called';
+        const statusText = {
+          'called': 'Zadzwoniono',
+          'not_called': 'Niezadzwoniono',
+          'callback': 'Do oddzwonienia'
+        }[status];
+        
+        return [
+          reg.id,
+          `"${reg.name}"`, // Wrap in quotes to handle commas in names
+          `"${reg.phone}"`,
+          new Date(reg.created_at).toLocaleDateString(),
+          statusText,
+          callStatus[reg.id]?.callbackDate ? `"${new Date(callStatus[reg.id].callbackDate!).toLocaleDateString()}"` : '',
+          `"${callStatus[reg.id]?.notes || ''}"`
+        ].join(',');
+      })
     ];
     const csvContent = csvRows.join('\n');
     
@@ -183,114 +251,180 @@ export default function AuctionRegistrations() {
                     <TableHead>Imię i nazwisko</TableHead>
                     <TableHead>Telefon</TableHead>
                     <TableHead>Data rejestracji</TableHead>
-                    <TableHead>Status połączenia</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Data przypomnienia</TableHead>
                     <TableHead>Notatki</TableHead>
                     <TableHead>Akcje</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredRegistrations.length > 0 ? (
-                    filteredRegistrations.map((registration) => (
-                      <TableRow key={registration.id} className={callStatus[registration.id]?.called ? "bg-green-50" : ""}>
-                        <TableCell>{registration.id}</TableCell>
-                        <TableCell>{registration.name}</TableCell>
-                        <TableCell>
-                          <a 
-                            href={`tel:${registration.phone}`} 
-                            className="flex items-center hover:text-primary"
-                          >
-                            <Phone className="h-4 w-4 mr-1" />
-                            {registration.phone}
-                          </a>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(registration.created_at).toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <Checkbox 
-                              id={`called-${registration.id}`}
-                              checked={!!callStatus[registration.id]?.called}
-                              onCheckedChange={() => {
-                                if (callStatus[registration.id]?.called) {
-                                  handleResetCall(registration.id);
-                                } else {
-                                  handleMarkAsCalled(registration.id);
+                    filteredRegistrations.map((registration) => {
+                      const status = callStatus[registration.id]?.status || 'not_called';
+                      const rowClass = 
+                        status === 'called' ? "bg-green-50" : 
+                        status === 'callback' ? "bg-yellow-50" : "";
+                      
+                      return (
+                        <TableRow key={registration.id} className={rowClass}>
+                          <TableCell>{registration.id}</TableCell>
+                          <TableCell>{registration.name}</TableCell>
+                          <TableCell>
+                            <a 
+                              href={`tel:${registration.phone}`} 
+                              className="flex items-center hover:text-primary"
+                            >
+                              <Phone className="h-4 w-4 mr-1" />
+                              {registration.phone}
+                            </a>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(registration.created_at).toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <Select 
+                              value={status} 
+                              onValueChange={(value: 'called' | 'not_called' | 'callback') => 
+                                handleStatusChange(registration.id, value)
+                              }
+                            >
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue>
+                                  {status === 'called' && (
+                                    <span className="text-green-600 flex items-center">
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Zadzwoniono
+                                    </span>
+                                  )}
+                                  {status === 'not_called' && (
+                                    <span className="text-red-600 flex items-center">
+                                      <XCircle className="h-4 w-4 mr-1" />
+                                      Do wykonania
+                                    </span>
+                                  )}
+                                  {status === 'callback' && (
+                                    <span className="text-yellow-600 flex items-center">
+                                      <Clock className="h-4 w-4 mr-1" />
+                                      Do oddzwonienia
+                                    </span>
+                                  )}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="called">
+                                  <span className="flex items-center">
+                                    <CheckCircle className="h-4 w-4 mr-1 text-green-600" />
+                                    Zadzwoniono
+                                  </span>
+                                </SelectItem>
+                                <SelectItem value="not_called">
+                                  <span className="flex items-center">
+                                    <XCircle className="h-4 w-4 mr-1 text-red-600" />
+                                    Do wykonania
+                                  </span>
+                                </SelectItem>
+                                <SelectItem value="callback">
+                                  <span className="flex items-center">
+                                    <Clock className="h-4 w-4 mr-1 text-yellow-600" />
+                                    Do oddzwonienia
+                                  </span>
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            {status === 'callback' && (
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button 
+                                    variant="outline" 
+                                    className={
+                                      callbackDates[registration.id] 
+                                        ? "text-yellow-600" 
+                                        : "text-muted-foreground"
+                                    }
+                                  >
+                                    <Clock className="mr-2 h-4 w-4" />
+                                    {callbackDates[registration.id] 
+                                      ? format(callbackDates[registration.id]!, 'dd/MM/yyyy') 
+                                      : 'Wybierz datę'
+                                    }
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={callbackDates[registration.id]}
+                                    onSelect={(date) => handleCallbackDateChange(registration.id, date)}
+                                    initialFocus
+                                    className="pointer-events-auto"
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              placeholder="Dodaj notatkę..."
+                              value={notes[registration.id] || callStatus[registration.id]?.notes || ""}
+                              onChange={(e) => handleNoteChange(registration.id, e.target.value)}
+                              onBlur={() => {
+                                if (notes[registration.id]) {
+                                  const newStatus = {
+                                    ...callStatus,
+                                    [registration.id]: {
+                                      ...callStatus[registration.id] || { status: 'not_called' },
+                                      notes: notes[registration.id]
+                                    }
+                                  };
+                                  saveCallStatus(newStatus);
                                 }
                               }}
                             />
-                            <label 
-                              htmlFor={`called-${registration.id}`}
-                              className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                              {callStatus[registration.id]?.called ? (
-                                <span className="text-green-600 flex items-center">
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              {status === 'not_called' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => handleStatusChange(registration.id, 'called')}
+                                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                >
                                   <CheckCircle className="h-4 w-4 mr-1" />
-                                  Zadzwoniono
-                                  {callStatus[registration.id]?.callDate && (
-                                    <span className="text-xs ml-1 text-muted-foreground">
-                                      ({new Date(callStatus[registration.id].callDate!).toLocaleDateString()})
-                                    </span>
-                                  )}
-                                </span>
-                              ) : (
-                                <span className="text-red-600 flex items-center">
-                                  <XCircle className="h-4 w-4 mr-1" />
-                                  Do wykonania
-                                </span>
+                                  Zaznacz jako wykonane
+                                </Button>
                               )}
-                            </label>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            placeholder="Dodaj notatkę..."
-                            value={notes[registration.id] || callStatus[registration.id]?.notes || ""}
-                            onChange={(e) => handleNoteChange(registration.id, e.target.value)}
-                            onBlur={() => {
-                              if (notes[registration.id]) {
-                                const newStatus = {
-                                  ...callStatus,
-                                  [registration.id]: {
-                                    ...callStatus[registration.id] || { called: false },
-                                    notes: notes[registration.id]
-                                  }
-                                };
-                                saveCallStatus(newStatus);
-                              }
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            {!callStatus[registration.id]?.called ? (
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                onClick={() => handleMarkAsCalled(registration.id)}
-                                className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                              >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Zaznacz jako wykonane
-                              </Button>
-                            ) : (
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                onClick={() => handleResetCall(registration.id)}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                <XCircle className="h-4 w-4 mr-1" />
-                                Zresetuj status
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                              {status === 'called' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => handleStatusChange(registration.id, 'not_called')}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <XCircle className="h-4 w-4 mr-1" />
+                                  Zresetuj status
+                                </Button>
+                              )}
+                              {status !== 'callback' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => handleStatusChange(registration.id, 'callback')}
+                                  className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                                >
+                                  <Clock className="h-4 w-4 mr-1" />
+                                  Zadzwonić później
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
                         Brak zarejestrowanych użytkowników
                       </TableCell>
                     </TableRow>
