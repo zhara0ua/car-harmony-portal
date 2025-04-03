@@ -9,6 +9,66 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      auction_cars: {
+        Row: {
+          created_at: string | null
+          current_price: number | null
+          end_date: string
+          external_id: string
+          external_url: string
+          fuel_type: string | null
+          id: number
+          image_url: string | null
+          location: string | null
+          make: string | null
+          mileage: string | null
+          model: string | null
+          start_price: number
+          status: string | null
+          title: string
+          transmission: string | null
+          year: number
+        }
+        Insert: {
+          created_at?: string | null
+          current_price?: number | null
+          end_date: string
+          external_id: string
+          external_url: string
+          fuel_type?: string | null
+          id?: number
+          image_url?: string | null
+          location?: string | null
+          make?: string | null
+          mileage?: string | null
+          model?: string | null
+          start_price: number
+          status?: string | null
+          title: string
+          transmission?: string | null
+          year: number
+        }
+        Update: {
+          created_at?: string | null
+          current_price?: number | null
+          end_date?: string
+          external_id?: string
+          external_url?: string
+          fuel_type?: string | null
+          id?: number
+          image_url?: string | null
+          location?: string | null
+          make?: string | null
+          mileage?: string | null
+          model?: string | null
+          start_price?: number
+          status?: string | null
+          title?: string
+          transmission?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
       auctions: {
         Row: {
           car_id: number | null

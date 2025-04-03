@@ -2,24 +2,19 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { AuctionCarCard } from "@/components/auctions/AuctionCarCard";
 import { AuctionFilters } from "@/components/auctions/AuctionFilters";
-import { useToast } from "@/components/ui/use-toast";
 import { type AuctionFilters as AuctionFiltersType, type AuctionCar } from "@/types/auction-car";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
-import { Clock, RefreshCw } from "lucide-react";
 
 export default function Auctions() {
   const [filters, setFilters] = useState<AuctionFiltersType>({});
-  const [isScrapingInProgress, setIsScrapingInProgress] = useState(false);
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const { toast } = useToast();
   
-  const { data: cars, isLoading, refetch } = useQuery({
+  const { data: cars, isLoading } = useQuery({
     queryKey: ['auction-cars', filters],
     queryFn: async () => {
       console.log('Fetching auction cars with filters:', filters);
@@ -51,35 +46,14 @@ export default function Auctions() {
       
       console.log('Query result:', { data, error });
       
-      if (error) throw error;
+      if (error) {
+        setErrorMessage(error.message);
+        setIsErrorDialogOpen(true);
+        throw error;
+      }
       return data as AuctionCar[];
     }
   });
-
-  const handleScraping = async () => {
-    try {
-      setIsScrapingInProgress(true);
-      
-      const { data, error } = await supabase.functions.invoke('scrape-auctions');
-      
-      if (error) {
-        throw error;
-      }
-      
-      toast({
-        title: "Sukces",
-        description: "Dane aukcji zostały zaktualizowane",
-      });
-      
-      refetch();
-    } catch (error) {
-      console.error('Error during scraping:', error);
-      setErrorMessage(error instanceof Error ? error.message : "Nie udało się pobrać danych z serwisu aukcyjnego");
-      setIsErrorDialogOpen(true);
-    } finally {
-      setIsScrapingInProgress(false);
-    }
-  };
 
   const handleFilterChange = (newFilters: AuctionFiltersType) => {
     console.log('Applying new filters:', newFilters);
@@ -94,24 +68,6 @@ export default function Auctions() {
         <div className="space-y-8">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Aukcje samochodów</h1>
-            <Button
-              variant="outline"
-              onClick={handleScraping}
-              disabled={isScrapingInProgress}
-              className="flex items-center gap-2"
-            >
-              {isScrapingInProgress ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  Aktualizacja...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-4 w-4" />
-                  Odśwież dane
-                </>
-              )}
-            </Button>
           </div>
 
           <AuctionFilters onFilterChange={handleFilterChange} />

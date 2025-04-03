@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Users, Car, ClipboardCheck, BarChart, Settings } from "lucide-react";
+import { Users, Car, ClipboardCheck, BarChart, Settings, Tag } from "lucide-react";
 
 const AdminDashboard = () => {
   return (
@@ -36,6 +36,14 @@ const AdminDashboard = () => {
                       <Link to="/admin/cars">
                         <Car className="h-4 w-4" />
                         <span>Автомобілі</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <Link to="/admin/auction-cars">
+                        <Tag className="h-4 w-4" />
+                        <span>Автомобілі на аукціоні</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
