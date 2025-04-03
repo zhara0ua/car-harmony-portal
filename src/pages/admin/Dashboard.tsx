@@ -1,5 +1,5 @@
 
-import { Link, Outlet } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -13,7 +13,11 @@ import {
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Users, Car, ClipboardCheck, BarChart, Settings, Tag } from "lucide-react";
 
-const AdminDashboard = () => {
+interface AdminDashboardProps {
+  children?: React.ReactNode;
+}
+
+const AdminDashboard = ({ children }: AdminDashboardProps) => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-100">
@@ -80,7 +84,7 @@ const AdminDashboard = () => {
         <main className="flex-1 p-6">
           <SidebarTrigger />
           <div className="container mx-auto">
-            <Outlet />
+            {children}
           </div>
         </main>
       </div>

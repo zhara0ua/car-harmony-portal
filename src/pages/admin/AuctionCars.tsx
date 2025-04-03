@@ -24,7 +24,7 @@ export default function AuctionCars() {
             <CardTitle>Import samochodów aukcyjnych</CardTitle>
           </CardHeader>
           <CardContent>
-            <AuctionFileUploader onSuccess={refetch} />
+            <AuctionFileUploader onUploadSuccess={refetch} />
           </CardContent>
         </Card>
 
